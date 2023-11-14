@@ -2,6 +2,7 @@
 import 'package:cay_khe/blocs/login_bloc.dart';
 import 'package:cay_khe/ui/views/home/login/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,15 +19,18 @@ class _LoginPageState extends State<LoginPage> {
   
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-      body: Center(
-        child: Container(
-          padding: EdgeInsets.fromLTRB(500, 0, 500, 0),
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return Container(
+          width: constraints.maxWidth,
         //  padding: EdgeInsets.all(80),
           constraints: BoxConstraints.expand(),
           color: Colors.white,
-          child: Column(
+          child: Center(
+            child: Container(
+              width: 480,
+              child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               // crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -98,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.all(Radius.circular(8))),
                         ),
-                        onPressed: onSignInClicked,
+                        onPressed: () =>  onSignInClicked(context),
                         child: Text("SIGN IN",
                             style: TextStyle(color: Colors.white))),
                   ),
@@ -116,21 +120,21 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                 ),
-              ]),
-        ),
-      ),
-    ));
+              ])),
+        ));
+      }),
+    );
   }
 
-   void onSignInClicked() async {
+   void onSignInClicked(BuildContext context) async {
   bool isValid = await bloc.isValidInfo(_usernameController.text, _passwordController.text);
   
   if (isValid) {
     // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+    GoRouter.of(context).go("/");
   } else {
     // Xử lý trường hợp thông tin không hợp lệ
-     setState(() {
+    setState(() {
       _showPass = !_showPass;
     });
   }
