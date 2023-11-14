@@ -1,5 +1,6 @@
 
 import 'package:cay_khe/blocs/login_bloc.dart';
+import 'package:cay_khe/ui/views/home/login/home_page.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -142,6 +143,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget gotoHome(BuildContext context) {
-    return gotoHome(context);
+    return HomePage();
   }
 }
