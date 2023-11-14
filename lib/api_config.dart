@@ -1,5 +1,6 @@
  class ApiConfig {
-  static const String baseUrl = 'https://localhost:8888/';
+  static const String baseUrl = 'http://localhost:8888/api';
   static const String tagsEndpoint = 'tags';
+  static const String loginEndpoint='auth';
 }
 

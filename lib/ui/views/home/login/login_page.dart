@@ -134,9 +134,6 @@ class _LoginPageState extends State<LoginPage> {
     GoRouter.of(context).go("/");
   } else {
     // Xử lý trường hợp thông tin không hợp lệ
-    setState(() {
-      _showPass = !_showPass;
-    });
   }
 }
 
