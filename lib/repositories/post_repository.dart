@@ -1,21 +1,26 @@
-import "package:cay_khe/models/tag.dart";
+import "package:cay_khe/dtos/post_dto.dart";
+import "package:cay_khe/models/post.dart";
 import 'package:dio/dio.dart';
 import "package:cay_khe/api_config.dart";
-import "package:cay_khe/data_sources/tag_data_source.dart";
+import "package:cay_khe/data_sources/post_data_source.dart";
 
 
-class TagRepository implements TagDataSource {
+class PostRepository implements PostDataSource {
   late Dio dio;
-  final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.tagsEndpoint}";
+  final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.postsEndpoint}";
 
-  TagRepository() {
+  PostRepository() {
     dio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
   }
 
   @override
-  Future<void> add(Tag tag) {
-    // TODO: implement add
-    throw UnimplementedError();
+  Future<void> add(PostDTO postDTO) async {
+    final response = await dio.post('$baseUrl/create', data: postDTO.toJson());
+    if (response.statusCode == 201) {
+      return Future.value();
+    } else {
+      throw Exception('Failed to create post');
+    }
   }
 
   @override
@@ -25,19 +30,19 @@ class TagRepository implements TagDataSource {
   }
 
   @override
-  Future<List<Tag>> get() async {
+  Future<List<Post>> get() async {
     final response = await dio.get(baseUrl);
 
     if (response.statusCode == 200) {
       Iterable list = response.data;
-      return list.map((tag) => Tag.fromJson(tag)).toList();
+      return list.map((post) => Post.fromJson(post)).toList();
     } else {
-      throw Exception('Failed to load tags');
+      throw Exception('Failed to load posts');
     }
   }
 
   @override
-  Future<Tag?> getOne(String name) async {
+  Future<Post?> getOne(String id) async {
     // final response = await dio.get('/$name');
     // if (response.statusCode == 200) {
     //   return Tag.fromJson(response.data);
@@ -48,7 +53,7 @@ class TagRepository implements TagDataSource {
   }
 
   @override
-  Future<void> update(Tag tag) {
+  Future<void> update(Post post) {
     // TODO: implement update
     throw UnimplementedError();
   }
