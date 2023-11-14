@@ -3,6 +3,7 @@ import 'package:cay_khe/ui/widgets/footer.dart';
 import 'package:cay_khe/ui/widgets/header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 
 const _pageKey = ValueKey('_pageKey');
 const _scaffoldKey = ValueKey('_scaffoldKey');
@@ -95,7 +96,7 @@ final appRouter = GoRouter(routes: [
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
-        body: Text("create ask"),
+        body: CuPost(isQuestion: true),
         footer: Footer(),
       ),
     ),
