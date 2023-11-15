@@ -5,6 +5,6 @@ abstract class PostDataSource {
   Future<List<Post>> get();
   Future<Post?> getOne(String id);
   Future<void> add(PostDTO postDTO);
-  Future<void> update(Post post);
+  Future<void> update(String id, PostDTO postDTO);
   Future<void> delete(String id);
 }

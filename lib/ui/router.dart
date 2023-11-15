@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 
 const _pageKey = ValueKey('_pageKey');
-const _scaffoldKey = ValueKey('_scaffoldKey');
 
 class NavigationDestination {
   const NavigationDestination({
@@ -138,7 +137,7 @@ final appRouter = GoRouter(routes: [
                         key: state.pageKey,
                         child: ScreenWithHeaderAndFooter(
                           header: Header(),
-                          body: CuPost(id: state.pathParameters['pid']!, action: 'update'),
+                          body: CuPost(id: state.pathParameters['pid']!, isUpdated: true),
                           footer: Footer(),
                         )),
               ),
@@ -153,5 +152,3 @@ final appRouter = GoRouter(routes: [
     ),
   ),
 ]);
-]
-);

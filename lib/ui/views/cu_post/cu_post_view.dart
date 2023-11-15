@@ -1,20 +1,20 @@
 import 'package:cay_khe/dtos/post_dto.dart';
-import 'package:cay_khe/dtos/tag_dto.dart';
 import 'package:cay_khe/models/post.dart';
+import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import '../../../repositories/tag_repository.dart';
+
 import '../../../repositories/post_repository.dart';
+import '../../../repositories/tag_repository.dart';
 import 'widgets/tag_item.dart';
-import 'package:cay_khe/models/tag.dart';
 
 class CuPost extends StatefulWidget {
-  final String? action;
+  final bool isUpdated;
   final String? id;
-  final bool? isQuestion;
+  final bool isQuestion;
 
-  const CuPost({super.key, this.action, this.id, this.isQuestion});
+  const CuPost({super.key, this.isUpdated = false, this.id, this.isQuestion = false});
 
   @override
   State<CuPost> createState() => _CuPostState();
@@ -40,8 +40,8 @@ class _CuPostState extends State<CuPost> {
     super.initState();
     _loadTags();
     _loadPost();
-    headingP1 = widget.action == 'update' ? 'Sửa' : 'Tạo';
-    headingP2 = widget.isQuestion == true ? 'câu hỏi' : 'bài viết';
+    headingP1 = widget.isUpdated ? 'Sửa' : 'Tạo';
+    headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
   }
 
   Future<void> _loadTags() async {
@@ -52,17 +52,23 @@ class _CuPostState extends State<CuPost> {
   }
 
   Future<void> _loadPost() async {
-    if (widget.action != 'update') {
+    if (!widget.isUpdated) {
       return;
     }
 
     Post? post = await postRepository.getOne(widget.id!);
+
     setState(() {
       _titleController.text = post!.title;
       _contentController.text = post.content;
-
-      selectedTags = post.tags.map((tag) => allTags.firstWhere((element) => element.name == tag)).toList();
-      allTags.removeWhere((tag) => selectedTags.contains(tag));
+      selectedTags = post.tags.map((tagName) {
+        if (tagName == 'hoidap') {
+          headingP2 = 'câu hỏi';
+        }
+        var tag = allTags.firstWhere((tag) => tag.name == tagName);
+        allTags.remove(tag);
+        return tag;
+      }).toList();
     });
   }
 
@@ -409,14 +415,23 @@ class _CuPostState extends State<CuPost> {
   }
 
   savePost(bool isPrivate) {
-    PostDTO postDTO = PostDTO(
+    PostDTO postDTO = createDTO(isPrivate);
+
+    if (widget.isUpdated) {
+      postRepository.update(widget.id!, postDTO);
+    } else {
+      postRepository.add(postDTO);
+    }
+  }
+
+  PostDTO createDTO(bool isPrivate) {
+    return PostDTO(
+      DateTime.now(),
       title: _titleController.text,
       content: _contentController.text,
       tags: selectedTags.map((tag) => tag.name).toList(),
       isPrivate: isPrivate,
-      createdBy: DateTime.now().toIso8601String(),
+      createdBy: "aUser",
     );
-
-    postRepository.add(postDTO);
   }
 }

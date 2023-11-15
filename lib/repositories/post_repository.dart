@@ -52,9 +52,13 @@ class PostRepository implements PostDataSource {
   }
 
   @override
-  Future<void> update(Post post) {
-    // TODO: implement update
-    throw UnimplementedError();
+  Future<void> update(String id, PostDTO postDTO) async {
+    final response = await dio.put('$baseUrl/$id/update', data: postDTO.toJson());
+    if (response.statusCode == 200) {
+      return Future.value();
+    } else {
+      throw Exception('Failed to update post');
+    }
   }
 
 

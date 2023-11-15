@@ -4,8 +4,9 @@ class PostDTO {
   final List<String> tags;
   final bool isPrivate;
   final String createdBy;
+  final DateTime? updatedBy;
 
-  PostDTO({
+  PostDTO(this.updatedBy, {
     required this.title,
     required this.content,
     required this.tags,
@@ -20,6 +21,7 @@ class PostDTO {
       'tags': tags,
       'isPrivate': isPrivate,
       'createdBy': createdBy,
+      'updatedAt': updatedBy?.toIso8601String(),
     };
   }
 }
