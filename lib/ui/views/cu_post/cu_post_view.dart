@@ -1,4 +1,6 @@
 import 'package:cay_khe/dtos/post_dto.dart';
+import 'package:cay_khe/dtos/tag_dto.dart';
+import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -11,11 +13,11 @@ class CuPost extends StatefulWidget {
   final String? action;
   final String? id;
   final bool? isQuestion;
+
   const CuPost({super.key, this.action, this.id, this.isQuestion});
 
   @override
   State<CuPost> createState() => _CuPostState();
-
 }
 
 class _CuPostState extends State<CuPost> {
@@ -37,6 +39,7 @@ class _CuPostState extends State<CuPost> {
   void initState() {
     super.initState();
     _loadTags();
+    _loadPost();
     headingP1 = widget.action == 'update' ? 'Sửa' : 'Tạo';
     headingP2 = widget.isQuestion == true ? 'câu hỏi' : 'bài viết';
   }
@@ -45,6 +48,21 @@ class _CuPostState extends State<CuPost> {
     List<Tag> tags = await tagRepository.get();
     setState(() {
       allTags = tags;
+    });
+  }
+
+  Future<void> _loadPost() async {
+    if (widget.action != 'update') {
+      return;
+    }
+
+    Post? post = await postRepository.getOne(widget.id!);
+    setState(() {
+      _titleController.text = post!.title;
+      _contentController.text = post.content;
+
+      selectedTags = post.tags.map((tag) => allTags.firstWhere((element) => element.name == tag)).toList();
+      allTags.removeWhere((tag) => selectedTags.contains(tag));
     });
   }
 
@@ -265,122 +283,117 @@ class _CuPostState extends State<CuPost> {
         actionButtons
       ],
     );
-    return Scaffold(
-      key: _formKey,
-      backgroundColor: Colors.grey[100],
-      body: Container(
-        alignment: Alignment.center,
-        child: Container(
-          width: 1200,
-          margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      flex: _left,
-                      child: SizedBox(
-                        height: 40,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.only(
-                                left: 8,
-                                top: 8,
-                                bottom: 8,
-                              ),
-                              child: Text(
-                                '$headingP1 $headingP2',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
+    return Center(
+      child: Container(
+        width: 1200,
+        margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    flex: _left,
+                    child: SizedBox(
+                      height: 40,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(
+                              left: 8,
+                              top: 8,
+                              bottom: 8,
+                            ),
+                            child: Text(
+                              '$headingP1 $headingP2',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Row(
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isEditing = !_isEditing;
-                                    });
-                                  },
-                                  child: Text(
-                                    'Chỉnh sửa',
-                                    style: TextStyle(
-                                      color: (_isEditing)
-                                          ? Colors.black87
-                                          : Colors.grey.shade400,
-                                      fontSize: 16,
-                                      fontWeight: (_isEditing)
-                                          ? FontWeight.w500
-                                          : FontWeight.w400,
-                                    ),
+                          ),
+                          Row(
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isEditing = !_isEditing;
+                                  });
+                                },
+                                child: Text(
+                                  'Chỉnh sửa',
+                                  style: TextStyle(
+                                    color: (_isEditing)
+                                        ? Colors.black87
+                                        : Colors.grey.shade400,
+                                    fontSize: 16,
+                                    fontWeight: (_isEditing)
+                                        ? FontWeight.w500
+                                        : FontWeight.w400,
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isEditing = !_isEditing;
-                                    });
-                                  },
-                                  child: Text(
-                                    'Xem trước',
-                                    style: TextStyle(
-                                      color: (!_isEditing)
-                                          ? Colors.black87
-                                          : Colors.grey.shade400,
-                                      fontSize: 16,
-                                      fontWeight: (!_isEditing)
-                                          ? FontWeight.w500
-                                          : FontWeight.w400,
-                                    ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isEditing = !_isEditing;
+                                  });
+                                },
+                                child: Text(
+                                  'Xem trước',
+                                  style: TextStyle(
+                                    color: (!_isEditing)
+                                        ? Colors.black87
+                                        : Colors.grey.shade400,
+                                    fontSize: 16,
+                                    fontWeight: (!_isEditing)
+                                        ? FontWeight.w500
+                                        : FontWeight.w400,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    Expanded(
-                      flex: _right,
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 20),
-                        height: 40,
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
+                  ),
+                  Expanded(
+                    flex: _right,
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 20),
+                      height: 40,
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
                       ),
                     ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: _left,
-                      child: (_isEditing) ? postEditing : postPreview,
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    flex: _left,
+                    child: (_isEditing) ? postEditing : postPreview,
+                  ),
+                  Expanded(
+                    flex: _right,
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 20),
+                      height: 40,
+                      alignment: Alignment.centerRight,
                     ),
-                    Expanded(
-                      flex: _right,
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 20),
-                        height: 40,
-                        alignment: Alignment.centerRight,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

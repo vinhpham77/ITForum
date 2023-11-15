@@ -43,13 +43,12 @@ class PostRepository implements PostDataSource {
 
   @override
   Future<Post?> getOne(String id) async {
-    // final response = await dio.get('/$name');
-    // if (response.statusCode == 200) {
-    //   return Tag.fromJson(response.data);
-    // } else {
-    //   throw Exception('Failed to load book');
-    // }
-    throw UnimplementedError();
+    final response = await dio.get('$baseUrl/$id');
+    if (response.statusCode == 200) {
+      return Post.fromJson(response.data);
+    } else {
+      throw Exception('Failed to get post');
+    }
   }
 
   @override

@@ -25,7 +25,8 @@ class NavigationDestination {
 final appRouter = GoRouter(routes: [
   GoRoute(
     path: '/',
-    pageBuilder: (context, state) => const MaterialPage<void>(
+    pageBuilder: (context, state) =>
+    const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
@@ -36,7 +37,8 @@ final appRouter = GoRouter(routes: [
   ),
   GoRoute(
     path: '/question',
-    pageBuilder: (context, state) => const MaterialPage<void>(
+    pageBuilder: (context, state) =>
+    const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
@@ -47,7 +49,8 @@ final appRouter = GoRouter(routes: [
   ),
   GoRoute(
     path: '/search',
-    pageBuilder: (context, state) => const MaterialPage<void>(
+    pageBuilder: (context, state) =>
+    const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
@@ -58,30 +61,33 @@ final appRouter = GoRouter(routes: [
     routes: [
       GoRoute(
         path: ':pid',
-        pageBuilder: (context, state) => MaterialPage<void>(
-            key: state.pageKey,
-            child: ScreenWithHeaderAndFooter(
-              header: Header(),
-              body: Text(state.pathParameters['pid']!),
-              footer: Footer(),
-            )),
+        pageBuilder: (context, state) =>
+            MaterialPage<void>(
+                key: state.pageKey,
+                child: ScreenWithHeaderAndFooter(
+                  header: Header(),
+                  body: Text(state.pathParameters['pid']!),
+                  footer: Footer(),
+                )),
       ),
     ],
   ),
   GoRoute(
     path: '/publish/post',
-    pageBuilder: (context, state) => const MaterialPage<void>(
+    pageBuilder: (context, state) =>
+    const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
-        body: Text("create post"),
+        body: CuPost(),
         footer: Footer(),
       ),
     ),
   ),
   GoRoute(
     path: '/publish/series',
-    pageBuilder: (context, state) => const MaterialPage<void>(
+    pageBuilder: (context, state) =>
+    const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
@@ -92,7 +98,8 @@ final appRouter = GoRouter(routes: [
   ),
   GoRoute(
     path: '/publish/ask',
-    pageBuilder: (context, state) => const MaterialPage<void>(
+    pageBuilder: (context, state) =>
+    const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
@@ -101,4 +108,42 @@ final appRouter = GoRouter(routes: [
       ),
     ),
   ),
-]);
+  GoRoute(
+      path: '/posts',
+      pageBuilder: (context, state) =>
+      const MaterialPage<void>(
+        key: _pageKey,
+        child: ScreenWithHeaderAndFooter(
+          header: Header(),
+          body: Text("posts"),
+          footer: Footer(),
+        ),
+      ),
+      routes: [
+        GoRoute(
+            path: ':pid',
+            pageBuilder: (context, state) =>
+                MaterialPage<void>(
+                    key: state.pageKey,
+                    child: ScreenWithHeaderAndFooter(
+                      header: Header(),
+                      body: Text('Details ${state.pathParameters['pid']!}'),
+                      footer: Footer(),
+                    )),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                pageBuilder: (context, state) =>
+                    MaterialPage<void>(
+                        key: state.pageKey,
+                        child: ScreenWithHeaderAndFooter(
+                          header: Header(),
+                          body: CuPost(id: state.pathParameters['pid']!, action: 'update'),
+                          footer: Footer(),
+                        )),
+              ),
+            ]),
+      ]
+  ),
+]
+);
