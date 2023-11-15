@@ -1,3 +1,4 @@
+import 'package:cay_khe/ui/views/home/login/login_page.dart';
 import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
 import 'package:cay_khe/ui/widgets/footer.dart';
 import 'package:cay_khe/ui/widgets/header.dart';
@@ -86,8 +87,7 @@ final appRouter = GoRouter(routes: [
   ),
   GoRoute(
     path: '/publish/series',
-    pageBuilder: (context, state) =>
-    const MaterialPage<void>(
+    pageBuilder: (context, state) => const MaterialPage<void>(
       key: _pageKey,
       child: ScreenWithHeaderAndFooter(
         header: Header(),
@@ -145,5 +145,13 @@ final appRouter = GoRouter(routes: [
             ]),
       ]
   ),
+   GoRoute(
+    path: '/login',
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: _pageKey,
+      child: LoginPage(),
+    ),
+  ),
+]);
 ]
 );

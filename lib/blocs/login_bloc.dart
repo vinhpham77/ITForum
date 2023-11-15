@@ -8,7 +8,7 @@ import 'package:cay_khe/validators/vadidatiions.dart';
 class LoginBloc {
   StreamController _userController = new StreamController();
   StreamController _passController = new StreamController();
-  StreamController loginStatusController = StreamController();
+  StreamController<String> loginStatusController = StreamController();
   UserRepository _userRepository = new UserRepository();
 
   Stream get userStream => _userController.stream;
@@ -30,7 +30,6 @@ class LoginBloc {
     if (result == 'Success')
     {
         this.username = username;
-        print(this.username);
         loginStatusController.sink.add(this.username);
     return true;
     }

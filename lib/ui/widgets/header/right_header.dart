@@ -1,3 +1,4 @@
+import 'package:cay_khe/blocs/login_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -83,7 +84,17 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ),
         SizedBox(width: 10),
-        MenuAnchor(
+        
+        widgetSignIn(),
+        
+        SizedBox(width: screenSize.width / 10),
+      ],
+    );
+  }
+
+  Widget widgetSignIn() => Row(
+    children: [
+      MenuAnchor(
           builder:
               (BuildContext context, MenuController controller, Widget? child) {
             return IconButton(
@@ -156,8 +167,6 @@ class _RightHeaderState extends State<RightHeader> {
                 )),
           ),
         ),
-        SizedBox(width: screenSize.width / 10),
-      ],
-    );
-  }
+    ],
+  );
 }
