@@ -1,6 +1,6 @@
 
 import 'package:cay_khe/blocs/login_bloc.dart';
-import 'package:cay_khe/ui/views/home/login/home_page.dart';
+import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

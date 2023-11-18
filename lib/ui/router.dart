@@ -1,10 +1,17 @@
-import 'package:cay_khe/ui/views/home/login/login_page.dart';
+import 'package:cay_khe/ui/views/login/changePassword.dart';
+import 'package:cay_khe/ui/views/login/forgotPassword_page.dart';
+import 'package:cay_khe/ui/views/login/login_page.dart';
+import 'package:cay_khe/ui/views/login/register_page.dart';
 import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
 import 'package:cay_khe/ui/widgets/footer.dart';
 import 'package:cay_khe/ui/widgets/header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
+
+
+
+
 
 const _pageKey = ValueKey('_pageKey');
 
@@ -149,6 +156,27 @@ final appRouter = GoRouter(routes: [
     pageBuilder: (context, state) => const MaterialPage<void>(
       key: _pageKey,
       child: LoginPage(),
+    ),
+  ),
+    GoRoute(
+    path: '/signup',
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: _pageKey,
+      child: SignupPage()
+    ),
+  ),
+    GoRoute(
+    path: '/forgotpass',
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: _pageKey,
+      child: ForgotPasswordPage()
+    ),
+  ),
+  GoRoute(
+    path: '/changepass',
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: _pageKey,
+      child: ChangePasswordPage()
     ),
   ),
 ]);
