@@ -7,10 +7,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import '/ui/widgets/notification.dart';
 import '../../../repositories/post_repository.dart';
 import '../../../repositories/tag_repository.dart';
 import 'widgets/tag_item.dart';
-import '/ui/widgets/notification.dart';
 
 class CuPost extends StatefulWidget {
   final bool isUpdated;
@@ -112,7 +112,6 @@ class _CuPostState extends State<CuPost> {
             FilledButton(
               onPressed: () {
                 savePost(false);
-                //Navigator.pop(context);
               },
               child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
             ),
@@ -121,10 +120,7 @@ class _CuPostState extends State<CuPost> {
               child: TextButton(
                 style: TextButton.styleFrom(),
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    savePost(true);
-                    //Navigator.pop(context);
-                  }
+                  savePost(true);
                 },
                 child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
               ),
@@ -152,8 +148,14 @@ class _CuPostState extends State<CuPost> {
             top: 32,
             bottom: 32,
           ),
-          child: TextField(
+          child: TextFormField(
             controller: _titleController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Vui lòng nhập tiêu đề';
+              }
+              return null;
+            },
             decoration: const InputDecoration(
               hintText: 'Viết tiêu đề ở đây...',
               hintStyle: TextStyle(
@@ -222,7 +224,7 @@ class _CuPostState extends State<CuPost> {
                       label: selectedTags.isEmpty
                           ? 'Có thể gắn một đến ba thẻ...'
                           : "Gắn thêm một thẻ khác..."),
-                )
+                ),
             ],
           ),
         ),
@@ -247,8 +249,14 @@ class _CuPostState extends State<CuPost> {
             bottom: 32,
           ),
           height: 400,
-          child: TextField(
+          child: TextFormField(
             controller: _contentController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Vui lòng nhập nội dung';
+              }
+              return null;
+            },
             maxLines: null,
             decoration: const InputDecoration.collapsed(
               hintText: 'Viết nội dung ở đây...',
@@ -445,6 +453,10 @@ class _CuPostState extends State<CuPost> {
   }
 
   savePost(bool isPrivate) async {
+    if (!validateOnPressed()) {
+      return;
+    }
+
     PostDTO postDTO = createDTO(isPrivate);
 
     Future<Response<dynamic>> future;
@@ -486,5 +498,29 @@ class _CuPostState extends State<CuPost> {
       isPrivate: isPrivate,
       createdBy: "aUser",
     );
+  }
+
+  String? validateSelectedTags(List<Tag> selectedTags) {
+    if (selectedTags.isEmpty) {
+      return 'Vui lòng chọn ít nhất một tag';
+    }
+    if (selectedTags.length > 3) {
+      return 'Chỉ được chọn tối đa 3 tags';
+    }
+    return null;
+  }
+
+  bool validateOnPressed() {
+    if (_formKey.currentState!.validate()) {
+      String? tagValidation = validateSelectedTags(selectedTags);
+
+      if (tagValidation != null) {
+        showTopRightSnackBar(context, tagValidation, NotifyType.warning);
+      } else {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
