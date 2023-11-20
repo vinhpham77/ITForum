@@ -1,9 +1,7 @@
-import "package:cay_khe/dtos/post_dto.dart";
-import "package:cay_khe/models/post.dart";
-import 'package:dio/dio.dart';
 import "package:cay_khe/api_config.dart";
 import "package:cay_khe/data_sources/post_data_source.dart";
-
+import "package:cay_khe/dtos/post_dto.dart";
+import 'package:dio/dio.dart';
 
 class PostRepository implements PostDataSource {
   late Dio dio;
@@ -14,52 +12,28 @@ class PostRepository implements PostDataSource {
   }
 
   @override
-  Future<void> add(PostDTO postDTO) async {
-    final response = await dio.post('$baseUrl/create', data: postDTO.toJson());
-    if (response.statusCode == 201) {
-      return Future.value();
-    } else {
-      throw Exception('Failed to create post');
-    }
+  Future<Response<dynamic>> add(PostDTO postDTO) async {
+    return dio.post('$baseUrl/create', data: postDTO.toJson());
   }
 
   @override
-  Future<void> delete(String id) {
+  Future<Response<dynamic>> delete(String id) {
     // TODO: implement delete
     throw UnimplementedError();
   }
 
   @override
-  Future<List<Post>> get() async {
-    final response = await dio.get(baseUrl);
-
-    if (response.statusCode == 200) {
-      Iterable list = response.data;
-      return list.map((post) => Post.fromJson(post)).toList();
-    } else {
-      throw Exception('Failed to load posts');
-    }
+  Future<Response<dynamic>> get() async {
+    return dio.get(baseUrl);
   }
 
   @override
-  Future<Post?> getOne(String id) async {
-    final response = await dio.get('$baseUrl/$id');
-    if (response.statusCode == 200) {
-      return Post.fromJson(response.data);
-    } else {
-      throw Exception('Failed to get post');
-    }
+  Future<Response<dynamic>> getOne(String id) async {
+    return dio.get('$baseUrl/$id');
   }
 
   @override
-  Future<void> update(String id, PostDTO postDTO) async {
-    final response = await dio.put('$baseUrl/$id/update', data: postDTO.toJson());
-    if (response.statusCode == 200) {
-      return Future.value();
-    } else {
-      throw Exception('Failed to update post');
-    }
+  Future<Response<dynamic>> update(String id, PostDTO postDTO) async {
+    return dio.put('$baseUrl/$id/update', data: postDTO.toJson());
   }
-
-
 }

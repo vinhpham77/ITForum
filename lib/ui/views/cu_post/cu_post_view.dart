@@ -1,20 +1,24 @@
+import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/post_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../../../repositories/post_repository.dart';
 import '../../../repositories/tag_repository.dart';
 import 'widgets/tag_item.dart';
+import '/ui/widgets/notification.dart';
 
 class CuPost extends StatefulWidget {
   final bool isUpdated;
   final String? id;
   final bool isQuestion;
 
-  const CuPost({super.key, this.isUpdated = false, this.id, this.isQuestion = false});
+  const CuPost(
+      {super.key, this.isUpdated = false, this.id, this.isQuestion = false});
 
   @override
   State<CuPost> createState() => _CuPostState();
@@ -63,19 +67,38 @@ class _CuPostState extends State<CuPost> {
       return;
     }
 
-    Post? post = await postRepository.getOne(widget.id!);
+    var future = postRepository.getOne(widget.id!);
 
-    setState(() {
-      _titleController.text = post!.title;
-      _contentController.text = post.content;
-      selectedTags = post.tags.map((tagName) {
-        if (tagName == 'hoidap') {
-          headingP2 = 'câu hỏi';
-        }
-        var tag = allTags.firstWhere((tag) => tag.name == tagName);
-        allTags.remove(tag);
-        return tag;
-      }).toList();
+    future.then((response) {
+      Post post = Post.fromJson(response.data);
+
+      setState(() {
+        _titleController.text = post.title;
+        _contentController.text = post.content;
+        selectedTags = post.tags.map((tagName) {
+          if (tagName == 'hoidap') {
+            headingP2 = 'câu hỏi';
+          }
+          var tag = allTags.firstWhere((tag) => tag.name == tagName);
+          allTags.remove(tag);
+          return tag;
+        }).toList();
+      });
+    }).catchError((error) {
+      DioException err = error;
+
+      String message = '';
+
+      if (err.response?.data is Map<String, dynamic>) {
+        Map<String, dynamic> data = err.response?.data;
+        message = data.entries
+            .map((entry) => "${entry.key}: ${entry.value}")
+            .join("\n");
+      } else if (err.response?.data is String) {
+        message = err.response?.data;
+      }
+
+      showTopRightSnackBar(context, message, NotifyType.error);
     });
   }
 
@@ -89,7 +112,7 @@ class _CuPostState extends State<CuPost> {
             FilledButton(
               onPressed: () {
                 savePost(false);
-                Navigator.pop(context);
+                //Navigator.pop(context);
               },
               child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
             ),
@@ -100,7 +123,7 @@ class _CuPostState extends State<CuPost> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     savePost(true);
-                    Navigator.pop(context);
+                    //Navigator.pop(context);
                   }
                 },
                 child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
@@ -421,14 +444,37 @@ class _CuPostState extends State<CuPost> {
     return '$title  \n###### $tags\n  # \n  $content';
   }
 
-  savePost(bool isPrivate) {
+  savePost(bool isPrivate) async {
     PostDTO postDTO = createDTO(isPrivate);
 
+    Future<Response<dynamic>> future;
     if (widget.isUpdated) {
-      postRepository.update(widget.id!, postDTO);
+      future = postRepository.update(widget.id!, postDTO);
     } else {
-      postRepository.add(postDTO);
+      future = postRepository.add(postDTO);
     }
+
+    future.then((response) {
+      response.data;
+      showTopRightSnackBar(
+          context, '$headingP1 $headingP2 thành công!', NotifyType.success);
+      Navigator.of(context).pop();
+    }).catchError((error) {
+      DioException err = error;
+
+      String message = '';
+
+      if (err.response?.data is Map<String, dynamic>) {
+        Map<String, dynamic> data = err.response?.data;
+        message = data.entries
+            .map((entry) => "${entry.key}: ${entry.value}")
+            .join("\n");
+      } else if (err.response?.data is String) {
+        message = err.response?.data;
+      }
+
+      showTopRightSnackBar(context, message, NotifyType.error);
+    });
   }
 
   PostDTO createDTO(bool isPrivate) {
