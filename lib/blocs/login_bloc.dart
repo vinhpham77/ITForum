@@ -14,8 +14,7 @@ class LoginBloc {
   Stream get userStream => _userController.stream;
   Stream get passStream => _passController.stream;
   Stream get getloginStatusController => loginStatusController.stream;
-  String username = "";
-
+  static String usernameGlobal = "";
   Future<bool> isValidInfo(String username, String password) async {
     if (!Validations.isValidUser(username)) {
       _userController.sink.addError("Tài khoản không hợp lệ");
@@ -29,16 +28,14 @@ class LoginBloc {
     String result = await _userRepository.loginUser(username, password);
     if (result == 'Success')
     {
-        this.username = username;
-        loginStatusController.sink.add(this.username);
+        usernameGlobal = username;
+        loginStatusController.sink.add(usernameGlobal);
     return true;
     }
     else{
       loginStatusController.sink.addError(result);
       return false;
     }
-
-    
   }
 
   void dispose() {

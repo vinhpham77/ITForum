@@ -1,5 +1,6 @@
 
 import 'package:cay_khe/blocs/changePassword_bloc.dart';
+import 'package:cay_khe/blocs/login_bloc.dart';
 
 import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   ChangePasswordBloc bloc =new ChangePasswordBloc();
 
   bool _showPass = false;
-
+TextEditingController _usernameController = new TextEditingController();
   TextEditingController _curentPassController = new TextEditingController();
   TextEditingController _newPasswordController = new TextEditingController();
   TextEditingController _reRewPasswordController = new TextEditingController();
@@ -54,10 +55,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           color: Colors.black,
                           fontSize: 30)),
                 ),
+                  
                 Padding(
                     padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
                     child: StreamBuilder(
-                      stream:bloc.pasStream,
+                      stream:bloc.curentPasStream,
                       builder: (context, snapshot) => TextField(
                         style: TextStyle(fontSize: 18, color: Colors.black),
                         controller: _curentPassController,
@@ -113,7 +115,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.all(Radius.circular(8))),
                         ),
-                        onPressed: () =>  onSignInClicked(context),
+                        onPressed: () =>  onChangePassClicked(context),
                         child: Text("Đổi mật khẩu",
                             style: TextStyle(color: Colors.white))),
                   ),
@@ -125,13 +127,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     );
   }
 
-   void onSignInClicked(BuildContext context) async {
-  bool isValid = await bloc.isValidInfo(_curentPassController.text, _newPasswordController.text,_reRewPasswordController.text);
+   void onChangePassClicked(BuildContext context) async {
+  bool isValid = await bloc.isValidInfo(LoginBloc.usernameGlobal,_curentPassController.text, _newPasswordController.text,_reRewPasswordController.text);
   
   if (isValid) {
     // Thực hiện các công việc cần thiết khi thông tin hợp lệ
     GoRouter.of(context).go("/");
   } else {
+    print("khong thuc hien duoc");
+   
     // Xử lý trường hợp thông tin không hợp lệ
   }
 }

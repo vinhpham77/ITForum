@@ -5,31 +5,30 @@ import 'package:cay_khe/validators/vadidatiions.dart';
 
 
 
-class ChangePasswordBloc {
+class ResetPasswordBloc {
   StreamController _usernameController = new StreamController();
-  StreamController _currentPassController = new StreamController();
+  StreamController _otpController = new StreamController();
   StreamController _passController = new StreamController();
   StreamController _repassController = new StreamController();
   StreamController<String> loginStatusController = StreamController();
   UserRepository _userRepository = new UserRepository();
 
 Stream get usernameStream => _usernameController.stream;
-  Stream get curentPasStream => _currentPassController.stream;
+  Stream get otpStream => _otpController.stream;
   Stream get pasStream => _passController.stream;
   Stream get repassStream => _repassController.stream;
   Stream get getloginStatusController => loginStatusController.stream;
 
   String username = "";
 
-  Future<bool> isValidInfo(String username, String currentpassword, String newpassword,String repassword) async {
-    if (username==null&& username=='') {
-      print(username);
-      _usernameController.sink.addError("Tài khoản không hợp lệ");
+  Future<bool> isValidInfo(String username, String otp, String newpassword,String repassword) async {
+   if(!Validations.isValidUser(username))
+  {
+     _usernameController.sink.addError("Tài khoản không hợp lệ");
       return false;
-    }
-
-    if (!Validations.isValidPass(currentpassword)) {
-      _currentPassController.sink.addError("Mật khẩu không hợp lệ");
+  }
+    if (!Validations.isValidPass(otp)) {
+      _otpController.sink.addError("Mật khẩu không hợp lệ");
       return false;
     }
      if (!Validations.isValidPass(newpassword)) {
@@ -41,7 +40,7 @@ Stream get usernameStream => _usernameController.stream;
       return false;
     }
 
-    String result = await _userRepository.changePassUser( username, currentpassword, newpassword);
+    String result = await _userRepository.resetPassUser(username, newpassword);
     if (result == 'Success')
     {
        // this.username = username;

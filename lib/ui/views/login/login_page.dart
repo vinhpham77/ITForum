@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                               borderRadius: BorderRadius.all(Radius.circular(8))),
                         ),
                         onPressed: () =>  onSignInClicked(context),
-                        child: Text("SIGN IN",
+                        child: Text("Đăng nhập",
                             style: TextStyle(color: Colors.white))),
                   ),
                 ),

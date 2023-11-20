@@ -159,7 +159,7 @@ final appRouter = GoRouter(routes: [
     ),
   ),
     GoRoute(
-    path: '/signup',
+    path: '/register',
     pageBuilder: (context, state) => const MaterialPage<void>(
       key: _pageKey,
       child: SignupPage()

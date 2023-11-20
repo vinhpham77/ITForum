@@ -6,5 +6,8 @@ class Validations
   static bool isValidPass(String pass){
     return pass.length>2;
   }
+  static bool isValidrePass(String pass,String repass){
+    return pass==repass;
+  }
 
 }

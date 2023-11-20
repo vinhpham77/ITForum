@@ -53,7 +53,29 @@ class _SignupPageState extends State<SignupPage> {
                                   color: Colors.black,
                                   fontSize: 30)),
                         ),
-                       
+                       Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 20.0),
+                          child: Stack(
+                            alignment: AlignmentDirectional.centerEnd,
+                            children: <Widget>[
+                              StreamBuilder(
+                                  stream: bloc.fullnameStream,
+                                  builder: (context, snapshot) => TextField(
+                                        style: TextStyle(
+                                            fontSize: 18, color: Colors.black),
+                                        controller: _fullnameController,
+                                        decoration: InputDecoration(
+                                            labelText: "Tên người dùng",
+                                            errorText: snapshot.hasError
+                                                ? snapshot.error.toString()
+                                                : null,
+                                            labelStyle: TextStyle(
+                                                color: Color(0xff888888),
+                                                fontSize: 15)),
+                                      )),
+                            ],
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 0, 0, 20.0),
                           child: Row(
@@ -66,7 +88,6 @@ class _SignupPageState extends State<SignupPage> {
                                     style: TextStyle(
                                         fontSize: 18, color: Colors.black),
                                     controller: _emailController,
-                                    obscureText: !_showPass,
                                     decoration: InputDecoration(
                                       labelText: "Địa chỉ email",
                                       errorText: snapshot.hasError
@@ -89,7 +110,7 @@ class _SignupPageState extends State<SignupPage> {
                                     style: TextStyle(
                                         fontSize: 18, color: Colors.black),
                                     controller: _usernameController,
-                                    obscureText: !_showPass,
+                                   
                                     decoration: InputDecoration(
                                       labelText: "Tên tài khoản",
                                       errorText: snapshot.hasError
@@ -165,8 +186,8 @@ class _SignupPageState extends State<SignupPage> {
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),
                                 ),
-                                onPressed: () => onSignInClicked(context),
-                                child: Text("SIGN UP",
+                                onPressed: () => onSignUpClicked(context),
+                                child: Text("Đăng ký",
                                     style: TextStyle(color: Colors.white))),
                           ),
                         ),
@@ -188,15 +209,18 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  void onSignInClicked(BuildContext context) async {
+  void onSignUpClicked(BuildContext context) async {
     bool isValid = await bloc.isValidInfo(
-        _usernameController.text, _passwordController.text);
-
+        _usernameController.text, _passwordController.text, _emailController.text, _fullnameController.text);
     if (isValid) {
+       print("đăng ký thành công");
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-      GoRouter.of(context).go("/");
+      GoRouter.of(context).go("/login");
     } else {
+      print("đăng ký thất bại");
       // Xử lý trường hợp thông tin không hợp lệ
+       GoRouter.of(context).go("/register");
+ 
     }
   }
 

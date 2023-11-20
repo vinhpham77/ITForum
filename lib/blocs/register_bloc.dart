@@ -23,7 +23,7 @@ class RegisterBloc {
   Stream get getloginStatusController => loginStatusController.stream;
   String username = "";
 
-  Future<bool> isValidInfo(String username, String password) async {
+  Future<bool> isValidInfo(String username, String password, String email, String displayname) async {
     if (!Validations.isValidUser(username)) {
       _userController.sink.addError("Tài khoản không hợp lệ");
       return false;
@@ -33,15 +33,15 @@ class RegisterBloc {
       _passController.sink.addError("Mật khẩu không hợp lệ");
       return false;
     }
-    String result = await _userRepository.loginUser(username, password);
+    String result = await _userRepository.registerUser(username, password, email, displayname);
     if (result == 'Success')
     {
-        this.username = username;
-        loginStatusController.sink.add(this.username);
+        // this.username = username;
+        // loginStatusController.sink.add(this.username);
     return true;
     }
     else{
-      loginStatusController.sink.addError(result);
+      //loginStatusController.sink.addError(result);
       return false;
     }
 
