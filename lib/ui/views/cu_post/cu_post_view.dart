@@ -49,6 +49,13 @@ class _CuPostState extends State<CuPost> {
     setState(() {
       allTags = tags;
     });
+
+    if (widget.isQuestion) {
+      setState(() {
+        selectedTags.add(allTags.firstWhere((tag) => tag.name == 'hoidap'));
+        allTags.removeWhere((tag) => tag.name == 'hoidap');
+      });
+    }
   }
 
   Future<void> _loadPost() async {
