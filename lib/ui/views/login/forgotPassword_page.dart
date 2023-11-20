@@ -13,7 +13,7 @@ class ForgotPasswordPage extends StatefulWidget {
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   ForgotPasswordBloc bloc = new ForgotPasswordBloc();
   TextEditingController _emailController = new TextEditingController();
-  TextEditingController _usernameController=new TextEditingController();
+  TextEditingController _usernameController = new TextEditingController();
 
   bool showOtpInput = false;
 
@@ -54,13 +54,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         const Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                           child: Text(
-                              "Gửi email của bạn. Chúng tôi sẽ gửi một liên kết đến email đó để bạn có thể đặt lại mật khẩu.",
+                              "Chúng tôi sẽ gửi một mã OTP đến email mà bạn đã đăng ký tài khoản bên dưới để bạn có thể đặt lại mật khẩu.",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                   fontSize: 15)),
                         ),
-                          Padding(
+                        Padding(
                             padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
                             child: StreamBuilder(
                               stream: bloc.usernameStream,
@@ -78,25 +78,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                         fontSize: 15)),
                               ),
                             )),
-                        // Padding(
-                        //     padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
-                        //     child: StreamBuilder(
-                        //       stream: bloc.emailStream,
-                        //       builder: (context, snapshot) => TextField(
-                        //         style: TextStyle(
-                        //             fontSize: 18, color: Colors.black),
-                        //         controller: _emailController,
-                        //         decoration: InputDecoration(
-                        //             labelText: "Email của bạn",
-                        //             errorText: snapshot.hasError
-                        //                 ? snapshot.error.toString()
-                        //                 : null,
-                        //             labelStyle: TextStyle(
-                        //                 color: Color(0xff888888  ),
-                        //                 fontSize: 15)),
-                        //       ),
-                        //     )),
-                            
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                           child: SizedBox(
@@ -109,7 +90,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),
                                 ),
-                                onPressed: () => onSignInClicked(context),
+                                onPressed: () => onSubmitClicked(context),
                                 child: Text("Gửi email",
                                     style: TextStyle(color: Colors.white))),
                           ),
@@ -120,13 +101,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 
-  void onSignInClicked(BuildContext context) async {
+  void onSubmitClicked(BuildContext context) async {
     try {
       User? isValid = await bloc.isValidInfo(_usernameController.text);
 
+print(isValid);
       if (isValid != null) {
         // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-        GoRouter.of(context).go("/");
+        GoRouter.of(context).go("/resetPass");
       } else {
         print("Thông tin không hợp lệ hoặc có lỗi xảy ra");
       }

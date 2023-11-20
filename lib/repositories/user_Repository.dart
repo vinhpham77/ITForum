@@ -103,17 +103,18 @@ Future<User?> forgotPassUser(String username) async {
 }
   
 
-   Future<String> resetPassUser(String username, String newPassword) async {
+   Future<String> resetPassUser(String username, String newPassword,String otp) async {
     try {
       final response = await dio.post(
         "/resetPassword",
         data: {
           'username': username,
-          'newPassword':newPassword
+          'newPassword':newPassword,
+          'otp':otp
         },
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 204) {
         return "Success";
       } else {
         return "Failed";

@@ -1,6 +1,8 @@
 
 import 'package:cay_khe/blocs/login_bloc.dart';
+import 'package:cay_khe/ui/views/login/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/login/home_page.dart';
+import 'package:cay_khe/ui/views/login/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -83,11 +85,15 @@ class _LoginPageState extends State<LoginPage> {
                       )),
                       GestureDetector(
                           onTap: onToggleShowPass,
-                          child: Text(_showPass ? "Hide" : "Show",
+                          child: MouseRegion(
+                             cursor: SystemMouseCursors.click,
+                            child: Text(_showPass ? "Hide" : "Show",
                               style: TextStyle(
                                   color: Colors.blue,
                                   fontSize: 13,
-                                  fontWeight: FontWeight.bold)))
+                                  fontWeight: FontWeight.bold)
+                                  ),)
+                                  )
                     ],
                   ),
                 ),
@@ -110,13 +116,28 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   height: 130,
                   width: double.infinity,
-                  child: Row(
+                  child:  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text("Quên mật khẩu",
-                          style: TextStyle(fontSize: 15, color: Colors.blue)),
-                      Text("Tạo tài khoản",
-                          style: TextStyle(fontSize: 15, color: Colors.blue))
+                      GestureDetector(
+                     onTap: () {
+                    navigateToForgotPasswordPage(context);
+                  },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Text(
+                  "Quên mật khẩu",
+                  style: TextStyle(fontSize: 15, color: Colors.blue),
+                ),
+              ),
+            ),
+                       GestureDetector(
+                        onTap: ()=>navigateToSignupPage(context),
+                        child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child:  Text("Tạo tài khoản",
+                          style: TextStyle(fontSize: 15, color: Colors.blue))))
+                     
                     ],
                   ),
                 ),
@@ -142,7 +163,14 @@ class _LoginPageState extends State<LoginPage> {
       _showPass = !_showPass;
     });
   }
+ void navigateToForgotPasswordPage(BuildContext context) {
 
+  GoRouter.of(context).go("/forgotpass");
+    
+ }
+  void navigateToSignupPage(BuildContext context) {
+   GoRouter.of(context).go('/changepass');
+  }
   Widget gotoHome(BuildContext context) {
     return HomePage();
   }

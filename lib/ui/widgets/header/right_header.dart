@@ -28,9 +28,9 @@ class _RightHeaderState extends State<RightHeader> {
     ItemMenu(
         name: "Đổi mật khẩu",
         icon: Icons.change_circle,
-        route: "/publish/post"),
+        route: "/changepass"),
     ItemMenu(
-        name: "Quên mật khẩu", icon: Icons.vpn_key, route: "/publish/post"),
+        name: "Quên mật khẩu", icon: Icons.vpn_key, route: "/forgotpass"),
     ItemMenu(name: "Đăng xuất", icon: Icons.logout, route: "/publish/post")
   ];
 
