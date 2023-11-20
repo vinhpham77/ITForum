@@ -57,13 +57,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                   fontSize: 30)),
                         ),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                             child: StreamBuilder(
-                              stream: bloc.pasStream,
+                              stream: bloc.otpStream,
                               builder: (context, snapshot) => TextField(
                                 style: TextStyle(
                                     fontSize: 18, color: Colors.black),
-                                controller: _newPasswordController,
+                                controller: _otpController,
                                 decoration: InputDecoration(
                                     labelText: "Nhập mã OTP",
                                     errorText: snapshot.hasError
@@ -75,7 +75,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               ),
                             )),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                             child: StreamBuilder(
                               stream: bloc.pasStream,
                               builder: (context, snapshot) => TextField(
@@ -93,7 +93,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               ),
                             )),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40.0),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 20.0),
                           child: Stack(
                             alignment: AlignmentDirectional.centerEnd,
                             children: <Widget>[
@@ -117,7 +117,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
                           child: SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -141,14 +141,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   void onChangePassClicked(BuildContext context) async {
     bool isValid = await bloc.isValidInfo(
-        LoginBloc.usernameGlobal,
-        forgotpassBloc.username,
+        ForgotPasswordBloc.requestname,
+        _otpController.text,
         _newPasswordController.text,
         _reRewPasswordController.text);
 
     if (isValid) {
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-      GoRouter.of(context).go("/");
+      GoRouter.of(context).go("/login");
     } else {
       print("khong thuc hien duoc");
 

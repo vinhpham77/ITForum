@@ -2,6 +2,7 @@ import 'package:cay_khe/ui/views/login/changePassword.dart';
 import 'package:cay_khe/ui/views/login/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/login/login_page.dart';
 import 'package:cay_khe/ui/views/login/register_page.dart';
+import 'package:cay_khe/ui/views/login/resetPassword.dart';
 import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
 import 'package:cay_khe/ui/widgets/footer.dart';
 import 'package:cay_khe/ui/widgets/header.dart';
@@ -177,6 +178,13 @@ final appRouter = GoRouter(routes: [
     pageBuilder: (context, state) => const MaterialPage<void>(
       key: _pageKey,
       child: ChangePasswordPage()
+    ),
+  ),
+   GoRoute(
+    path: '/resetpass',
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: _pageKey,
+      child: ResetPasswordPage()
     ),
   ),
 ]);

@@ -17,14 +17,16 @@ class LoginBloc {
   static String usernameGlobal = "";
   Future<bool> isValidInfo(String username, String password) async {
     if (!Validations.isValidUser(username)) {
-      _userController.sink.addError("Tài khoản không hợp lệ");
+      _userController.sink.addError("Tài khoản phải lớn hơn 2 kí tự");
       return false;
     }
+    _userController.sink.add("");
 
     if (!Validations.isValidPass(password)) {
-      _passController.sink.addError("Mật khẩu không hợp lệ");
+      _passController.sink.addError("Mật khẩu phải lớn hơn 2 kí tự");
       return false;
     }
+    _passController.sink.add("");
     String result = await _userRepository.loginUser(username, password);
     if (result == 'Success')
     {

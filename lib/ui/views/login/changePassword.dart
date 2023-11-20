@@ -1,4 +1,3 @@
-
 import 'package:cay_khe/blocs/changePassword_bloc.dart';
 import 'package:cay_khe/blocs/login_bloc.dart';
 
@@ -13,132 +12,162 @@ class ChangePasswordPage extends StatefulWidget {
 }
 
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  ChangePasswordBloc bloc =new ChangePasswordBloc();
+  ChangePasswordBloc bloc = new ChangePasswordBloc();
 
   bool _showPass = false;
-TextEditingController _usernameController = new TextEditingController();
+  TextEditingController _usernameController = new TextEditingController();
   TextEditingController _curentPassController = new TextEditingController();
   TextEditingController _newPasswordController = new TextEditingController();
   TextEditingController _reRewPasswordController = new TextEditingController();
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Container(
-          width: constraints.maxWidth,
-        //  padding: EdgeInsets.all(80),
-          constraints: BoxConstraints.expand(),
-          color: Colors.white,
-          child: Center(
-            child: Container(
-              width: 480,
-              child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
-                  child: Container(
-                      child: Text("STARFRUIT",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: 50))),
-                ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
-                  child: Text("Đổi mật khẩu",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          fontSize: 30)),
-                ),
-                  
-                Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
-                    child: StreamBuilder(
-                      stream:bloc.curentPasStream,
-                      builder: (context, snapshot) => TextField(
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                        controller: _curentPassController,
-                        decoration: InputDecoration(
-                            labelText: "Nhập mật khẩu hiện tại",
-                            errorText: snapshot.hasError? snapshot.error.toString():null,
-                            labelStyle: TextStyle(
-                                color: Color(0xff888888), fontSize: 15)),
-                      ),
-                      
-                    )),
-                     Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
-                    child: StreamBuilder(
-                      stream:bloc.pasStream,
-                      builder: (context, snapshot) => TextField(
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                        controller: _newPasswordController,
-                        decoration: InputDecoration(
-                            labelText: "Nhập mật khẩu mới",
-                            errorText: snapshot.hasError? snapshot.error.toString():null,
-                            labelStyle: TextStyle(
-                                color: Color(0xff888888), fontSize: 15)),
-                      ),
-                      
-                    )),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 40.0),
-                  child: Stack(
-                    alignment: AlignmentDirectional.centerEnd,
-                    children: <Widget>[
-                     StreamBuilder(stream: bloc.repassStream, builder: (context,snapshot)=> TextField(
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                        controller: _reRewPasswordController,
-                        obscureText: !_showPass,
-                        decoration: InputDecoration(
-                            labelText: "Nhập lại mật khẩu mới",
-                            errorText:  snapshot.hasError? snapshot.error.toString():null,
-                            labelStyle: TextStyle(
-                                color: Color(0xff888888), fontSize: 15)),
-                      )),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(8))),
+          builder: (BuildContext context, BoxConstraints constraints) {
+        return Container(
+            width: constraints.maxWidth,
+            //  padding: EdgeInsets.all(80),
+            constraints: BoxConstraints.expand(),
+            color: Colors.white,
+            child: Center(
+              child: Container(
+                  width: 480,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      // crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
+                          child: Container(
+                              child: Text("STARFRUIT",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                      fontSize: 50))),
                         ),
-                        onPressed: () =>  onChangePassClicked(context),
-                        child: Text("Đổi mật khẩu",
-                            style: TextStyle(color: Colors.white))),
-                  ),
-                ),
-               
-              ])),
-        ));
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                          child: Text("Đổi mật khẩu",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 30)),
+                        ),
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            child: StreamBuilder(
+                              stream: bloc.curentPasStream,
+                              builder: (context, snapshot) => TextField(
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.black),
+                                controller: _curentPassController,
+                                decoration: InputDecoration(
+                                    labelText: "Nhập mật khẩu hiện tại",
+                                    errorText: snapshot.hasError
+                                        ? snapshot.error.toString()
+                                        : null,
+                                    labelStyle: TextStyle(
+                                        color: Color(0xff888888),
+                                        fontSize: 15)),
+                              ),
+                            )),
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            child: Stack(
+                              alignment: AlignmentDirectional.centerEnd,
+                              children: <Widget>[
+                                StreamBuilder(
+                                  stream: bloc.pasStream,
+                                  builder: (context, snapshot) => TextField(
+                                    style: TextStyle(
+                                        fontSize: 18, color: Colors.black),
+                                    controller: _newPasswordController,
+                                    obscureText: !_showPass,
+                                    decoration: InputDecoration(
+                                        labelText: "Nhập mật khẩu mới",
+                                        errorText: snapshot.hasError
+                                            ? snapshot.error.toString()
+                                            : null,
+                                        labelStyle: TextStyle(
+                                            color: Color(0xff888888),
+                                            fontSize: 15)),
+                                  ),
+                                ),
+                                GestureDetector(
+                                    onTap: onToggleShowPass,
+                                    child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: Text(_showPass ? "Hide" : "Show",
+                                            style: TextStyle(
+                                                color: Colors.blue,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold))))
+                              ],
+                            )),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40.0),
+                          child: Stack(
+                            alignment: AlignmentDirectional.centerEnd,
+                            children: <Widget>[
+                              StreamBuilder(
+                                  stream: bloc.repassStream,
+                                  builder: (context, snapshot) => TextField(
+                                        style: TextStyle(
+                                            fontSize: 18, color: Colors.black),
+                                        controller: _reRewPasswordController,
+                                        obscureText: !_showPass,
+                                        decoration: InputDecoration(
+                                            labelText: "Nhập lại mật khẩu mới",
+                                            errorText: snapshot.hasError
+                                                ? snapshot.error.toString()
+                                                : null,
+                                            labelStyle: TextStyle(
+                                                color: Color(0xff888888),
+                                                fontSize: 15)),
+                                      )),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 60),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(8))),
+                                ),
+                                onPressed: () => onChangePassClicked(context),
+                                child: Text("Đổi mật khẩu",
+                                    style: TextStyle(color: Colors.white))),
+                          ),
+                        ),
+                      ])),
+            ));
       }),
     );
   }
 
-   void onChangePassClicked(BuildContext context) async {
-  bool isValid = await bloc.isValidInfo(LoginBloc.usernameGlobal,_curentPassController.text, _newPasswordController.text,_reRewPasswordController.text);
-  
-  if (isValid) {
-    // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-    GoRouter.of(context).go("/");
-  } else {
-    print("khong thuc hien duoc");
-   
-    // Xử lý trường hợp thông tin không hợp lệ
+  void onChangePassClicked(BuildContext context) async {
+    bool isValid = await bloc.isValidInfo(
+        LoginBloc.usernameGlobal,
+        _curentPassController.text,
+        _newPasswordController.text,
+        _reRewPasswordController.text);
+
+    if (isValid) {
+      // Thực hiện các công việc cần thiết khi thông tin hợp lệ
+      GoRouter.of(context).go("/");
+    } else {
+      print("khong thuc hien duoc");
+
+      // Xử lý trường hợp thông tin không hợp lệ
+    }
   }
-}
 
   void onToggleShowPass() {
     setState(() {

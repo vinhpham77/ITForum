@@ -16,34 +16,27 @@ class ForgotPasswordBloc {
   Stream get emailStream => _emailController.stream;
   Stream get getloginStatusController => loginStatusController.stream;
   String username = "";
-
+static String requestname="";
   Future<User?> isValidInfo(String username) async {
     if (!Validations.isValidUser(username)) {
-      _emailController.sink.addError("Tài khoản không hợp lệ");
+      _usernameController.sink.addError("Tài khoản không hợp lệ");
       return null;
     }
+      _usernameController.sink.add("");
 
-    try {
       var result = await _userRepository.forgotPassUser(username);
 
       if (result != null) {
-        _userController.sink.add(result.username);
-        print(result.username);
+        requestname=result.username;
+        _usernameController.sink.add(result.username);
         return result;
-      } else {
-        _emailController.sink
-            .addError("Thông tin không hợp lệ hoặc có lỗi xảy ra");
-        return null;
-      }
-    } catch (error) {
-      // Xử lý lỗi nếu có
-      print("Lỗi xảy ra: $error");
-      _emailController.sink.addError("Lỗi xảy ra");
+      } 
       return null;
-    }
+    } 
+
+     void dispose() {
+    _emailController.close();
+  } 
   }
 
-  void dispose() {
-    _emailController.close();
-  }
-}
+  

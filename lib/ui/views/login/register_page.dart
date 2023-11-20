@@ -37,7 +37,7 @@ class _SignupPageState extends State<SignupPage> {
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                           child: Container(
                               child: Text("STARFRUIT",
                                   style: TextStyle(
@@ -46,14 +46,14 @@ class _SignupPageState extends State<SignupPage> {
                                       fontSize: 50))),
                         ),
                         const Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                           child: Text("Đăng ký",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                   fontSize: 30)),
                         ),
-                       Padding(
+                        Padding(
                           padding: const EdgeInsets.fromLTRB(0, 0, 0, 20.0),
                           child: Stack(
                             alignment: AlignmentDirectional.centerEnd,
@@ -110,7 +110,6 @@ class _SignupPageState extends State<SignupPage> {
                                     style: TextStyle(
                                         fontSize: 18, color: Colors.black),
                                     controller: _usernameController,
-                                   
                                     decoration: InputDecoration(
                                       labelText: "Tên tài khoản",
                                       errorText: snapshot.hasError
@@ -147,6 +146,15 @@ class _SignupPageState extends State<SignupPage> {
                                                 color: Color(0xff888888),
                                                 fontSize: 15)),
                                       )),
+                              GestureDetector(
+                                  onTap: onToggleShowPass,
+                                  child: MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: Text(_showPass ? "Hide" : "Show",
+                                          style: TextStyle(
+                                              color: Colors.blue,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold))))
                             ],
                           ),
                         ),
@@ -196,10 +204,18 @@ class _SignupPageState extends State<SignupPage> {
                           width: double.infinity,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              Text("Đăng nhập",
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.blue)),
+                            children: [
+                              GestureDetector(
+                                onTap: () => clickOnSignin(context),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: Text(
+                                    "Đăng nhập",
+                                    style: TextStyle(
+                                        fontSize: 15, color: Colors.blue),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -211,16 +227,19 @@ class _SignupPageState extends State<SignupPage> {
 
   void onSignUpClicked(BuildContext context) async {
     bool isValid = await bloc.isValidInfo(
-        _usernameController.text, _passwordController.text, _emailController.text, _fullnameController.text);
+        _usernameController.text,
+        _passwordController.text,
+        _rePasswordController.text,
+        _emailController.text,
+        _fullnameController.text);
     if (isValid) {
-       print("đăng ký thành công");
+      print("đăng ký thành công");
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
       GoRouter.of(context).go("/login");
     } else {
       print("đăng ký thất bại");
       // Xử lý trường hợp thông tin không hợp lệ
-       GoRouter.of(context).go("/register");
- 
+      GoRouter.of(context).go("/register");
     }
   }
 
@@ -228,6 +247,10 @@ class _SignupPageState extends State<SignupPage> {
     setState(() {
       _showPass = !_showPass;
     });
+  }
+
+  void clickOnSignin(context) {
+    GoRouter.of(context).go("/login");
   }
 
   Widget gotoHome(BuildContext context) {
