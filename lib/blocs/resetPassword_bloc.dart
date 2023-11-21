@@ -21,15 +21,15 @@ class ResetPasswordBloc {
   Stream get pasStream => _passController.stream;
   Stream get repassStream => _repassController.stream;
   Stream get getloginStatusController => loginStatusController.stream;
-late BuildContext context;
-ResetPasswordBloc (BuildContext context){
-  this.context=context;
-}
+  late BuildContext context;
+  ResetPasswordBloc(BuildContext context) {
+    this.context = context;
+  }
   String username = "";
 
   Future<bool> isValidInfo(String username, String otp, String newpassword,
       String repassword) async {
-     Future <bool> isvalid;
+    Future<bool> isvalid;
     if (!Validations.isValidUser(username)) {
       _usernameController.sink.addError("Tài khoản không hợp lệ");
       return false;
@@ -52,10 +52,9 @@ ResetPasswordBloc (BuildContext context){
     }
     _repassController.sink.add("");
 
-    var future =
-        _userRepository.resetPassUser(username, newpassword, otp);
-   
-      isvalid=  future.then((response) {
+    var future = _userRepository.resetPassUser(username, newpassword, otp);
+
+    isvalid = future.then((response) {
       response.data;
       showTopRightSnackBar(
           context, 'Đổi mật khẩu thành công!', NotifyType.success);
@@ -66,8 +65,7 @@ ResetPasswordBloc (BuildContext context){
       return false;
     });
     return false;
-   
-      }
+  }
 
   void dispose() {
     _passController.close();

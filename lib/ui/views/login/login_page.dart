@@ -154,8 +154,6 @@ class _LoginPageState extends State<LoginPage> {
   if (isValid) {
     // Thực hiện các công việc cần thiết khi thông tin hợp lệ
     GoRouter.of(context).go("/");
-  } else {
-    // Xử lý trường hợp thông tin không hợp lệ
   }
 }
 

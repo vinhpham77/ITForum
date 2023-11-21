@@ -35,7 +35,7 @@ class UserRepository {
   Future<Response<dynamic>> changePassUser(
       String username, String currentpassword, String newPassword) async {
     return dio.post(
-      "/changepassword",
+      "/changePassword",
       data: {
         'username': username,
         'currentPassword': currentpassword,
