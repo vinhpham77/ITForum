@@ -17,6 +17,7 @@ class RightHeader extends StatefulWidget {
 }
 
 class _RightHeaderState extends State<RightHeader> {
+  LoginBloc loginBloc = new LoginBloc();
   List<ItemMenu> creatMenu = [
     ItemMenu(name: "Bài viết", icon: Icons.create, route: "/publish/post"),
     ItemMenu(name: "Series", icon: Icons.list, route: "/publish/series"),
@@ -80,12 +81,32 @@ class _RightHeaderState extends State<RightHeader> {
                 bottomRight: Radius.circular(10.0),
               ),
             ),
-            child: const Icon(Icons.search),
+            child: const Icon(Icons.search, color: Colors.white,),
           ),
         ),
         SizedBox(width: 10),
         
-        widgetSignIn(),
+        StreamBuilder(
+            stream: loginBloc.getloginStatusController, 
+            builder: (context,snapshot) {
+              if(LoginBloc.usernameGlobal == "")
+                return Container(
+                  height: 32,
+                  width: 100,
+                  child:FloatingActionButton(
+                  hoverColor: Colors.black38,
+                  backgroundColor: Colors.black,
+                  onPressed: () {
+                    GoRouter.of(context).go('/login');
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0))
+                  ),
+                  child: const Text("Đăng nhập", style: TextStyle(color: Colors.white),)),
+                );
+              return widgetSignIn();
+            }
+        ),
         
         SizedBox(width: screenSize.width / 10),
       ],
