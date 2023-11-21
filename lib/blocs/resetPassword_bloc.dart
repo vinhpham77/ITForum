@@ -29,6 +29,7 @@ ResetPasswordBloc (BuildContext context){
 
   Future<bool> isValidInfo(String username, String otp, String newpassword,
       String repassword) async {
+     Future <bool> isvalid;
     if (!Validations.isValidUser(username)) {
       _usernameController.sink.addError("Tài khoản không hợp lệ");
       return false;
@@ -54,7 +55,7 @@ ResetPasswordBloc (BuildContext context){
     var future =
         _userRepository.resetPassUser(username, newpassword, otp);
    
-     future.then((response) {
+      isvalid=  future.then((response) {
       response.data;
       showTopRightSnackBar(
           context, 'Đổi mật khẩu thành công!', NotifyType.success);
