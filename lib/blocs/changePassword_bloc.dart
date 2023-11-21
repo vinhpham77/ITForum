@@ -1,7 +1,13 @@
 import 'dart:async';
+import 'dart:html';
+import 'dart:js';
 
+import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
+import 'package:cay_khe/ui/common/utils.dart';
+import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
+import 'package:flutter/material.dart';
 
 class ChangePasswordBloc {
   StreamController _usernameController = new StreamController();
@@ -19,6 +25,12 @@ class ChangePasswordBloc {
 
   String username = "";
 
+
+late BuildContext context;
+
+  RegisterBloc(BuildContext context) {
+    this.context = context;
+  }
   Future<bool> isValidInfo(String username, String currentpassword,
       String newpassword, String repassword) async {
         print(username);
@@ -47,16 +59,21 @@ class ChangePasswordBloc {
     }
     _repassController.sink.add("");
 
-    String result = await _userRepository.changePassUser(
+    var future =  _userRepository.changePassUser(
         username, currentpassword, newpassword);
-    if (result == 'Success') {
-      // this.username = username;
-      // loginStatusController.sink.add(this.username);
+          future.then((response) {
+      response.data;
+      showTopRightSnackBar(
+          context, 'Đổi mật khẩu thành công!', NotifyType.success);
+      Navigator.of(context).pop();
       return true;
-    } else {
-      loginStatusController.sink.addError(result);
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
       return false;
-    }
+    });
+    return false;
+   
   }
 
   void dispose() {

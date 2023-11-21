@@ -1,8 +1,13 @@
 import 'dart:async';
 
+import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/user_dto.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
+import 'package:cay_khe/ui/common/utils.dart';
+import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ForgotPasswordBloc {
   StreamController _emailController = new StreamController();
@@ -17,23 +22,34 @@ class ForgotPasswordBloc {
   Stream get getloginStatusController => loginStatusController.stream;
   String username = "";
 static String requestname="";
-  Future<User?> isValidInfo(String username) async {
+late BuildContext context;
+
+  ForgotPasswordBloc(BuildContext context) {
+    this.context = context;
+  }
+  Future<User>? isValidInfo(String username)  {
+    Future<User>? isvalid;
     if (!Validations.isValidUser(username)) {
       _usernameController.sink.addError("Tài khoản không hợp lệ");
-      return null;
+      return Future<User>.value(null);
+    
     }
       _usernameController.sink.add("");
 
-      var result = await _userRepository.forgotPassUser(username);
+      var future =  _userRepository.forgotPassUser(username);
+ isvalid= future.then((response) {
+      response.data;
+      showTopRightSnackBar(
+          context, 'Đến trang đổi mật khẩu!', NotifyType.success);
+      return response.data;
 
-      if (result != null) {
-        requestname=result.username;
-        _usernameController.sink.add(result.username);
-        return result;
-      } 
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
       return null;
-    } 
-
+    }) as Future<User>?;
+    return isvalid;
+  }
      void dispose() {
     _emailController.close();
   } 
