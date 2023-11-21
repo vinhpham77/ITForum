@@ -155,7 +155,8 @@ class _RightHeaderState extends State<RightHeader> {
           menuChildren: List<MenuItemButton>.generate(
             creatMenu.length,
             (int index) => MenuItemButton(
-                onPressed: () => {},
+                onPressed: () =>
+                    {GoRouter.of(context).go(profilerMenu[index].route)},
                 child: Row(
                   children: [
                     Icon(profilerMenu[index].icon),
