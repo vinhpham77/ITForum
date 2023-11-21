@@ -25,15 +25,8 @@ class TagRepository implements TagDataSource {
   }
 
   @override
-  Future<dynamic> get() async {
-    final response = await dio.get(baseUrl);
-
-    if (response.statusCode == 200) {
-      Iterable list = response.data;
-      return list.map((tag) => Tag.fromJson(tag)).toList();
-    } else {
-      throw Exception('Failed to load tags');
-    }
+  Future<Response<dynamic>> get() async {
+    return dio.get(baseUrl);
   }
 
   @override

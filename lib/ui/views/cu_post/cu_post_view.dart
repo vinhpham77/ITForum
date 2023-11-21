@@ -7,6 +7,7 @@ import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:go_router/go_router.dart';
 
 import '/ui/widgets/notification.dart';
 import '../../../repositories/post_repository.dart';
@@ -51,6 +52,7 @@ class _CuPostState extends State<CuPost> {
 
   Future<void> _loadTags() async {
     var future = tagRepository.get();
+
     future.then((response) {
       List<Tag> tags = response.data.map<Tag>((tag) {
         return Tag.fromJson(tag);
@@ -412,7 +414,7 @@ class _CuPostState extends State<CuPost> {
                       child: IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () {
-                          Navigator.pop(context);
+                          GoRouter.of(context).go('/');
                         },
                       ),
                     ),
@@ -465,10 +467,10 @@ class _CuPostState extends State<CuPost> {
     }
 
     future.then((response) {
-      response.data;
+      Post post = Post.fromJson(response.data);
       showTopRightSnackBar(
           context, '$headingP1 $headingP2 thành công!', NotifyType.success);
-      Navigator.of(context).pop();
+      GoRouter.of(context).go('/posts/${post.id}');
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
