@@ -1,7 +1,15 @@
 import 'package:dio/dio.dart';
 
-String getMessageFromException(Exception err) {
-  DioException error = err as DioException;
+String getMessageFromException(dynamic err) {
+
+  var error = err;
+
+  if (err is DioException) {
+    error = err;
+  } else {
+    return "Có lỗi xảy ra. Vui lòng thử lại sau!";
+  }
+
   String message = '';
 
   if (error.response?.data is Map<String, dynamic>) {
