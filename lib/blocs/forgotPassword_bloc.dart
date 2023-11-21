@@ -21,38 +21,36 @@ class ForgotPasswordBloc {
   Stream get emailStream => _emailController.stream;
   Stream get getloginStatusController => loginStatusController.stream;
   String username = "";
-static String requestname="";
-late BuildContext context;
+  static String requestname = "";
+  late BuildContext context;
 
   ForgotPasswordBloc(BuildContext context) {
     this.context = context;
   }
-  Future<User>? isValidInfo(String username)  {
+  Future<User>? isValidInfo(String username) {
     Future<User>? isvalid;
     if (!Validations.isValidUser(username)) {
       _usernameController.sink.addError("Tài khoản không hợp lệ");
       return Future<User>.value(null);
-    
     }
-      _usernameController.sink.add("");
+    _usernameController.sink.add("");
 
-      var future =  _userRepository.forgotPassUser(username);
- isvalid= future.then((response) {
+    var future = _userRepository.forgotPassUser(username);
+    isvalid = future.then((response) {
       response.data;
       showTopRightSnackBar(
           context, 'Đến trang đổi mật khẩu!', NotifyType.success);
-      return response.data;
-
+        GoRouter.of(context).go("/resetPass"); 
+      return Future<User>.value(response.data);
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
-      return null;
+      return Future<User>.value(null);
     }) as Future<User>?;
     return isvalid;
   }
-     void dispose() {
-    _emailController.close();
-  } 
-  }
 
-  
+  void dispose() {
+    _emailController.close();
+  }
+}

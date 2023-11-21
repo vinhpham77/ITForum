@@ -102,19 +102,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void onSubmitClicked(BuildContext context) async {
-    try {
-     Future< User?> isValid = (await bloc.isValidInfo(_usernameController.text)) as Future<User?>;
+    var isValid = await bloc.isValidInfo(_usernameController.text);
 
-      print(isValid);
-      if (isValid != null) {
-        // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-        GoRouter.of(context).go("/resetPass");
-      } else {
-        print("Thông tin không hợp lệ hoặc có lỗi xảy ra");
-      }
-    } catch (error) {
-      print("Lỗi xảy ra: $error");
-    }
+    // print(isValid != null);
+    // if (isValid != null) {
+    //   // Thực hiện các công việc cần thiết khi thông tin hợp lệ
+    //   GoRouter.of(context).go("/resetPass");
+    // }
   }
 
   Widget gotoHome(BuildContext context) {

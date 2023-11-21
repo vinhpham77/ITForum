@@ -37,14 +37,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
-                          child: Container(
-                              child: Text("STARFRUIT",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                      fontSize: 50))),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                          child: Text("STARFRUIT",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 50)),
                         ),
                         const Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
@@ -55,11 +54,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                   fontSize: 30)),
                         ),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                             child: StreamBuilder(
                               stream: bloc.otpStream,
                               builder: (context, snapshot) => TextField(
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 18, color: Colors.black),
                                 controller: _otpController,
                                 decoration: InputDecoration(
@@ -67,17 +66,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                     errorText: snapshot.hasError
                                         ? snapshot.error.toString()
                                         : null,
-                                    labelStyle: TextStyle(
+                                    labelStyle: const TextStyle(
                                         color: Color(0xff888888),
                                         fontSize: 15)),
                               ),
                             )),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                             child: StreamBuilder(
                               stream: bloc.pasStream,
                               builder: (context, snapshot) => TextField(
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 18, color: Colors.black),
                                 controller: _newPasswordController,
                                 decoration: InputDecoration(
