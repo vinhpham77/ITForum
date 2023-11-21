@@ -1,39 +1,37 @@
-import 'package:cay_khe/blocs/changePassword_bloc.dart';
-import 'package:cay_khe/blocs/forgotPassword_bloc.dart';
-import 'package:cay_khe/blocs/login_bloc.dart';
-import 'package:cay_khe/blocs/resetPassword_bloc.dart';
-
-import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:cay_khe/blocs/forgotPassword_bloc.dart';
+import 'package:cay_khe/blocs/resetPassword_bloc.dart';
+import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:go_router/go_router.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
   @override
-  _ResetPasswordPageState createState() => _ResetPasswordPageState();
+  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
-  ResetPasswordBloc bloc = new ResetPasswordBloc();
-  ForgotPasswordBloc forgotpassBloc = new ForgotPasswordBloc();
+  late ResetPasswordBloc bloc;
+
   bool _showPass = false;
 
-  TextEditingController _otpController = new TextEditingController();
-  TextEditingController _newPasswordController = new TextEditingController();
-  TextEditingController _reRewPasswordController = new TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _reRewPasswordController =  TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    bloc = ResetPasswordBloc(context);
     return Scaffold(
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
             width: constraints.maxWidth,
             //  padding: EdgeInsets.all(80),
-            constraints: BoxConstraints.expand(),
+            constraints: const BoxConstraints.expand(),
             color: Colors.white,
             child: Center(
-              child: Container(
+              child: SizedBox(
                   width: 480,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -149,10 +147,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     if (isValid) {
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
       GoRouter.of(context).go("/login");
-    } else {
-      print("khong thuc hien duoc");
-
-      // Xử lý trường hợp thông tin không hợp lệ
     }
   }
 

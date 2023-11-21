@@ -13,7 +13,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  LoginBloc bloc =new LoginBloc();
+  late LoginBloc bloc ;
 
   bool _showPass = false;
   TextEditingController _usernameController = new TextEditingController();
@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   
   @override
   Widget build(BuildContext context) {
+    bloc=LoginBloc(context);
     return Scaffold(
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -149,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
 
    void onSignInClicked(BuildContext context) async {
   bool isValid = await bloc.isValidInfo(_usernameController.text, _passwordController.text);
-  
+  print(isValid);
   if (isValid) {
     // Thực hiện các công việc cần thiết khi thông tin hợp lệ
     GoRouter.of(context).go("/");

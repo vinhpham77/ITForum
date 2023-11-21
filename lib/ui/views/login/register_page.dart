@@ -10,7 +10,7 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  RegisterBloc bloc = new RegisterBloc();
+   late RegisterBloc bloc ; 
 
   bool _showPass = false;
   TextEditingController _usernameController = new TextEditingController();
@@ -21,6 +21,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
+    bloc =RegisterBloc(context);
     return Scaffold(
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -233,13 +234,10 @@ class _SignupPageState extends State<SignupPage> {
         _emailController.text,
         _fullnameController.text);
     if (isValid) {
+      print(isValid);
       print("đăng ký thành công");
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
       GoRouter.of(context).go("/login");
-    } else {
-      print("đăng ký thất bại");
-      // Xử lý trường hợp thông tin không hợp lệ
-      GoRouter.of(context).go("/register");
     }
   }
 

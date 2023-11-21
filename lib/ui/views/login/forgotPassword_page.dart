@@ -11,14 +11,14 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  ForgotPasswordBloc bloc = new ForgotPasswordBloc();
   TextEditingController _emailController = new TextEditingController();
   TextEditingController _usernameController = new TextEditingController();
 
   bool showOtpInput = false;
-
+  late ForgotPasswordBloc bloc;
   @override
   Widget build(BuildContext context) {
+    bloc = ForgotPasswordBloc(context);
     return Scaffold(
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -103,9 +103,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void onSubmitClicked(BuildContext context) async {
     try {
-      User? isValid = await bloc.isValidInfo(_usernameController.text);
+     Future< User?> isValid = (await bloc.isValidInfo(_usernameController.text)) as Future<User?>;
 
-print(isValid);
+      print(isValid);
       if (isValid != null) {
         // Thực hiện các công việc cần thiết khi thông tin hợp lệ
         GoRouter.of(context).go("/resetPass");

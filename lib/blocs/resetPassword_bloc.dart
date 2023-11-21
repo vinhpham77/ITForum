@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:js';
 
+import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
+import 'package:cay_khe/ui/common/utils.dart';
+import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
+import 'package:flutter/material.dart';
 
 class ResetPasswordBloc {
   StreamController _usernameController = new StreamController();
@@ -16,7 +21,10 @@ class ResetPasswordBloc {
   Stream get pasStream => _passController.stream;
   Stream get repassStream => _repassController.stream;
   Stream get getloginStatusController => loginStatusController.stream;
-
+late BuildContext context;
+ResetPasswordBloc (BuildContext context){
+  this.context=context;
+}
   String username = "";
 
   Future<bool> isValidInfo(String username, String otp, String newpassword,
@@ -43,16 +51,22 @@ class ResetPasswordBloc {
     }
     _repassController.sink.add("");
 
-    String result =
-        await _userRepository.resetPassUser(username, newpassword, otp);
+    var future =
+        _userRepository.resetPassUser(username, newpassword, otp);
    
-    if (result == 'Success') {
+     future.then((response) {
+      response.data;
+      showTopRightSnackBar(
+          context, 'Đổi mật khẩu thành công!', NotifyType.success);
       return true;
-    } else {
-      loginStatusController.sink.addError(result);
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
       return false;
-    }
-  }
+    });
+    return false;
+   
+      }
 
   void dispose() {
     _passController.close();
