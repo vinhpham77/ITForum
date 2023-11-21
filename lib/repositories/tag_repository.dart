@@ -25,7 +25,7 @@ class TagRepository implements TagDataSource {
   }
 
   @override
-  Future<List<Tag>> get() async {
+  Future<dynamic> get() async {
     final response = await dio.get(baseUrl);
 
     if (response.statusCode == 200) {
