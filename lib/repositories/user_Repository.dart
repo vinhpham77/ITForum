@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:cay_khe/api_config.dart';
-import 'package:cay_khe/dtos/user_dto.dart';
 import 'package:dio/dio.dart';
 
 class UserRepository {

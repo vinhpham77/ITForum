@@ -8,10 +8,10 @@ import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
 
 class LoginBloc {
-  StreamController _userController = new StreamController();
-  StreamController _passController = new StreamController();
+  final StreamController _userController = StreamController();
+  final StreamController _passController = StreamController();
   StreamController<String> loginStatusController = StreamController();
-  UserRepository _userRepository = new UserRepository();
+  final UserRepository _userRepository = UserRepository();
 
   Stream get userStream => _userController.stream;
   Stream get passStream => _passController.stream;
@@ -19,20 +19,18 @@ class LoginBloc {
   static String usernameGlobal = "";
   late BuildContext context;
 
-  LoginBloc(BuildContext context) {
-    this.context = context;
-  }
+  LoginBloc(this.context);
 
   Future<bool> isValidInfo(String username, String password) {
     Future<bool> isValid;
-    if (!Validations.isValidUser(username)) {
+    if (!Validations.isValidUsername(username)) {
       _userController.sink.addError("Tài khoản phải lớn hơn 2 kí tự");
       return Future<bool>.value(false);
     }
 
     _userController.sink.add("");
 
-    if (!Validations.isValidPass(password)) {
+    if (!Validations.isValidPassword(password)) {
       _passController.sink.addError("Mật khẩu phải lớn hơn 2 kí tự");
       return Future<bool>.value(false);
     }

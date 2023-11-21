@@ -1,50 +1,48 @@
 import 'package:cay_khe/blocs/register_bloc.dart';
-import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
   @override
-  _SignupPageState createState() => _SignupPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
 class _SignupPageState extends State<SignupPage> {
-   late RegisterBloc bloc ; 
+  late RegisterBloc bloc;
 
   bool _showPass = false;
-  TextEditingController _usernameController = new TextEditingController();
-  TextEditingController _fullnameController = new TextEditingController();
-  TextEditingController _passwordController = new TextEditingController();
-  TextEditingController _rePasswordController = new TextEditingController();
-  TextEditingController _emailController = new TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _fullnameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _rePasswordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    bloc =RegisterBloc(context);
+    bloc = RegisterBloc(context);
     return Scaffold(
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
             width: constraints.maxWidth,
             //  padding: EdgeInsets.all(80),
-            constraints: BoxConstraints.expand(),
+            constraints: const BoxConstraints.expand(),
             color: Colors.white,
             child: Center(
-              child: Container(
+              child: SizedBox(
                   width: 480,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                          child: Container(
-                              child: Text("STARFRUIT",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                      fontSize: 50))),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                          child: Text("STARFRUIT",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 50)),
                         ),
                         const Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -62,7 +60,7 @@ class _SignupPageState extends State<SignupPage> {
                               StreamBuilder(
                                   stream: bloc.fullnameStream,
                                   builder: (context, snapshot) => TextField(
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 18, color: Colors.black),
                                         controller: _fullnameController,
                                         decoration: InputDecoration(
@@ -70,7 +68,7 @@ class _SignupPageState extends State<SignupPage> {
                                             errorText: snapshot.hasError
                                                 ? snapshot.error.toString()
                                                 : null,
-                                            labelStyle: TextStyle(
+                                            labelStyle: const TextStyle(
                                                 color: Color(0xff888888),
                                                 fontSize: 15)),
                                       )),
@@ -86,7 +84,7 @@ class _SignupPageState extends State<SignupPage> {
                                 child: StreamBuilder(
                                   stream: bloc.emailController,
                                   builder: (context, snapshot) => TextField(
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18, color: Colors.black),
                                     controller: _emailController,
                                     decoration: InputDecoration(
@@ -94,21 +92,21 @@ class _SignupPageState extends State<SignupPage> {
                                       errorText: snapshot.hasError
                                           ? snapshot.error.toString()
                                           : null,
-                                      labelStyle: TextStyle(
+                                      labelStyle: const TextStyle(
                                           color: Color(0xff888888),
                                           fontSize: 15),
                                     ),
                                   ),
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                   width:
                                       16), // Add some space between the text fields
                               Expanded(
                                 child: StreamBuilder(
                                   stream: bloc.userStream,
                                   builder: (context, snapshot) => TextField(
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18, color: Colors.black),
                                     controller: _usernameController,
                                     decoration: InputDecoration(
@@ -116,7 +114,7 @@ class _SignupPageState extends State<SignupPage> {
                                       errorText: snapshot.hasError
                                           ? snapshot.error.toString()
                                           : null,
-                                      labelStyle: TextStyle(
+                                      labelStyle: const TextStyle(
                                           color: Color(0xff888888),
                                           fontSize: 15),
                                     ),
@@ -134,7 +132,7 @@ class _SignupPageState extends State<SignupPage> {
                               StreamBuilder(
                                   stream: bloc.passStream,
                                   builder: (context, snapshot) => TextField(
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 18, color: Colors.black),
                                         controller: _passwordController,
                                         obscureText: !_showPass,
@@ -143,7 +141,7 @@ class _SignupPageState extends State<SignupPage> {
                                             errorText: snapshot.hasError
                                                 ? snapshot.error.toString()
                                                 : null,
-                                            labelStyle: TextStyle(
+                                            labelStyle: const TextStyle(
                                                 color: Color(0xff888888),
                                                 fontSize: 15)),
                                       )),
@@ -152,7 +150,7 @@ class _SignupPageState extends State<SignupPage> {
                                   child: MouseRegion(
                                       cursor: SystemMouseCursors.click,
                                       child: Text(_showPass ? "Hide" : "Show",
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               color: Colors.blue,
                                               fontSize: 13,
                                               fontWeight: FontWeight.bold))))
@@ -167,7 +165,7 @@ class _SignupPageState extends State<SignupPage> {
                               StreamBuilder(
                                   stream: bloc.rePasswordController,
                                   builder: (context, snapshot) => TextField(
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 18, color: Colors.black),
                                         controller: _rePasswordController,
                                         obscureText: !_showPass,
@@ -176,7 +174,7 @@ class _SignupPageState extends State<SignupPage> {
                                             errorText: snapshot.hasError
                                                 ? snapshot.error.toString()
                                                 : null,
-                                            labelStyle: TextStyle(
+                                            labelStyle: const TextStyle(
                                                 color: Color(0xff888888),
                                                 fontSize: 15)),
                                       )),
@@ -191,16 +189,16 @@ class _SignupPageState extends State<SignupPage> {
                             child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
+                                  shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),
                                 ),
                                 onPressed: () => onSignUpClicked(context),
-                                child: Text("Đăng ký",
+                                child: const Text("Đăng ký",
                                     style: TextStyle(color: Colors.white))),
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           height: 100,
                           width: double.infinity,
                           child: Row(
@@ -208,7 +206,7 @@ class _SignupPageState extends State<SignupPage> {
                             children: [
                               GestureDetector(
                                 onTap: () => clickOnSignin(context),
-                                child: MouseRegion(
+                                child: const MouseRegion(
                                   cursor: SystemMouseCursors.click,
                                   child: Text(
                                     "Đăng nhập",
@@ -234,9 +232,7 @@ class _SignupPageState extends State<SignupPage> {
         _emailController.text,
         _fullnameController.text);
     if (isValid) {
-      print(isValid);
-      print("đăng ký thành công");
-      // Thực hiện các công việc cần thiết khi thông tin hợp lệ
+     
       GoRouter.of(context).go("/login");
     }
   }
@@ -251,7 +247,5 @@ class _SignupPageState extends State<SignupPage> {
     GoRouter.of(context).go("/login");
   }
 
-  Widget gotoHome(BuildContext context) {
-    return HomePage();
-  }
+  
 }
