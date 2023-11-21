@@ -28,51 +28,50 @@ class ChangePasswordBloc {
 
 late BuildContext context;
 
-  RegisterBloc(BuildContext context) {
+  ChangePasswordBloc(BuildContext context) {
     this.context = context;
   }
   Future<bool> isValidInfo(String username, String currentpassword,
       String newpassword, String repassword) async {
+        Future<bool> isValid;
         print(username);
     if (username == "" || !Validations.isValidUser(username)) {
    //  print(!Validations.isValidUser(username));
       _usernameController.sink.addError("Tài khoản phải lớn hơn 2 kí tự");
-      return false;
+      return Future<bool>.value(false);
     }
     _usernameController.sink.add("");
     if (!Validations.isValidPass(currentpassword)) {
        print(!Validations.isValidPass(currentpassword));
       _currentPassController.sink.addError("Mật khẩu phải lớn hơn 2 kí tự ");
-      return false;
+      return Future<bool>.value(false);
     }
     _currentPassController.sink.add("");
 
     if (!Validations.isValidPass(newpassword)) {
       _passController.sink.addError("Mật khẩu phải khớp với mật khẩu ở trên");
-      return false;
+      return Future<bool>.value(false);
     }
     _passController.sink.add("");
 
     if (!Validations.isValidRepass(newpassword, repassword)) {
       _repassController.sink.addError("Mật khẩu phải khớp với mật khẩu ở trên");
-      return false;
+      return Future<bool>.value(false);
     }
     _repassController.sink.add("");
 
     var future =  _userRepository.changePassUser(
         username, currentpassword, newpassword);
-          future.then((response) {
-      response.data;
+       isValid=  future.then((response) {
       showTopRightSnackBar(
           context, 'Đổi mật khẩu thành công!', NotifyType.success);
-      Navigator.of(context).pop();
-      return true;
+      return  Future<bool>.value(true);
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
-      return false;
+      return Future<bool>.value(false);
     });
-    return false;
+    return isValid;
    
   }
 

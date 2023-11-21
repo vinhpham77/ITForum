@@ -12,7 +12,7 @@ class ChangePasswordPage extends StatefulWidget {
 }
 
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  ChangePasswordBloc bloc = new ChangePasswordBloc();
+  late ChangePasswordBloc bloc;
 
   bool _showPass = false;
   TextEditingController _usernameController = new TextEditingController();
@@ -22,6 +22,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    bloc =ChangePasswordBloc(context);
     return Scaffold(
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -158,14 +159,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         _curentPassController.text,
         _newPasswordController.text,
         _reRewPasswordController.text);
-
+    print(isValid);
     if (isValid) {
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
       GoRouter.of(context).go("/");
-    } else {
-      print("khong thuc hien duoc");
-
-      // Xử lý trường hợp thông tin không hợp lệ
     }
   }
 
