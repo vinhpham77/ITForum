@@ -2,6 +2,7 @@ import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/post_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/tag.dart';
+import 'package:cay_khe/ui/common/utils.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -49,9 +50,18 @@ class _CuPostState extends State<CuPost> {
   }
 
   Future<void> _loadTags() async {
-    List<Tag> tags = await tagRepository.get();
-    setState(() {
-      allTags = tags;
+    var future = tagRepository.get();
+    future.then((response) {
+      List<Tag> tags = response.data.map<Tag>((tag) {
+        return Tag.fromJson(tag);
+      }).toList();
+      setState(() {
+        allTags = tags;
+      });
+    }
+    ).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
     });
 
     if (widget.isQuestion) {
@@ -85,19 +95,7 @@ class _CuPostState extends State<CuPost> {
         }).toList();
       });
     }).catchError((error) {
-      DioException err = error;
-
-      String message = '';
-
-      if (err.response?.data is Map<String, dynamic>) {
-        Map<String, dynamic> data = err.response?.data;
-        message = data.entries
-            .map((entry) => "${entry.key}: ${entry.value}")
-            .join("\n");
-      } else if (err.response?.data is String) {
-        message = err.response?.data;
-      }
-
+      String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
     });
   }
@@ -472,19 +470,7 @@ class _CuPostState extends State<CuPost> {
           context, '$headingP1 $headingP2 thành công!', NotifyType.success);
       Navigator.of(context).pop();
     }).catchError((error) {
-      DioException err = error;
-
-      String message = '';
-
-      if (err.response?.data is Map<String, dynamic>) {
-        Map<String, dynamic> data = err.response?.data;
-        message = data.entries
-            .map((entry) => "${entry.key}: ${entry.value}")
-            .join("\n");
-      } else if (err.response?.data is String) {
-        message = err.response?.data;
-      }
-
+      String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
     });
   }
