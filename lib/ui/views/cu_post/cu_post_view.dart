@@ -51,6 +51,7 @@ class _CuPostState extends State<CuPost> {
 
   Future<void> _loadTags() async {
     var future = tagRepository.get();
+
     future.then((response) {
       List<Tag> tags = response.data.map<Tag>((tag) {
         return Tag.fromJson(tag);
