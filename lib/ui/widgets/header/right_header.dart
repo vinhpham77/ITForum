@@ -17,7 +17,6 @@ class RightHeader extends StatefulWidget {
 }
 
 class _RightHeaderState extends State<RightHeader> {
-  LoginBloc loginBloc = new LoginBloc();
   List<ItemMenu> creatMenu = [
     ItemMenu(name: "Bài viết", icon: Icons.create, route: "/publish/post"),
     ItemMenu(name: "Series", icon: Icons.list, route: "/publish/series"),
@@ -46,6 +45,7 @@ class _RightHeaderState extends State<RightHeader> {
 
   @override
   Widget build(BuildContext context) {
+    LoginBloc loginBloc = new LoginBloc(context);
     var screenSize = MediaQuery.of(context).size;
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
