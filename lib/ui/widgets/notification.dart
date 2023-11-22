@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../dtos/notify_type.dart'; // Thêm dòng này để sử dụng Completer
+import '../../dtos/notify_type.dart';
 
 void showTopRightSnackBar(
     BuildContext context, String message, NotifyType notifyType) {
@@ -113,7 +113,6 @@ void showTopRightSnackBar(
   );
 
   Overlay.of(context).insert(overlayEntry);
-  // Tự động ẩn SnackBar sau 2 giây
   Future.delayed(const Duration(seconds: 2)).then((_) {
     if (overlayEntry.mounted) {
       overlayEntry.remove();

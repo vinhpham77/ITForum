@@ -1,39 +1,38 @@
 import "package:cay_khe/api_config.dart";
-import "package:cay_khe/data_sources/post_data_source.dart";
 import "package:cay_khe/dtos/post_dto.dart";
 import 'package:dio/dio.dart';
+import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
 
-class PostRepository implements PostDataSource {
+class PostRepository {
   late Dio dio;
-  final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.postsEndpoint}";
 
   PostRepository() {
-    dio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
+    dio = Dio(BaseOptions(
+        baseUrl: "${ApiConfig.baseUrl}/${ApiConfig.postsEndpoint}"));
   }
 
-  @override
   Future<Response<dynamic>> add(PostDTO postDTO) async {
-    return dio.post('$baseUrl/create', data: postDTO.toJson());
+    dio.interceptors.add(InterceptorsWrapper(
+        onRequest: JwtInterceptor().onRequest,
+        onError: JwtInterceptor().onError)
+    );
+    return dio.post('/create', data: postDTO.toJson());
   }
 
-  @override
   Future<Response<dynamic>> delete(String id) {
     // TODO: implement delete
     throw UnimplementedError();
   }
 
-  @override
   Future<Response<dynamic>> get() async {
-    return dio.get(baseUrl);
+    return dio.get('');
   }
 
-  @override
   Future<Response<dynamic>> getOne(String id) async {
-    return dio.get('$baseUrl/$id');
+    return dio.get('/$id');
   }
 
-  @override
   Future<Response<dynamic>> update(String id, PostDTO postDTO) async {
-    return dio.put('$baseUrl/$id/update', data: postDTO.toJson());
+    return dio.put('/$id/update', data: postDTO.toJson());
   }
 }

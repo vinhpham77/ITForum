@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:html';
-import 'dart:js';
 
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
-import 'package:cay_khe/ui/common/utils.dart';
+import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +16,13 @@ class ChangePasswordBloc {
   final UserRepository _userRepository = UserRepository();
 
   Stream get usernameStream => _usernameController.stream;
+
   Stream get curentPasStream => _currentPassController.stream;
+
   Stream get pasStream => _passController.stream;
+
   Stream get repassStream => _repassController.stream;
+
   Stream get getloginStatusController => loginStatusController.stream;
 
   String username = "";
@@ -30,6 +32,7 @@ class ChangePasswordBloc {
   ChangePasswordBloc(BuildContext context) {
     this.context = context;
   }
+
   Future<bool> isValidInfo(String username, String currentpassword,
       String newpassword, String repassword) async {
     Future<bool> isValid;
