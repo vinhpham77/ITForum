@@ -3,5 +3,6 @@
   static const String tagsEndpoint = 'tags';
   static const String postsEndpoint = 'posts';
   static const String loginEndpoint='auth';
+  static const String seriesEndpoint = 'series';
 }
 

@@ -7,7 +7,7 @@ class Header extends StatefulWidget {
   const Header({super.key});
 
   @override
-  _HeaderState createState() => _HeaderState();
+  State<Header> createState() => _HeaderState();
 }
 
 class _HeaderState extends State<Header> {
@@ -16,12 +16,11 @@ class _HeaderState extends State<Header> {
     return Container(
       height: 60,
       color: Colors.white.withOpacity(0.5),
-      child: Container(
-        child: Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [LeftHeader(), RightHeader()],
-          ),
+      child: Expanded(
+        // fix error: The overflowing RenderFlex has an orientation of Axis.horizontal.
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [LeftHeader(), const RightHeader()],
         ),
       ),
     );
