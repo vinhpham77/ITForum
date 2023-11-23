@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:cay_khe/api_config.dart';
-import 'package:cay_khe/dtos/user_dto.dart';
 import 'package:dio/dio.dart';
 
 class UserRepository {
@@ -35,7 +33,7 @@ class UserRepository {
   Future<Response<dynamic>> changePassUser(
       String username, String currentpassword, String newPassword) async {
     return dio.post(
-      "/changepassword",
+      "/changePassword",
       data: {
         'username': username,
         'currentPassword': currentpassword,

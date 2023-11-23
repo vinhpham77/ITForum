@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cay_khe/blocs/forgotPassword_bloc.dart';
 import 'package:cay_khe/blocs/resetPassword_bloc.dart';
-import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:go_router/go_router.dart';
 
 class ResetPasswordPage extends StatefulWidget {
@@ -17,7 +16,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   final TextEditingController _otpController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _reRewPasswordController =  TextEditingController();
+  final TextEditingController _reRewPasswordController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -73,21 +73,35 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             )),
                         Padding(
                             padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                            child: StreamBuilder(
-                              stream: bloc.pasStream,
-                              builder: (context, snapshot) => TextField(
-                                style: const TextStyle(
-                                    fontSize: 18, color: Colors.black),
-                                controller: _newPasswordController,
-                                decoration: InputDecoration(
-                                    labelText: "Nhập mật khẩu mới",
-                                    errorText: snapshot.hasError
-                                        ? snapshot.error.toString()
-                                        : null,
-                                    labelStyle: TextStyle(
-                                        color: Color(0xff888888),
-                                        fontSize: 15)),
-                              ),
+                            child: Stack(
+                              alignment: AlignmentDirectional.centerEnd,
+                              children: <Widget>[
+                                StreamBuilder(
+                                  stream: bloc.pasStream,
+                                  builder: (context, snapshot) => TextField(
+                                    style: const TextStyle(
+                                        fontSize: 18, color: Colors.black),
+                                    controller: _newPasswordController,
+                                    decoration: InputDecoration(
+                                        labelText: "Nhập mật khẩu mới",
+                                        errorText: snapshot.hasError
+                                            ? snapshot.error.toString()
+                                            : null,
+                                        labelStyle: const TextStyle(
+                                            color: Color(0xff888888),
+                                            fontSize: 15)),
+                                  ),
+                                ),
+                                GestureDetector(
+                                    onTap: onToggleShowPass,
+                                    child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: Text(_showPass ? "Hide" : "Show",
+                                            style: const TextStyle(
+                                                color: Colors.blue,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold))))
+                              ],
                             )),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 0, 0, 20.0),
@@ -97,7 +111,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               StreamBuilder(
                                   stream: bloc.repassStream,
                                   builder: (context, snapshot) => TextField(
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 18, color: Colors.black),
                                         controller: _reRewPasswordController,
                                         obscureText: !_showPass,
@@ -106,7 +120,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                             errorText: snapshot.hasError
                                                 ? snapshot.error.toString()
                                                 : null,
-                                            labelStyle: TextStyle(
+                                            labelStyle: const TextStyle(
                                                 color: Color(0xff888888),
                                                 fontSize: 15)),
                                       )),
@@ -121,12 +135,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
+                                  shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),
                                 ),
                                 onPressed: () => onChangePassClicked(context),
-                                child: Text("Đổi mật khẩu",
+                                child: const Text("Đổi mật khẩu",
                                     style: TextStyle(color: Colors.white))),
                           ),
                         ),
@@ -153,9 +167,5 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() {
       _showPass = !_showPass;
     });
-  }
-
-  Widget gotoHome(BuildContext context) {
-    return HomePage();
   }
 }

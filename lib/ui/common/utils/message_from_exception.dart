@@ -10,17 +10,17 @@ String getMessageFromException(dynamic err) {
     return "Có lỗi xảy ra. Vui lòng thử lại sau!";
   }
 
-  String message = '';
+  String message = "Có lỗi xảy ra. Vui lòng thử lại sau!";
 
-  if (error.response?.data is Map<String, dynamic>) {
-    Map<String, dynamic> data = error.response?.data;
+  var errorMessage = error.response?.data;
+
+  if (errorMessage is Map<String, dynamic>) {
+    Map<String, dynamic> data = errorMessage;
     message = data.entries
         .map((entry) => "${entry.key}: ${entry.value}")
         .join("\n");
-  } else if (error.response?.data is String) {
-    message = error.response?.data;
-  } else {
-    message = "Có lỗi xảy ra. Vui lòng thử lại sau!";
+  } else if (errorMessage is String && errorMessage.isNotEmpty) {
+    message = errorMessage;
   }
 
   return message;

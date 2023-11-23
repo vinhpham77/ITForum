@@ -2,7 +2,7 @@ import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/post_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/tag.dart';
-import 'package:cay_khe/ui/common/utils.dart';
+import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -479,12 +479,10 @@ class _CuPostState extends State<CuPost> {
 
   PostDTO createDTO(bool isPrivate) {
     return PostDTO(
-      DateTime.now(),
       title: _titleController.text,
       content: _contentController.text,
       tags: selectedTags.map((tag) => tag.name).toList(),
       isPrivate: isPrivate,
-      createdBy: "aUser",
     );
   }
 

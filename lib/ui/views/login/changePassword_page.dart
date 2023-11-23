@@ -1,50 +1,49 @@
 import 'package:cay_khe/blocs/changePassword_bloc.dart';
 import 'package:cay_khe/blocs/login_bloc.dart';
-
-import 'package:cay_khe/ui/views/login/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
   @override
-  _ChangePasswordPageState createState() => _ChangePasswordPageState();
+  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
 }
 
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  ChangePasswordBloc bloc = new ChangePasswordBloc();
+  late ChangePasswordBloc bloc;
 
-  bool _showPass = false;
-  TextEditingController _usernameController = new TextEditingController();
-  TextEditingController _curentPassController = new TextEditingController();
-  TextEditingController _newPasswordController = new TextEditingController();
-  TextEditingController _reRewPasswordController = new TextEditingController();
+  bool _showCurentPass = false;
+  bool _showNewPass = false;
+  bool _showReNewPass=false;
+  final TextEditingController _curentPassController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _reRewPasswordController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    bloc = ChangePasswordBloc(context);
     return Scaffold(
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
             width: constraints.maxWidth,
             //  padding: EdgeInsets.all(80),
-            constraints: BoxConstraints.expand(),
+            constraints: const BoxConstraints.expand(),
             color: Colors.white,
             child: Center(
-              child: Container(
+              child: SizedBox(
                   width: 480,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      // crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
-                          child: Container(
-                              child: Text("STARFRUIT",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                      fontSize: 50))),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                          child: Text("STARFRUIT",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 50)),
                         ),
                         const Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -55,41 +54,56 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                   fontSize: 30)),
                         ),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
-                            child: StreamBuilder(
-                              stream: bloc.curentPasStream,
-                              builder: (context, snapshot) => TextField(
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.black),
-                                controller: _curentPassController,
-                                decoration: InputDecoration(
-                                    labelText: "Nhập mật khẩu hiện tại",
-                                    errorText: snapshot.hasError
-                                        ? snapshot.error.toString()
-                                        : null,
-                                    labelStyle: TextStyle(
-                                        color: Color(0xff888888),
-                                        fontSize: 15)),
-                              ),
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            child: Stack(
+                              alignment: AlignmentDirectional.centerEnd,
+                              children: <Widget>[
+                                StreamBuilder(
+                                  stream: bloc.curentPasStream,
+                                  builder: (context, snapshot) => TextField(
+                                    style: const TextStyle(
+                                        fontSize: 18, color: Colors.black),
+                                    controller: _curentPassController,
+                                     obscureText: !_showCurentPass,
+                                    decoration: InputDecoration(
+                                        labelText: "Nhập mật khẩu hiện tại",
+                                        errorText: snapshot.hasError
+                                            ? snapshot.error.toString()
+                                            : null,
+                                        labelStyle: const TextStyle(
+                                            color: Color(0xff888888),
+                                            fontSize: 15)),
+                                  ),
+                                ),
+                                GestureDetector(
+                                    onTap: onToggleShowCurentPass,
+                                    child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: Text(_showCurentPass ? "Hide" : "Show",
+                                            style: const TextStyle(
+                                                color: Colors.blue,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold))))
+                              ],
                             )),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
                             child: Stack(
                               alignment: AlignmentDirectional.centerEnd,
                               children: <Widget>[
                                 StreamBuilder(
                                   stream: bloc.pasStream,
                                   builder: (context, snapshot) => TextField(
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18, color: Colors.black),
                                     controller: _newPasswordController,
-                                    obscureText: !_showPass,
+                                    obscureText: !_showNewPass,
                                     decoration: InputDecoration(
                                         labelText: "Nhập mật khẩu mới",
                                         errorText: snapshot.hasError
                                             ? snapshot.error.toString()
                                             : null,
-                                        labelStyle: TextStyle(
+                                        labelStyle: const TextStyle(
                                             color: Color(0xff888888),
                                             fontSize: 15)),
                                   ),
@@ -98,8 +112,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                     onTap: onToggleShowPass,
                                     child: MouseRegion(
                                         cursor: SystemMouseCursors.click,
-                                        child: Text(_showPass ? "Hide" : "Show",
-                                            style: TextStyle(
+                                        child: Text(_showNewPass ? "Hide" : "Show",
+                                            style: const TextStyle(
                                                 color: Colors.blue,
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold))))
@@ -113,16 +127,16 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               StreamBuilder(
                                   stream: bloc.repassStream,
                                   builder: (context, snapshot) => TextField(
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 18, color: Colors.black),
                                         controller: _reRewPasswordController,
-                                        obscureText: !_showPass,
+                                        obscureText: !_showReNewPass,
                                         decoration: InputDecoration(
                                             labelText: "Nhập lại mật khẩu mới",
                                             errorText: snapshot.hasError
                                                 ? snapshot.error.toString()
                                                 : null,
-                                            labelStyle: TextStyle(
+                                            labelStyle: const TextStyle(
                                                 color: Color(0xff888888),
                                                 fontSize: 15)),
                                       )),
@@ -137,12 +151,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
+                                  shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),
                                 ),
                                 onPressed: () => onChangePassClicked(context),
-                                child: Text("Đổi mật khẩu",
+                                child: const Text("Đổi mật khẩu",
                                     style: TextStyle(color: Colors.white))),
                           ),
                         ),
@@ -158,24 +172,21 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         _curentPassController.text,
         _newPasswordController.text,
         _reRewPasswordController.text);
-
     if (isValid) {
       // Thực hiện các công việc cần thiết khi thông tin hợp lệ
+      // ignore: use_build_context_synchronously
       GoRouter.of(context).go("/");
-    } else {
-      print("khong thuc hien duoc");
-
-      // Xử lý trường hợp thông tin không hợp lệ
     }
   }
 
   void onToggleShowPass() {
     setState(() {
-      _showPass = !_showPass;
+      _showNewPass = !_showNewPass;
     });
   }
-
-  Widget gotoHome(BuildContext context) {
-    return HomePage();
+  void onToggleShowCurentPass(){
+      setState(() {
+      _showCurentPass = !_showCurentPass;
+    });
   }
 }

@@ -1,18 +1,17 @@
 import 'package:cay_khe/blocs/forgotPassword_bloc.dart';
 import 'package:cay_khe/dtos/user_dto.dart';
-import 'package:cay_khe/ui/views/login/home_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
   @override
-  _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
+  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  TextEditingController _emailController = new TextEditingController();
-  TextEditingController _usernameController = new TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
   bool showOtpInput = false;
   late ForgotPasswordBloc bloc;
@@ -25,7 +24,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         return Container(
             width: constraints.maxWidth,
             //  padding: EdgeInsets.all(80),
-            constraints: BoxConstraints.expand(),
+            constraints: const BoxConstraints.expand(),
             color: Colors.white,
             child: Center(
               child: Container(
@@ -34,14 +33,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
-                          child: Container(
-                              child: Text("STARFRUIT",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                      fontSize: 50))),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                          child: Text("STARFRUIT",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 50)),
                         ),
                         const Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -61,11 +59,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                   fontSize: 15)),
                         ),
                         Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
                             child: StreamBuilder(
                               stream: bloc.usernameStream,
                               builder: (context, snapshot) => TextField(
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 18, color: Colors.black),
                                 controller: _usernameController,
                                 decoration: InputDecoration(
@@ -73,7 +71,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     errorText: snapshot.hasError
                                         ? snapshot.error.toString()
                                         : null,
-                                    labelStyle: TextStyle(
+                                    labelStyle: const TextStyle(
                                         color: Color(0xff888888),
                                         fontSize: 15)),
                               ),
@@ -86,12 +84,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
+                                  shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),
                                 ),
                                 onPressed: () => onSubmitClicked(context),
-                                child: Text("Gửi email",
+                                child: const Text("Gửi email",
                                     style: TextStyle(color: Colors.white))),
                           ),
                         ),
@@ -102,16 +100,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void onSubmitClicked(BuildContext context) async {
-    var isValid = await bloc.isValidInfo(_usernameController.text);
+    bool isValid = await bloc.isValidInfo(_usernameController.text);
 
-    // print(isValid != null);
-    // if (isValid != null) {
-    //   // Thực hiện các công việc cần thiết khi thông tin hợp lệ
-    //   GoRouter.of(context).go("/resetPass");
-    // }
+    if (isValid) {
+      GoRouter.of(context).go("/resetPass");
+    }
   }
 
-  Widget gotoHome(BuildContext context) {
-    return HomePage();
-  }
+  
 }

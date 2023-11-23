@@ -1,20 +1,14 @@
-import 'package:cay_khe/ui/views/login/changePassword.dart';
+import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
+import 'package:cay_khe/ui/views/login/changePassword_page.dart';
 import 'package:cay_khe/ui/views/login/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/login/login_page.dart';
 import 'package:cay_khe/ui/views/login/register_page.dart';
-import 'package:cay_khe/ui/views/login/resetPassword.dart';
+import 'package:cay_khe/ui/views/login/resetPassword_page.dart';
 import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
-import 'package:cay_khe/ui/widgets/footer.dart';
-import 'package:cay_khe/ui/widgets/header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 
-
-
-
-
-const _pageKey = ValueKey('_pageKey');
+final navigatorKey = GlobalKey<NavigatorState>();
 
 class NavigationDestination {
   const NavigationDestination({
@@ -30,161 +24,125 @@ class NavigationDestination {
   final Widget? child;
 }
 
-final appRouter = GoRouter(routes: [
+final appRouter = GoRouter(navigatorKey: navigatorKey, routes: [
   GoRoute(
     path: '/',
-    pageBuilder: (context, state) =>
-    const MaterialPage<void>(
-      key: _pageKey,
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('home'),
       child: ScreenWithHeaderAndFooter(
-        header: Header(),
         body: Text("post"),
-        footer: Footer(),
       ),
     ),
   ),
   GoRoute(
     path: '/question',
-    pageBuilder: (context, state) =>
-    const MaterialPage<void>(
-      key: _pageKey,
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('question'),
       child: ScreenWithHeaderAndFooter(
-        header: Header(),
         body: Text("question"),
-        footer: Footer(),
       ),
     ),
   ),
   GoRoute(
     path: '/search',
-    pageBuilder: (context, state) =>
-    const MaterialPage<void>(
-      key: _pageKey,
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('search'),
       child: ScreenWithHeaderAndFooter(
-        header: Header(),
         body: Text("search"),
-        footer: Footer(),
       ),
     ),
     routes: [
       GoRoute(
         path: ':pid',
-        pageBuilder: (context, state) =>
-            MaterialPage<void>(
-                key: state.pageKey,
-                child: ScreenWithHeaderAndFooter(
-                  header: Header(),
-                  body: Text(state.pathParameters['pid']!),
-                  footer: Footer(),
-                )),
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: state.pageKey,
+            child: ScreenWithHeaderAndFooter(
+              body: Text(state.pathParameters['pid']!),
+            )),
       ),
     ],
   ),
   GoRoute(
     path: '/publish/post',
-    pageBuilder: (context, state) =>
-    const MaterialPage<void>(
-      key: _pageKey,
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('post-create'),
       child: ScreenWithHeaderAndFooter(
-        header: Header(),
         body: CuPost(),
-        footer: Footer(),
       ),
     ),
   ),
   GoRoute(
     path: '/publish/series',
     pageBuilder: (context, state) => const MaterialPage<void>(
-      key: _pageKey,
+      key: ValueKey('series-create'),
       child: ScreenWithHeaderAndFooter(
-        header: Header(),
         body: Text("create series"),
-        footer: Footer(),
       ),
     ),
   ),
   GoRoute(
     path: '/publish/ask',
-    pageBuilder: (context, state) =>
-    const MaterialPage<void>(
-      key: _pageKey,
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('ask-create'),
       child: ScreenWithHeaderAndFooter(
-        header: Header(),
         body: CuPost(isQuestion: true),
-        footer: Footer(),
       ),
     ),
   ),
   GoRoute(
       path: '/posts',
-      pageBuilder: (context, state) =>
-      const MaterialPage<void>(
-        key: _pageKey,
-        child: ScreenWithHeaderAndFooter(
-          header: Header(),
-          body: Text("posts"),
-          footer: Footer(),
-        ),
-      ),
+      pageBuilder: (context, state) => const MaterialPage<void>(
+            key: ValueKey('posts'),
+            child: ScreenWithHeaderAndFooter(
+              body: Text("posts"),
+            ),
+          ),
       routes: [
         GoRoute(
             path: ':pid',
-            pageBuilder: (context, state) =>
-                MaterialPage<void>(
-                    key: state.pageKey,
-                    child: ScreenWithHeaderAndFooter(
-                      header: Header(),
-                      body: Text('Details ${state.pathParameters['pid']!}'),
-                      footer: Footer(),
-                    )),
+            pageBuilder: (context, state) => MaterialPage<void>(
+                key: state.pageKey,
+                child: ScreenWithHeaderAndFooter(
+                  body: Text('Details ${state.pathParameters['pid']!}'),
+                )),
             routes: [
               GoRoute(
                 path: 'edit',
-                pageBuilder: (context, state) =>
-                    MaterialPage<void>(
-                        key: state.pageKey,
-                        child: ScreenWithHeaderAndFooter(
-                          header: Header(),
-                          body: CuPost(id: state.pathParameters['pid']!, isUpdated: true),
-                          footer: Footer(),
-                        )),
+                pageBuilder: (context, state) => MaterialPage<void>(
+                    key: state.pageKey,
+                    child: ScreenWithHeaderAndFooter(
+                      body: CuPost(
+                          id: state.pathParameters['pid']!, isUpdated: true),
+                    )),
               ),
             ]),
-      ]
-  ),
-   GoRoute(
+      ]),
+  GoRoute(
+    name: 'login',
     path: '/login',
     pageBuilder: (context, state) => const MaterialPage<void>(
-      key: _pageKey,
+      key: ValueKey('login'),
       child: LoginPage(),
     ),
   ),
-    GoRoute(
+  GoRoute(
     path: '/register',
     pageBuilder: (context, state) => const MaterialPage<void>(
-      key: _pageKey,
-      child: SignupPage()
-    ),
+        key: ValueKey('register'), child: SignupPage()),
   ),
-    GoRoute(
+  GoRoute(
     path: '/forgotpass',
     pageBuilder: (context, state) => const MaterialPage<void>(
-      key: _pageKey,
-      child: ForgotPasswordPage()
-    ),
+        key: ValueKey('forgotpass'), child: ForgotPasswordPage()),
   ),
   GoRoute(
     path: '/changepass',
     pageBuilder: (context, state) => const MaterialPage<void>(
-      key: _pageKey,
-      child: ChangePasswordPage()
-    ),
+        key: ValueKey('changepass'), child: ChangePasswordPage()),
   ),
-   GoRoute(
+  GoRoute(
     path: '/resetpass',
     pageBuilder: (context, state) => const MaterialPage<void>(
-      key: _pageKey,
-      child: ResetPasswordPage()
-    ),
+        key: ValueKey('resetpass'), child: ResetPasswordPage()),
   ),
 ]);

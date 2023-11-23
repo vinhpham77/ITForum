@@ -2,19 +2,19 @@ import 'dart:async';
 
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
-import 'package:cay_khe/ui/common/utils.dart';
+import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
 
 class RegisterBloc {
-  StreamController _userController = new StreamController();
-  StreamController _passController = new StreamController();
-  StreamController _fullnameController = new StreamController();
-  StreamController _rePasswordController = new StreamController();
-  StreamController _emailController = new StreamController();
+  final StreamController _userController = StreamController();
+  final StreamController _passController = StreamController();
+  final StreamController _fullnameController = StreamController();
+  final StreamController _rePasswordController = StreamController();
+  final StreamController _emailController = StreamController();
   StreamController<String> loginStatusController = StreamController();
-  UserRepository _userRepository = new UserRepository();
+  final UserRepository _userRepository = UserRepository();
 
   Stream get userStream => _userController.stream;
   Stream get passStream => _passController.stream;
@@ -27,9 +27,7 @@ class RegisterBloc {
 
   late BuildContext context;
 
-  RegisterBloc(BuildContext context) {
-    this.context = context;
-  }
+  RegisterBloc(this.context);
   Future<bool> isValidInfo(String username, String password, String repassword,
       String email, String displayname) async {
     Future<bool> isValid;
@@ -44,18 +42,18 @@ class RegisterBloc {
     }
     _emailController.sink.add("");
 
-    if (!Validations.isValidUser(username)) {
+    if (!Validations.isValidUsername(username)) {
       _userController.sink.addError("Tài khoản phải lớn hơn 2 kí tự");
       return Future<bool>.value(false);
     }
     _userController.sink.add("");
 
-    if (!Validations.isValidPass(password)) {
+    if (!Validations.isValidPassword(password)) {
       _passController.sink.addError("Mật khẩu phải lớn hơn 2 kí tự");
       return Future<bool>.value(false);
     }
     _passController.sink.add("");
-    if (!Validations.isValidRepass(password, repassword)) {
+    if (!Validations.arePasswordsEqual(password, repassword)) {
       _rePasswordController.sink
           .addError("Mật khẩu không khớp với mật khẩu trên");
       return Future<bool>.value(false);
@@ -64,15 +62,12 @@ class RegisterBloc {
     var future =
         _userRepository.registerUser(username, password, email, displayname);
     isValid = future.then((response) {
-      print(response.data);
-      print("adsd");
       showTopRightSnackBar(context, 'Đăng ký thành công!', NotifyType.success);
-      return true;
+      return Future<bool>.value(true);
     }).catchError((error) {
       String message = getMessageFromException(error);
-      print(message);
       showTopRightSnackBar(context, message, NotifyType.error);
-      return false;
+      return Future<bool>.value(false);
     });
     return isValid;
   }
