@@ -32,7 +32,7 @@ class RegisterBloc {
       String email, String displayname) async {
     Future<bool> isValid;
     if (!Validations.isValidDisplayName(displayname)) {
-      _fullnameController.sink.addError("Tên người dùng phải lớn hơn 1 kí tự");
+      _fullnameController.sink.addError("Tên người dùng phải lớn hơn 2 kí tự");
       return Future<bool>.value(false);
     }
     _fullnameController.sink.add("");

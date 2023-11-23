@@ -174,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void navigateToSignupPage(BuildContext context) {
-    GoRouter.of(context).go('/changepass');
+    GoRouter.of(context).go('/register');
   }
 
  
