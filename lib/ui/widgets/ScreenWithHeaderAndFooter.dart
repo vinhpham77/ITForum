@@ -18,11 +18,14 @@ class ScreenWithHeaderAndFooter extends StatelessWidget {
         appBar: PreferredSize(
             preferredSize: Size(screenSize.width, 60), child: const Header()),
         body: SingleChildScrollView(
-          child: Column(
-            children: [
-              body,
-              const Footer(),
-            ],
+          child: Container(
+            color: Colors.black12.withOpacity(0.05),
+            child: Column(
+              children: [
+                body,
+                const Footer(),
+              ],
+            ),
           ),
         ));
   }

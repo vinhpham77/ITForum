@@ -157,4 +157,12 @@ class JwtInterceptor extends Interceptor {
     return utf8.decode(base64Url.decode(output));
   }
 
+  Dio addInterceptors(Dio dio) {
+    dio.interceptors.add(InterceptorsWrapper(
+        onRequest: JwtInterceptor().onRequest,
+        onError: JwtInterceptor().onError)
+    );
+
+    return dio;
+  }
 }

@@ -1,7 +1,7 @@
 import "package:cay_khe/api_config.dart";
 import "package:cay_khe/dtos/post_dto.dart";
 import 'package:dio/dio.dart';
-import 'package:cay_khe/ui/common/utils/jwt_intercepter.dart';
+import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
 
 class PostRepository {
   late Dio dio;
@@ -12,10 +12,7 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> add(PostDTO postDTO) async {
-    dio.interceptors.add(InterceptorsWrapper(
-        onRequest: JwtInterceptor().onRequest,
-        onError: JwtInterceptor().onError)
-    );
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.post('/create', data: postDTO.toJson());
   }
 
@@ -33,6 +30,7 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> update(String id, PostDTO postDTO) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.put('/$id/update', data: postDTO.toJson());
   }
 }

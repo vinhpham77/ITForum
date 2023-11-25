@@ -1,16 +1,17 @@
 import "package:cay_khe/api_config.dart";
 import "package:cay_khe/dtos/series_dto.dart";
+import "package:cay_khe/ui/common/utils/index.dart";
 import 'package:dio/dio.dart';
 
 class SeriesRepository {
   late Dio dio;
-  final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.seriesEndpoint}";
 
   SeriesRepository() {
-    dio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
+    dio = Dio(BaseOptions(baseUrl: "${ApiConfig.baseUrl}/${ApiConfig.seriesEndpoint}"));
   }
 
   Future<Response<dynamic>> add(SeriesDTO seriesDTO) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.post('/create', data: seriesDTO.toJson());
   }
 
@@ -20,7 +21,7 @@ class SeriesRepository {
   }
 
   Future<Response<dynamic>> get() async {
-    return dio.get(baseUrl);
+    return dio.get('');
   }
 
   Future<Response<dynamic>> getOne(String id) async {
@@ -28,6 +29,7 @@ class SeriesRepository {
   }
 
   Future<Response<dynamic>> update(String id, SeriesDTO seriesDTO) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.put('/$id/update', data: seriesDTO.toJson());
   }
 }

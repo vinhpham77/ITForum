@@ -1,10 +1,11 @@
 import 'package:cay_khe/ui/common/utils/index.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'ui/router.dart';
 
 void main() {
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 

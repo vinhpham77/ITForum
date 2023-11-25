@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-
 class ItemMenu {
   ItemMenu({required this.name, required this.icon, required this.route});
 
@@ -48,26 +47,23 @@ class _RightHeaderState extends State<RightHeader> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        SizedBox(
-          width: 268,
-          height: 32,
+        Container(
+          height: 36,
+          constraints: const BoxConstraints(maxWidth: 240, minWidth: 40),
           child: TextField(
-            style: const TextStyle(
-                fontSize: 16.0, height: 1.0, color: Colors.black),
+            style: const TextStyle(fontSize: 16.0, color: Colors.black),
             controller: searchController,
             decoration: const InputDecoration(
-              hintText: 'Enter your name',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10.0),
-                  bottomLeft: Radius.circular(10.0),
-                ),
-              ),
-            ),
+              contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
+                hintText: 'Nhập từ khóa tìm kiếm...',
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10.0),
+                        bottomLeft: Radius.circular(10.0)))),
           ),
         ),
         SizedBox(
-          height: 32,
+          height: 36,
           child: FloatingActionButton(
             hoverColor: Colors.black38,
             backgroundColor: Colors.black,
@@ -80,7 +76,10 @@ class _RightHeaderState extends State<RightHeader> {
                 bottomRight: Radius.circular(10.0),
               ),
             ),
-            child: const Icon(Icons.search, color: Colors.white,),
+            child: const Icon(
+              Icons.search,
+              color: Colors.white,
+            ),
           ),
         ),
         const SizedBox(width: 10),
