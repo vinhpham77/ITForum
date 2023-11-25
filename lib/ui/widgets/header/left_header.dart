@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart' as go;
 
 class LeftHeader extends StatefulWidget {
-  LeftHeader();
+  const LeftHeader({super.key});
 
   @override
   _LeftHeaderState createState() => _LeftHeaderState();
@@ -18,7 +18,7 @@ class _LeftHeaderState extends State<LeftHeader> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(width: screenSize.width / 10),
-        Text(
+        const Text(
           'STARFRUIT',
           style: TextStyle(
             fontSize: 26,

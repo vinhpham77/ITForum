@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class PostsView extends StatefulWidget {
-  PostsView();
+  const PostsView({super.key});
 
   @override
   _PostsViewState createState() => _PostsViewState();
@@ -19,7 +19,7 @@ class _PostsViewState extends State<PostsView> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                const SizedBox(
                   width: 180,
                   child: Text(""),
                 ),

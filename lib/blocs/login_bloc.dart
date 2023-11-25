@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';

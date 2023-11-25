@@ -16,11 +16,11 @@ class _HeaderState extends State<Header> {
     return Container(
       height: 60,
       color: Colors.white.withOpacity(0.5),
-      child: Expanded(
+      child: const Expanded(
         // fix error: The overflowing RenderFlex has an orientation of Axis.horizontal.
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [LeftHeader(), const RightHeader()],
+          children: [LeftHeader(), RightHeader()],
         ),
       ),
     );

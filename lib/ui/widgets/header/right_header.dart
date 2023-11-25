@@ -1,9 +1,6 @@
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../common/utils/jwt_intercepter.dart';
 
 class ItemMenu {
   ItemMenu({required this.name, required this.icon, required this.route});

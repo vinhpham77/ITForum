@@ -8,7 +8,7 @@ class Footer extends StatelessWidget {
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
           width: constraints.maxWidth,
-          color: Color.fromARGB(255, 11, 26, 51),
+          color: const Color.fromARGB(255, 11, 26, 51),
           child: Center(
               child: Expanded(
             child: Container(

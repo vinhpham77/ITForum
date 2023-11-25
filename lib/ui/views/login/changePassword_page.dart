@@ -14,7 +14,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   bool _showCurentPass = false;
   bool _showNewPass = false;
-  bool _showReNewPass=false;
+  final bool _showReNewPass=false;
   final TextEditingController _curentPassController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _reRewPasswordController =

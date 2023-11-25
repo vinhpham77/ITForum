@@ -1,4 +1,3 @@
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/ui/common/utils/index.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
