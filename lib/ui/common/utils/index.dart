@@ -1,2 +1,2 @@
-export './jwt_interceptor.dart';
+export './jwt_intercepter.dart';
 export './message_from_exception.dart';

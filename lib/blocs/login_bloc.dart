@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/user_Repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
@@ -8,7 +9,7 @@ import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import jwtInterceptor
-import '../ui/common/utils/jwt_interceptor.dart';
+import '../ui/common/utils/jwt_intercepter.dart';
 
 class LoginBloc {
   final StreamController _userController = StreamController();
@@ -48,22 +49,16 @@ class LoginBloc {
 
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString('refreshToken', response.data['token']);
-
-        bool success = JwtInterceptor().refreshAccessToken(prefs, response.data['token']) as bool;
-
-        if (success) {
-          prefs.setString('accessToken', response.data['token']);
-        }
+        JwtInterceptor().refreshAccessToken(prefs).then((_) => _ != null);
       });
 
-      showTopRightSnackBar(
-          context, 'Đăng nhập thành công!', NotifyType.success);
       return true;
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
       return false;
     });
+
     return isValid;
   }
 
