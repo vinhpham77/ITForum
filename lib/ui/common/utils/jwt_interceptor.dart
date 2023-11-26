@@ -80,7 +80,7 @@ class JwtInterceptor extends Interceptor {
       dio.options.extra['withCredentials'] = true;
       html.document.cookie = 'refresh_token=$refreshToken';
       var response = await dio.get('${ApiConfig.baseUrl}/auth/refresh-token');
-      parseJwt(response.data['token']);
+      parseJwt(response.data['token'], needToNavigate: true);
       bool success = await prefs.setString('accessToken', response.data['token']);
       return success ? response.data['token'] : null;
     } catch (e) {
@@ -91,9 +91,9 @@ class JwtInterceptor extends Interceptor {
     }
   }
 
-  parseJwt(String? token, {bool needToRefresh = false}) {
+  parseJwt(String? token, {bool needToRefresh = false, bool needToNavigate = false}) {
     if (token == null) {
-      if (needToRefresh) {
+      if (needToRefresh && needToNavigate) {
         refreshAccessToken(null).then((_) => parseJwt(token));
       } else {
         return;
@@ -103,7 +103,9 @@ class JwtInterceptor extends Interceptor {
     var payloadMap = validateJwtAndReturnPayload(token!);
 
     if (payloadMap == null) {
-      navigateToLogin();
+      if (needToNavigate) {
+        navigateToLogin();
+      }
       return;
     }
 
