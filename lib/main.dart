@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SharedPreferences.getInstance().then((prefs) {
       String? accessToken = prefs.getString('accessToken');
-      JwtInterceptor().parseJwt(accessToken, needToRefresh: true);
+      JwtInterceptor().parseJwt(accessToken, needToRefresh: true, needToNavigate: false);
     });
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,

@@ -34,14 +34,17 @@ class _CuSeriesState extends State<CuSeries> {
   final int _left = 3;
   final int _right = 1;
   List<Post> selectedPosts = [];
+  List<String> selectedPostIds = [];
   List<Post> allPosts = [];
   final double _contentHeight = 460;
 
   @override
   void initState() {
     super.initState();
-    //_loadPosts();
-    _loadSeries();
+    if (widget.id != null) {
+      _loadSeries();
+      _loadPosts();
+    }
     operation = widget.id == null ? 'Tạo' : 'Sửa';
   }
 
@@ -414,9 +417,12 @@ class _CuSeriesState extends State<CuSeries> {
 
     future.then((response) {
       Series series = Series.fromJson(response.data);
-      showTopRightSnackBar(
-          context, '$operation series thành công!', NotifyType.success);
-      appRouter.go('/series/${series.id}');
+
+      if (operation == 'Tạo') {
+        appRouter.go('/series/${series.id}/edit');
+      } else {
+        appRouter.go('/series/${series.id}');
+      }
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
@@ -425,14 +431,14 @@ class _CuSeriesState extends State<CuSeries> {
 
   SeriesDTO createDTO(bool isPrivate) {
     return SeriesDTO(
-      title: _titleController.text,
-      content: _contentController.text,
-      isPrivate: isPrivate,
-    );
+        title: _titleController.text,
+        content: _contentController.text,
+        isPrivate: isPrivate,
+        postIds: []);
   }
 
   Future<void> _loadPosts() async {
-    var future = seriesRepository.get();
+    var future = postRepository.getByUser();
 
     future.then((response) {
       List<Post> posts = response.data.map<Post>((post) {
@@ -440,6 +446,13 @@ class _CuSeriesState extends State<CuSeries> {
       }).toList();
       setState(() {
         allPosts = posts;
+
+        for (Post post in posts) {
+          if (selectedPostIds.contains(post.id)) {
+            selectedPosts.add(post);
+            allPosts.remove(post);
+          }
+        }
       });
     }).catchError((error) {
       String message = getMessageFromException(error);
@@ -448,23 +461,15 @@ class _CuSeriesState extends State<CuSeries> {
   }
 
   void _loadSeries() {
-    if (widget.id == null) {
-      return;
-    }
-
-    var future = postRepository.getOne(widget.id!);
+    var future = seriesRepository.getOne(widget.id!);
 
     future.then((response) {
-      Post post = Post.fromJson(response.data);
+      Series series = Series.fromJson(response.data);
 
       setState(() {
-        _titleController.text = post.title;
-        _contentController.text = post.content;
-        selectedPosts = post.tags.map((postItem) {
-          var posts = allPosts.firstWhere((post) => true);
-          allPosts.remove(posts);
-          return posts;
-        }).toList();
+        _titleController.text = series.title;
+        _contentController.text = series.content;
+        selectedPostIds = series.postIds;
       });
     }).catchError((error) {
       String message = getMessageFromException(error);
