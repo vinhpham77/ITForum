@@ -7,7 +7,7 @@ import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:share_plus/share_plus.dart';
+// import 'package:share_plus/share_plus.dart';
 
 class PostDetailsPage extends StatefulWidget {
   const PostDetailsPage({super.key});
@@ -452,7 +452,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     String postLink =
         'https://example.com/bai-viet'; // Thay thế bằng liên kết thực tế của bài viết
 
-    Share.share('Check out this post: $postTitle\n$postLink');
+    // Share.share('Check out this post: $postTitle\n$postLink');
   }
 
   onPressed() {
