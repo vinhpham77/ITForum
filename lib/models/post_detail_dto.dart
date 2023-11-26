@@ -1,4 +1,5 @@
 import 'package:cay_khe/dtos/user_dto.dart';
+import 'package:cay_khe/models/user.dart';
 
 class PostDetailDTO {
     String id;
