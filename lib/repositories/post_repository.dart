@@ -29,6 +29,10 @@ class PostRepository {
     return dio.get('/$id');
   }
 
+  Future<Response<dynamic>> getNumber() async {
+    return dio.get('/number');
+  }
+
   Future<Response<dynamic>> update(String id, PostDTO postDTO) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.put('/$id/update', data: postDTO.toJson());

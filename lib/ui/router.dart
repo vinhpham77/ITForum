@@ -7,6 +7,7 @@ import 'package:cay_khe/ui/views/login/login_page.dart';
 import 'package:cay_khe/ui/views/login/register_page.dart';
 import 'package:cay_khe/ui/views/login/resetPassword_page.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
+import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('home'),
         child: ScreenWithHeaderAndFooter(
-          body: Text("posts"),
+          body: PostsView(),
         ),
       ),
     ),

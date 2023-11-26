@@ -1,16 +1,27 @@
+import 'package:cay_khe/models/result_count.dart';
+import 'package:cay_khe/repositories/post_aggregation_repository.dart';
+import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
 import 'package:cay_khe/ui/widgets/pagination.dart';
 import 'package:cay_khe/ui/widgets/post_feed_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:cay_khe/models/post_aggregation.dart';
+
+import '../../../dtos/notify_type.dart';
+import '../../common/utils/message_from_exception.dart';
+import '../../widgets/notification.dart';
+
 class PostsView extends StatefulWidget {
-  const PostsView({this.indexSelected = 0});
+  const PostsView({super.key, this.indexSelected = 0});
   final int indexSelected;
   @override
   _PostsViewState createState() => _PostsViewState();
 }
 
 class _PostsViewState extends State<PostsView> {
+  final PostAggregatioRepository postAggregatioRepository = PostAggregatioRepository();
+  late ResultCount<PostAggregation> resultCount;
   List<NavigationPost> listSelectBtn = [
     NavigationPost(index: 0, text: "Mới nhất"),
     NavigationPost(index: 1, text: "Đang theo dõi"),
@@ -19,7 +30,7 @@ class _PostsViewState extends State<PostsView> {
   ];
   @override
   Widget build(BuildContext context) {
-
+    _loadResult();
     listSelectBtn[widget.indexSelected].isSelected = true;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -35,25 +46,22 @@ class _PostsViewState extends State<PostsView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SingleChildScrollView(
-                      child: Container(
-                        width: 180,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: listSelectBtn.map((selectBtn) {
-                            return selectBtn.isSelected ? buttonSelected(selectBtn.index) : buttonSelect(selectBtn.index);
-                          }).toList(),
-                        ),
-                      ),
+                      child: LeftMenu(listSelectBtn: listSelectBtn),
                     ),
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                        child: Column(
-                          children: [
-                            Container(width: 680, child: PostFeedItem()),
-                            Pagination(routeStr: "", totalItem: 101)
-                          ],
+                        child: Container(
+                          child: Column(
+                            children: [
+                              // Column(
+                              //   children:resultCount.resultList.map<Widget>((e) {
+                              //     return PostFeedItem();
+                              //   }).toList()
+                              // ),
+                              Pagination(routeStr: "", totalItem: 101)
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -68,37 +76,14 @@ class _PostsViewState extends State<PostsView> {
     );
   }
 
-  Widget buttonSelect(int index) {
-    return Container(
-      width: 180,
-      child: TextButton(
-        child:  Align(
-          alignment: Alignment.centerLeft,
-          child: Text(listSelectBtn[index].text, style: TextStyle(color: Colors.black),),
-        ),
-        onPressed: () {},
-        onHover: (value) {listSelectBtn[index].isSelected = value;},
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(listSelectBtn[index].isSelected ? Color.fromRGBO(242, 242, 242, 1) : Colors.white),
-        ),
-      ),
-    );
-  }
-
-  Widget buttonSelected(int index) {
-    return Container(
-      width: 180,
-      child: TextButton(
-        child:  Align(
-          alignment: Alignment.centerLeft,
-          child: Text(listSelectBtn[index].text, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        ),
-        onPressed: () {},
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(Color.fromRGBO(242, 242, 242, 1)),
-        ),
-      ),
-    );
+  void _loadResult() {
+    var future = postAggregatioRepository.getSearch(page: 1);
+    future.then((response) {
+      resultCount = ResultCount.fromJson(response.data);
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
+    });
   }
 }
 
