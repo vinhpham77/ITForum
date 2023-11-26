@@ -363,7 +363,7 @@ class _CuPostState extends State<CuPost> {
                       child: IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () {
-                          GoRouter.of(context).go('/');
+                          appRouter.pop();
                         },
                       ),
                     ),

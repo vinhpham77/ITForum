@@ -4,6 +4,7 @@ import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
+import 'package:cay_khe/ui/views/cu_series/widgets/post_item.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -178,40 +179,54 @@ class _CuSeriesState extends State<CuSeries> {
                     bottomRight: Radius.circular(8))),
             padding: const EdgeInsets.only(
               left: 64,
-              right: 64,
+              right: 0,
               top: 8,
               bottom: 12,
             ),
-            child: Row(
+            child: Column(
               children: [
-                for (var post in selectedPosts)
-                  // CustomTagItem(
-                  //   tagName: post.name,
-                  //   onDelete: () {
-                  //     setState(() {
-                  //       if (post.name == 'hoidap') {
-                  //         headingP2 = 'bài viết';
-                  //       }
-                  //       selectedPosts.remove(post);
-                  //       allPosts.add(post);
-                  //     });
-                  //   },
-                  // ),
-                  // if (selectedPosts.length < 3)
-                  //   SizedBox(
-                  //     child: TagDropdown(
-                  //         tags: allPosts,
-                  //         onTagSelected: (post) {
-                  //           setState(() {
-                  //             selectedPosts.add(post);
-                  //             allPosts.remove(post);
-                  //           });
-                  //         },
-                  //         label: selectedPosts.isEmpty
-                  //             ? 'Có thể gắn một đến ba thẻ...'
-                  //             : "Gắn thêm một thẻ khác..."),
-                  //   ),
-                  const Text('data'),
+                Column(children: [
+                  for (var post in selectedPosts)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: PostItem(post: post)),
+                        TextButton(
+                          onPressed: () => removeSelectedPost(post),
+                          child: const Icon(Icons.close,
+                              size: 20, color: Colors.black54, opticalSize: 20),
+                        ),
+                        Container(
+                          width: 64,
+                        )
+                      ],
+                    ),
+                ]),
+                if (selectedPosts.isEmpty)
+                  Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.only(top: 4, bottom: 4, right: 64),
+                    child: const Text(
+                        'Chưa có bài viết nào. Vui lòng thêm tối thiểu 1 bài viết để chia sẻ với mọi người!'),
+                  ),
+                if (selectedPosts.isNotEmpty)
+                  Divider(
+                    endIndent: 64,
+                    thickness: 1,
+                    color: Colors.black12.withOpacity(0.05),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 64 + 4, 4),
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side:
+                          BorderSide(color: Colors.deepPurple.withOpacity(0.5)),
+                    ),
+                    onPressed: () => buildShowModalBottomSheet(context),
+                    child: const Text('Thêm bài viết'),
+                  ),
+                )
               ],
             ),
           ),
@@ -266,9 +281,7 @@ class _CuSeriesState extends State<CuSeries> {
                     fontStyle: FontStyle.italic,
                     color: Colors.grey.shade700,
                   ),
-              // Custom blockquote style
-              listBullet: const TextStyle(
-                  fontSize: 16), // Custom list item bullet style
+              listBullet: const TextStyle(fontSize: 16),
             ),
             softLineBreak: true,
           ),
@@ -393,16 +406,63 @@ class _CuSeriesState extends State<CuSeries> {
     );
   }
 
+  Future<dynamic> buildShowModalBottomSheet(BuildContext context) {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return SizedBox(
+            height: 500,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 16, bottom: 16),
+                  child: const Text(
+                    'Thêm bài viết',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: openModal(),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  ListView _buildPostListView() {
+    return ListView.builder(
+      itemCount: allPosts.length,
+      itemBuilder: (context, index) {
+        return PostItem(
+            post: allPosts[index],
+            onTap: () {
+              setState(() {
+                selectedPosts.add(allPosts[index]);
+                allPosts.removeAt(index);
+              });
+              Navigator.pop(context);
+            });
+      },
+    );
+  }
+
   getMarkdown() {
     String titleRaw = _titleController.text;
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
-    String posts = ''; //selectedPosts.map((tag) => '#${tag.name}').join('\t');
+    String posts = '';
     String content = _contentController.text;
     return '$title  \n###### $posts\n  # \n  $content';
   }
 
   saveSeries(bool isPrivate) {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (operation == 'Sửa' && selectedPosts.isEmpty) {
+      showTopRightSnackBar(
+          context, 'Vui lòng thêm ít nhất 1 bài viết', NotifyType.warning);
       return;
     }
 
@@ -434,25 +494,29 @@ class _CuSeriesState extends State<CuSeries> {
         title: _titleController.text,
         content: _contentController.text,
         isPrivate: isPrivate,
-        postIds: []);
+        postIds: selectedPosts.map((post) => post.id!).toList());
   }
 
-  Future<void> _loadPosts() async {
+  void _loadPosts() {
     var future = postRepository.getByUser();
 
     future.then((response) {
       List<Post> posts = response.data.map<Post>((post) {
         return Post.fromJson(post);
       }).toList();
+
+      List<Post> postsToAddToSelected = [];
+
+      for (int i = 0; i < posts.length; i++) {
+        if (selectedPostIds.contains(posts[i].id)) {
+          postsToAddToSelected.add(posts[i]);
+          posts.removeAt(i--);
+        }
+      }
+
       setState(() {
         allPosts = posts;
-
-        for (Post post in posts) {
-          if (selectedPostIds.contains(post.id)) {
-            selectedPosts.add(post);
-            allPosts.remove(post);
-          }
-        }
+        selectedPosts.addAll(postsToAddToSelected);
       });
     }).catchError((error) {
       String message = getMessageFromException(error);
@@ -475,5 +539,35 @@ class _CuSeriesState extends State<CuSeries> {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
     });
+  }
+
+  void removeSelectedPost(post) {
+    setState(() {
+      selectedPosts.remove(post);
+      allPosts.add(post);
+    });
+  }
+
+  openModal() {
+    if (allPosts.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.only(top: 4, bottom: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text('Không còn bài viết nào. Thêm bài viết mới'),
+            TextButton(
+              onPressed: () {
+                appRouter.go('/publish/post');
+              },
+              child: const Text('tại đây'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildPostListView();
   }
 }
