@@ -1,9 +1,10 @@
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
-import 'package:cay_khe/ui/views/login/changePassword_page.dart';
-import 'package:cay_khe/ui/views/login/forgotPassword_page.dart';
-import 'package:cay_khe/ui/views/login/login_page.dart';
-import 'package:cay_khe/ui/views/login/register_page.dart';
-import 'package:cay_khe/ui/views/login/resetPassword_page.dart';
+import 'package:cay_khe/ui/views/details_page/postDetails.dart';
+import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
+import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
+import 'package:cay_khe/ui/views/user_use/login_page.dart';
+import 'package:cay_khe/ui/views/user_use/register_page.dart';
+import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
 import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -117,6 +118,15 @@ final appRouter = GoRouter(navigatorKey: navigatorKey, routes: [
               ),
             ]),
       ]),
+       GoRoute(
+    path: '/postdetails',
+    pageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('postdetails'),
+      child: ScreenWithHeaderAndFooter(
+        body: PostDetailsPage()
+      ),
+    ),
+  ),
   GoRoute(
     name: 'login',
     path: '/login',
@@ -145,4 +155,6 @@ final appRouter = GoRouter(navigatorKey: navigatorKey, routes: [
     pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('resetpass'), child: ResetPasswordPage()),
   ),
+  
+
 ]);

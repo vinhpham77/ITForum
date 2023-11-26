@@ -35,4 +35,7 @@ class PostRepository {
   Future<Response<dynamic>> update(String id, PostDTO postDTO) async {
     return dio.put('/$id/update', data: postDTO.toJson());
   }
+    Future<Response<dynamic>> getOneDetails(String id) async {
+    return dio.get('/postDetails/$id');
+  }
 }
