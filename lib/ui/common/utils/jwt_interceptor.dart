@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cay_khe/api_config.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:dio/dio.dart';
@@ -6,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:html' as html;
 
+import '../../../dtos/jwt_payload.dart';
+
 class JwtInterceptor extends Interceptor {
   BuildContext context = navigatorKey.currentContext!;
 
@@ -13,18 +17,8 @@ class JwtInterceptor extends Interceptor {
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     var prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('accessToken');
-    String? refreshToken = prefs.getString('refreshToken');
-
-    if (accessToken == null) {
-      if (refreshToken == null) {
-        navigateToLogin();
-        return;
-      } else {
-        await refreshAccessToken(prefs, refreshToken);
-        accessToken = prefs.getString('accessToken');
-      }
-    }
+    String? accessToken =
+        prefs.getString('accessToken') ?? await refreshAccessToken(prefs);
 
     options.headers['Authorization'] = 'Bearer $accessToken';
     super.onRequest(options, handler);
@@ -35,16 +29,9 @@ class JwtInterceptor extends Interceptor {
       DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 412) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? refreshToken = prefs.getString('refreshToken');
-
-      if (refreshToken == null) {
-        navigateToLogin();
-        return;
-      }
 
       Dio dio = Dio();
-      await refreshAccessToken(prefs, refreshToken);
-      String accessToken = prefs.getString('accessToken')!;
+      String accessToken = await refreshAccessToken(prefs);
 
       RequestOptions requestOptions = err.requestOptions;
       requestOptions.headers['Authorization'] = 'Bearer $accessToken';
@@ -79,20 +66,105 @@ class JwtInterceptor extends Interceptor {
     appRouter.go('/login');
   }
 
-  Future<dynamic> refreshAccessToken(
-      SharedPreferences prefs, String? refreshToken) async {
-    Dio dio = Dio();
+  Future<dynamic> refreshAccessToken(SharedPreferences? prefs) async {
+    prefs ??= await SharedPreferences.getInstance();
+    String? refreshToken = prefs.getString('refreshToken');
+
+    if (refreshToken == null) {
+      navigateToLogin();
+      return;
+    }
 
     try {
+      Dio dio = Dio();
       dio.options.extra['withCredentials'] = true;
       html.document.cookie = 'refresh_token=$refreshToken';
       var response = await dio.get('${ApiConfig.baseUrl}/auth/refresh-token');
-      return await prefs.setString('accessToken', response.data['token']);
+      parseJwt(response.data['token'], needToNavigate: true);
+      bool success = await prefs.setString('accessToken', response.data['token']);
+      return success ? response.data['token'] : null;
     } catch (e) {
       if (e is DioException &&
           (e.response?.statusCode == 406 || e.response?.statusCode == 412)) {
         navigateToLogin();
       }
     }
+  }
+
+  parseJwt(String? token, {bool needToRefresh = false, bool needToNavigate = false}) {
+    if (token == null) {
+      if (needToRefresh && needToNavigate) {
+        refreshAccessToken(null).then((_) => parseJwt(token));
+      } else {
+        return;
+      }
+    }
+
+    var payloadMap = validateJwtAndReturnPayload(token!);
+
+    if (payloadMap == null) {
+      if (needToNavigate) {
+        navigateToLogin();
+      }
+      return;
+    }
+
+    JwtPayload.role = payloadMap['role'] as String;
+    JwtPayload.displayName = payloadMap['displayName'] as String;
+    JwtPayload.sub = payloadMap['sub'] as String;
+    JwtPayload.iat = payloadMap['iat'] as int;
+    JwtPayload.exp = payloadMap['exp'] as int;
+    JwtPayload.avatarUrl = payloadMap['avatarUrl'] as String?;
+  }
+
+  Map<String, dynamic>? validateJwtAndReturnPayload(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      return null;
+    }
+
+    final payload = _decodeBase64(parts[1]);
+    final payloadMap = json.decode(payload);
+    if (payloadMap is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final exp = payloadMap['exp'] as int;
+    final iat = payloadMap['iat'] as int;
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    if (now <= exp && now >= iat) {
+      return payloadMap;
+    }
+    return null;
+  }
+
+  String _decodeBase64(String str) {
+    String output = str.replaceAll('-', '+').replaceAll('_', '/');
+
+    switch (output.length % 4) {
+      case 0:
+        break;
+      case 2:
+        output += '==';
+        break;
+      case 3:
+        output += '=';
+        break;
+      default:
+        throw Exception('Chuỗi ký tự base64 không hợp lệ!"');
+    }
+
+    return utf8.decode(base64Url.decode(output));
+  }
+
+  Dio addInterceptors(Dio dio) {
+    dio.interceptors.add(InterceptorsWrapper(
+        onRequest: JwtInterceptor().onRequest,
+        onError: JwtInterceptor().onError)
+    );
+
+    return dio;
   }
 }

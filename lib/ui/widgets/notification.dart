@@ -63,6 +63,7 @@ void showTopRightSnackBar(
       top: 16.0,
       right: 16.0,
       child: Material(
+        color: Colors.transparent,
         child: Container(
           constraints: const BoxConstraints(minWidth: 300.0),
           decoration: BoxDecoration(

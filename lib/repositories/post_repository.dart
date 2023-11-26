@@ -12,10 +12,7 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> add(PostDTO postDTO) async {
-    dio.interceptors.add(InterceptorsWrapper(
-        onRequest: JwtInterceptor().onRequest,
-        onError: JwtInterceptor().onError)
-    );
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.post('/create', data: postDTO.toJson());
   }
 
@@ -28,11 +25,21 @@ class PostRepository {
     return dio.get('');
   }
 
+  Future<Response<dynamic>> getByUser() async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    return dio.get('/by-user');
+  }
+
   Future<Response<dynamic>> getOne(String id) async {
     return dio.get('/$id');
   }
 
+  Future<Response<dynamic>> getNumber() async {
+    return dio.get('/number');
+  }
+
   Future<Response<dynamic>> update(String id, PostDTO postDTO) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.put('/$id/update', data: postDTO.toJson());
   }
     Future<Response<dynamic>> getOneDetails(String id) async {

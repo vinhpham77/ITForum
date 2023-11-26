@@ -1,5 +1,4 @@
 import 'package:cay_khe/blocs/forgotPassword_bloc.dart';
-import 'package:cay_khe/dtos/user_dto.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +26,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             constraints: const BoxConstraints.expand(),
             color: Colors.white,
             child: Center(
-              child: Container(
+              child: SizedBox(
                   width: 480,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

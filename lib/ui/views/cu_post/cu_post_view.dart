@@ -1,8 +1,11 @@
+import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/post_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/tag.dart';
+import 'package:cay_khe/ui/common/utils/index.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
+import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +18,10 @@ import '../../../repositories/tag_repository.dart';
 import 'widgets/tag_item.dart';
 
 class CuPost extends StatefulWidget {
-  final bool isUpdated;
   final String? id;
   final bool isQuestion;
 
-  const CuPost(
-      {super.key, this.isUpdated = false, this.id, this.isQuestion = false});
+  const CuPost({super.key, this.id, this.isQuestion = false});
 
   @override
   State<CuPost> createState() => _CuPostState();
@@ -46,60 +47,8 @@ class _CuPostState extends State<CuPost> {
     super.initState();
     _loadTags();
     _loadPost();
-    headingP1 = widget.isUpdated ? 'Sửa' : 'Tạo';
+    headingP1 = widget.id == null || widget.id!.isEmpty ? 'Tạo' : 'Sửa';
     headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
-  }
-
-  Future<void> _loadTags() async {
-    var future = tagRepository.get();
-
-    future.then((response) {
-      List<Tag> tags = response.data.map<Tag>((tag) {
-        return Tag.fromJson(tag);
-      }).toList();
-      setState(() {
-        allTags = tags;
-      });
-    }
-    ).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
-
-    if (widget.isQuestion) {
-      setState(() {
-        selectedTags.add(allTags.firstWhere((tag) => tag.name == 'hoidap'));
-        allTags.removeWhere((tag) => tag.name == 'hoidap');
-      });
-    }
-  }
-
-  Future<void> _loadPost() async {
-    if (!widget.isUpdated) {
-      return;
-    }
-
-    var future = postRepository.getOne(widget.id!);
-
-    future.then((response) {
-      Post post = Post.fromJson(response.data);
-
-      setState(() {
-        _titleController.text = post.title;
-        _contentController.text = post.content;
-        selectedTags = post.tags.map((tagName) {
-          if (tagName == 'hoidap') {
-            headingP2 = 'câu hỏi';
-          }
-          var tag = allTags.firstWhere((tag) => tag.name == tagName);
-          allTags.remove(tag);
-          return tag;
-        }).toList();
-      });
-    }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
   }
 
   @override
@@ -200,7 +149,7 @@ class _CuPostState extends State<CuPost> {
                   tagName: tag.name,
                   onDelete: () {
                     setState(() {
-                      if (tag.name == 'hoidap') {
+                      if (tag.name == 'HoiDap') {
                         headingP2 = 'bài viết';
                       }
                       selectedTags.remove(tag);
@@ -214,7 +163,7 @@ class _CuPostState extends State<CuPost> {
                       tags: allTags,
                       onTagSelected: (tag) {
                         setState(() {
-                          if (tag.name == 'hoidap') {
+                          if (tag.name == 'HoiDap') {
                             headingP2 = 'câu hỏi';
                           }
                           selectedTags.add(tag);
@@ -460,10 +409,10 @@ class _CuPostState extends State<CuPost> {
     PostDTO postDTO = createDTO(isPrivate);
 
     Future<Response<dynamic>> future;
-    if (widget.isUpdated) {
-      future = postRepository.update(widget.id!, postDTO);
-    } else {
+    if (widget.id == null || widget.id!.isEmpty) {
       future = postRepository.add(postDTO);
+    } else {
+      future = postRepository.update(widget.id!, postDTO);
     }
 
     future.then((response) {
@@ -491,7 +440,7 @@ class _CuPostState extends State<CuPost> {
       return 'Vui lòng chọn ít nhất một tag';
     }
     if (selectedTags.length > 3) {
-      return 'Chỉ được chọn tối đa 3 tags';
+      return 'Chỉ được chọn tối đa 3 tag';
     }
     return null;
   }
@@ -508,5 +457,57 @@ class _CuPostState extends State<CuPost> {
     }
 
     return false;
+  }
+
+  void _loadTags() {
+    var future = tagRepository.get();
+
+    future.then((response) {
+      List<Tag> tags = response.data.map<Tag>((tag) {
+        return Tag.fromJson(tag);
+      }).toList();
+      setState(() {
+        allTags = tags;
+
+        if (widget.isQuestion) {
+          selectedTags.add(allTags.firstWhere((tag) => tag.name == 'HoiDap'));
+          allTags.removeWhere((tag) => tag.name == 'HoiDap');
+        }
+      });
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
+    });
+  }
+
+  void _loadPost() {
+    if (widget.id == null || widget.id!.isEmpty) {
+      return;
+    }
+
+    var future = postRepository.getOne(widget.id!);
+
+    future.then((response) {
+      Post post = Post.fromJson(response.data);
+      if (JwtPayload.sub != post.createdBy) {
+        appRouter.go('/forbidden');
+      }
+
+      setState(() {
+        _titleController.text = post.title;
+        _contentController.text = post.content;
+        selectedTags = post.tags.map((tagName) {
+          if (tagName == 'HoiDap') {
+            headingP2 = 'câu hỏi';
+          }
+          var tag = allTags.firstWhere((tag) => tag.name == tagName);
+          allTags.remove(tag);
+          return tag;
+        }).toList();
+      });
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
+    });
   }
 }

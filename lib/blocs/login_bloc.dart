@@ -48,22 +48,16 @@ class LoginBloc {
 
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString('refreshToken', response.data['token']);
-
-        bool success = JwtInterceptor().refreshAccessToken(prefs, response.data['token']) as bool;
-
-        if (success) {
-          prefs.setString('accessToken', response.data['token']);
-        }
+        JwtInterceptor().refreshAccessToken(prefs).then((_) => _ != null);
       });
 
-      showTopRightSnackBar(
-          context, 'Đăng nhập thành công!', NotifyType.success);
       return true;
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
       return false;
     });
+
     return isValid;
   }
 

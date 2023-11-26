@@ -1,4 +1,6 @@
-class Post {
+import 'package:cay_khe/dtos/user_dto.dart';
+
+class PostAggregation {
   String? id;
   String title;
   List<String> tags;
@@ -7,8 +9,9 @@ class Post {
   bool isPrivate;
   String createdBy;
   DateTime updatedAt;
+  User user;
 
-  Post({
+  PostAggregation({
     required this.id,
     required this.title,
     required this.content,
@@ -17,10 +20,11 @@ class Post {
     required this.isPrivate,
     required this.createdBy,
     required this.updatedAt,
+    required this.user
   });
 
-  factory Post.fromJson(Map<String, dynamic> json) {
-    return Post(
+  factory PostAggregation.fromJson(Map<String, dynamic> json) {
+    return PostAggregation(
       id: json['id'],
       title: json['title'],
       content: json['content'],
@@ -29,6 +33,7 @@ class Post {
       isPrivate: json['isPrivate'],
       createdBy: json['createdBy'],
       updatedAt: DateTime.parse(json['updatedAt']),
+      user: User.fromJson(json['user']),
     );
   }
 }
