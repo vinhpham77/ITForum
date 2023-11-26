@@ -1,3 +1,4 @@
+
 class User {
   String id;
 
@@ -5,13 +6,14 @@ class User {
 
   String email;
 
-  bool gender;
+  bool? gender;
 
-  DateTime birthdate;
+  DateTime? birthdate;
 
-  String avatarUrl;
+  String? avatarUrl;
 
-  String bio;
+  String? bio;
+  String role;
 
   String displayName;
 
@@ -23,6 +25,7 @@ class User {
     required this.birthdate,
     required this.avatarUrl,
     required this.bio,
+    required this.role,
     required this.displayName,
   });
 
@@ -31,10 +34,11 @@ class User {
       id: json['id'],
       username: json['username'],
       email: json['email'],
-      gender: bool.parse(json['gender']),
+      gender: json['gender'],
       birthdate: DateTime.parse(json['birthdate']),
       avatarUrl: json['avatarUrl'],
-      bio: json['createdBy'],
+      bio: json['bio'],
+      role: json['role'],
       displayName: json['displayName'],
     );
   }

@@ -1,4 +1,6 @@
-import 'package:cay_khe/dtos/user_dto.dart';
+
+
+import 'package:cay_khe/models/user.dart';
 
 class PostAggregation {
   String? id;
@@ -6,8 +8,7 @@ class PostAggregation {
   List<String> tags;
   String content;
   int score;
-  bool isPrivate;
-  String createdBy;
+  bool private;
   DateTime updatedAt;
   User user;
 
@@ -17,8 +18,7 @@ class PostAggregation {
     required this.content,
     required this.tags,
     required this.score,
-    required this.isPrivate,
-    required this.createdBy,
+    required this.private,
     required this.updatedAt,
     required this.user
   });
@@ -30,8 +30,7 @@ class PostAggregation {
       content: json['content'],
       tags: List<String>.from(json['tags']),
       score: json['score'],
-      isPrivate: json['isPrivate'],
-      createdBy: json['createdBy'],
+      private: json['private'],
       updatedAt: DateTime.parse(json['updatedAt']),
       user: User.fromJson(json['user']),
     );

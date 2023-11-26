@@ -3,12 +3,14 @@ import 'package:cay_khe/repositories/post_aggregation_repository.dart';
 import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
 import 'package:cay_khe/ui/widgets/pagination.dart';
 import 'package:cay_khe/ui/widgets/post_feed_item.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cay_khe/models/post_aggregation.dart';
 
 import '../../../dtos/notify_type.dart';
+import '../../../models/user.dart';
 import '../../common/utils/message_from_exception.dart';
 import '../../widgets/notification.dart';
 
@@ -54,11 +56,11 @@ class _PostsViewState extends State<PostsView> {
                         child: Container(
                           child: Column(
                             children: [
-                              // Column(
-                              //   children:resultCount.resultList.map<Widget>((e) {
-                              //     return PostFeedItem();
-                              //   }).toList()
-                              // ),
+                              Column(
+                                children:resultCount.resultList.map<Widget>((e) {
+                                  return PostFeedItem();
+                                }).toList()
+                              ),
                               Pagination(routeStr: "", totalItem: 101)
                             ],
                           ),
@@ -79,7 +81,8 @@ class _PostsViewState extends State<PostsView> {
   void _loadResult() {
     var future = postAggregatioRepository.getSearch(page: 1);
     future.then((response) {
-      resultCount = ResultCount.fromJson(response.data);
+
+      resultCount = ResultCount.fromJson(response.data, PostAggregation.fromJson);
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
