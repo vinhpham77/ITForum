@@ -4,6 +4,7 @@ import 'package:cay_khe/ui/views/details_page/postDetails.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
+import 'package:cay_khe/ui/views/search/search_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
@@ -38,7 +39,7 @@ final appRouter = GoRouter(
         return MaterialPage<void>(
         key: ValueKey('home'),
         child: ScreenWithHeaderAndFooter(
-          body: PostsView(queryParams: {'page': '3'}),
+          body: PostsView(params: {}),
         ),
       );},
     ),
@@ -71,7 +72,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('search'),
         child: ScreenWithHeaderAndFooter(
-          body: Text("search"),
+          body: SearchView(params: {}),
         ),
       ),
       routes: [
@@ -115,7 +116,7 @@ final appRouter = GoRouter(
         pageBuilder: (context, state) => const MaterialPage<void>(
               key: ValueKey('posts'),
               child: ScreenWithHeaderAndFooter(
-                body: PostsView(queryParams: {}),
+                body: PostsView(params: {}),
               ),
             ),
         routes: [
@@ -208,7 +209,7 @@ final appRouter = GoRouter(
         return MaterialPage<void>(
             key: ValueKey("viewposts"),
             child: ScreenWithHeaderAndFooter(
-              body: PostsView(queryParams: convertQuery(query: state.pathParameters["query"] ?? "")),
+              body: PostsView(params: convertQuery(query: state.pathParameters["query"] ?? "")),
             )
         );},
     ),
