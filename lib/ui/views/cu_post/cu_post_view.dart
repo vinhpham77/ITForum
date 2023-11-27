@@ -12,9 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 
-import '/ui/widgets/notification.dart';
 import '../../../repositories/post_repository.dart';
 import '../../../repositories/tag_repository.dart';
+import '/ui/widgets/notification.dart';
 import 'widgets/tag_item.dart';
 
 class CuPost extends StatefulWidget {
@@ -47,235 +47,12 @@ class _CuPostState extends State<CuPost> {
     super.initState();
     _loadTags();
     _loadPost();
-    headingP1 = widget.id == null || widget.id!.isEmpty ? 'Tạo' : 'Sửa';
+    headingP1 = widget.id == null ? 'Tạo' : 'Sửa';
     headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
   }
 
   @override
   Widget build(BuildContext context) {
-    var actionButtons = Container(
-        margin: const EdgeInsets.only(top: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FilledButton(
-              onPressed: () {
-                savePost(false);
-              },
-              child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
-            ),
-            Container(
-              margin: const EdgeInsets.only(left: 6),
-              child: TextButton(
-                style: TextButton.styleFrom(),
-                onPressed: () {
-                  savePost(true);
-                },
-                child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
-              ),
-            ),
-          ],
-        ));
-    var postEditing = Column(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8), topRight: Radius.circular(8)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
-          child: TextFormField(
-            controller: _titleController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Vui lòng nhập tiêu đề';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(
-              hintText: 'Viết tiêu đề ở đây...',
-              hintStyle: TextStyle(
-                color: Colors.black,
-                fontSize: 48,
-                fontWeight: FontWeight.w700,
-              ),
-              border: InputBorder.none,
-            ),
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
-            ),
-            maxLines: 1,
-            onChanged: (value) {
-              setState(() {});
-            },
-          ),
-        ),
-        Container(
-          decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 8,
-            bottom: 12,
-          ),
-          child: Row(
-            children: [
-              for (var tag in selectedTags)
-                CustomTagItem(
-                  tagName: tag.name,
-                  onDelete: () {
-                    setState(() {
-                      if (tag.name == 'HoiDap') {
-                        headingP2 = 'bài viết';
-                      }
-                      selectedTags.remove(tag);
-                      allTags.add(tag);
-                    });
-                  },
-                ),
-              if (selectedTags.length < 3)
-                SizedBox(
-                  child: TagDropdown(
-                      tags: allTags,
-                      onTagSelected: (tag) {
-                        setState(() {
-                          if (tag.name == 'HoiDap') {
-                            headingP2 = 'câu hỏi';
-                          }
-                          selectedTags.add(tag);
-                          allTags.remove(tag);
-                        });
-                      },
-                      label: selectedTags.isEmpty
-                          ? 'Có thể gắn một đến ba thẻ...'
-                          : "Gắn thêm một thẻ khác..."),
-                ),
-            ],
-          ),
-        ),
-        Container(
-          decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-            borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8)),
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
-          height: 400,
-          child: TextFormField(
-            controller: _contentController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Vui lòng nhập nội dung';
-              }
-              return null;
-            },
-            maxLines: null,
-            decoration: const InputDecoration.collapsed(
-              hintText: 'Viết nội dung ở đây...',
-            ),
-            onChanged: (value) {
-              setState(() {});
-            },
-          ),
-        ),
-        actionButtons
-      ],
-    );
-    var postPreview = Column(
-      children: [
-        Container(
-          height: 620,
-          decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
-          child: Markdown(
-            data: getMarkdown(),
-            styleSheet:
-                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-              textScaleFactor: 1.4,
-              h1: Theme.of(context)
-                  .textTheme
-                  .headlineMedium!
-                  .copyWith(fontSize: 32),
-              h2: Theme.of(context)
-                  .textTheme
-                  .headlineSmall!
-                  .copyWith(fontSize: 28),
-              h3: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(fontSize: 20),
-              h6: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontSize: 13),
-              p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
-              blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey.shade700,
-                  ),
-              // Custom blockquote style
-              listBullet: const TextStyle(
-                  fontSize: 16), // Custom list item bullet style
-            ),
-            softLineBreak: true,
-          ),
-        ),
-        actionButtons
-      ],
-    );
     return Center(
       child: Container(
         width: 1200,
@@ -374,7 +151,9 @@ class _CuPostState extends State<CuPost> {
                 children: [
                   Expanded(
                     flex: _left,
-                    child: (_isEditing) ? postEditing : postPreview,
+                    child: (_isEditing)
+                        ? _buildPostEditingTab()
+                        : _buildPostPreviewTab(context),
                   ),
                   Expanded(
                     flex: _right,
@@ -393,6 +172,236 @@ class _CuPostState extends State<CuPost> {
     );
   }
 
+  Column _buildPostPreviewTab(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          height: 620,
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            color: Colors.white,
+          ),
+          padding: const EdgeInsets.only(
+            left: 64,
+            right: 64,
+            top: 32,
+            bottom: 32,
+          ),
+          child: Markdown(
+            data: getMarkdown(),
+            styleSheet:
+                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              textScaleFactor: 1.4,
+              h1: Theme.of(context)
+                  .textTheme
+                  .headlineMedium!
+                  .copyWith(fontSize: 32),
+              h2: Theme.of(context)
+                  .textTheme
+                  .headlineSmall!
+                  .copyWith(fontSize: 28),
+              h3: Theme.of(context)
+                  .textTheme
+                  .titleLarge!
+                  .copyWith(fontSize: 20),
+              h6: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(fontSize: 13),
+              p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
+              blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade700,
+                  ),
+              // Custom blockquote style
+              listBullet: const TextStyle(
+                  fontSize: 16), // Custom list item bullet style
+            ),
+            softLineBreak: true,
+          ),
+        ),
+        _buildActionContainer()
+      ],
+    );
+  }
+  Column _buildPostEditingTab() {
+    return Column(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8), topRight: Radius.circular(8)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+            color: Colors.white,
+          ),
+          padding: const EdgeInsets.only(
+            left: 64,
+            right: 64,
+            top: 32,
+            bottom: 32,
+          ),
+          child: TextFormField(
+            controller: _titleController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Vui lòng nhập tiêu đề';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(
+              hintText: 'Viết tiêu đề ở đây...',
+              hintStyle: TextStyle(
+                color: Colors.black,
+                fontSize: 48,
+                fontWeight: FontWeight.w700,
+              ),
+              border: InputBorder.none,
+            ),
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 48,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            onChanged: (value) {
+              setState(() {});
+            },
+          ),
+        ),
+        Container(
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+            color: Colors.white,
+          ),
+          padding: const EdgeInsets.only(
+            left: 64,
+            right: 64,
+            top: 8,
+            bottom: 12,
+          ),
+          child: Row(
+            children: [
+              for (var tag in selectedTags)
+                CustomTagItem(
+                  tagName: tag.name,
+                  onDelete: () {
+                    setState(() {
+                      if (tag.name == 'HoiDap') {
+                        headingP2 = 'bài viết';
+                      }
+                      selectedTags.remove(tag);
+                      allTags.add(tag);
+                    });
+                  },
+                ),
+              if (selectedTags.length < 3)
+                SizedBox(
+                  child: TagDropdown(
+                      tags: allTags,
+                      onTagSelected: (tag) {
+                        setState(() {
+                          if (tag.name == 'HoiDap') {
+                            headingP2 = 'câu hỏi';
+                          }
+                          selectedTags.add(tag);
+                          allTags.remove(tag);
+                        });
+                      },
+                      label: selectedTags.isEmpty
+                          ? 'Gắn một đến ba thẻ...'
+                          : "Gắn thêm thẻ khác..."),
+                ),
+            ],
+          ),
+        ),
+        Container(
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8)),
+            color: Colors.white,
+          ),
+          padding: const EdgeInsets.only(
+            left: 64,
+            right: 64,
+            top: 32,
+            bottom: 32,
+          ),
+          height: 400,
+          child: TextFormField(
+            controller: _contentController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Vui lòng nhập nội dung';
+              }
+              return null;
+            },
+            maxLines: null,
+            decoration: const InputDecoration.collapsed(
+              hintText: 'Viết nội dung ở đây...',
+            ),
+            onChanged: (value) {
+              setState(() {});
+            },
+          ),
+        ),
+        _buildActionContainer()
+      ],
+    );
+  }
+  Container _buildActionContainer() {
+    return Container(
+        margin: const EdgeInsets.only(top: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FilledButton(
+              onPressed: () {
+                savePost(false);
+              },
+              child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
+            ),
+            Container(
+              margin: const EdgeInsets.only(left: 6),
+              child: TextButton(
+                style: TextButton.styleFrom(),
+                onPressed: () {
+                  savePost(true);
+                },
+                child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+          ],
+        ));
+  }
+
   getMarkdown() {
     String titleRaw = _titleController.text;
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
@@ -409,7 +418,7 @@ class _CuPostState extends State<CuPost> {
     PostDTO postDTO = createDTO(isPrivate);
 
     Future<Response<dynamic>> future;
-    if (widget.id == null || widget.id!.isEmpty) {
+    if (widget.id == null) {
       future = postRepository.add(postDTO);
     } else {
       future = postRepository.update(widget.id!, postDTO);
@@ -481,7 +490,7 @@ class _CuPostState extends State<CuPost> {
   }
 
   void _loadPost() {
-    if (widget.id == null || widget.id!.isEmpty) {
+    if (widget.id == null) {
       return;
     }
 

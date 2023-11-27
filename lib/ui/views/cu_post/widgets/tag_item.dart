@@ -21,7 +21,7 @@ class CustomTagItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('#', style: TextStyle(fontSize: 16)),
-            Text(tagName, style: const TextStyle(fontSize: 16), maxLines: 1 ),
+            Text(tagName, style: const TextStyle(fontSize: 16, color: Colors.black87), maxLines: 1),
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: onDelete,

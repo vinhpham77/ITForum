@@ -1,24 +1,20 @@
 import 'dart:convert';
+import 'dart:html' as html;
 
 import 'package:cay_khe/api_config.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:html' as html;
 
 import '../../../dtos/jwt_payload.dart';
 
 class JwtInterceptor extends Interceptor {
-  BuildContext context = navigatorKey.currentContext!;
-
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     var prefs = await SharedPreferences.getInstance();
     String? accessToken =
-        prefs.getString('accessToken') ?? await refreshAccessToken(prefs);
+        prefs.getString('accessToken') ?? await refreshAccessToken(prefs, true);
 
     options.headers['Authorization'] = 'Bearer $accessToken';
     super.onRequest(options, handler);
@@ -31,7 +27,7 @@ class JwtInterceptor extends Interceptor {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       Dio dio = Dio();
-      String accessToken = await refreshAccessToken(prefs);
+      String accessToken = await refreshAccessToken(prefs, true);
 
       RequestOptions requestOptions = err.requestOptions;
       requestOptions.headers['Authorization'] = 'Bearer $accessToken';
@@ -66,12 +62,16 @@ class JwtInterceptor extends Interceptor {
     appRouter.go('/login');
   }
 
-  Future<dynamic> refreshAccessToken(SharedPreferences? prefs) async {
+  Future<dynamic> refreshAccessToken(
+      SharedPreferences? prefs, bool needToNavigate) async {
+    print('1');
     prefs ??= await SharedPreferences.getInstance();
     String? refreshToken = prefs.getString('refreshToken');
 
     if (refreshToken == null) {
-      navigateToLogin();
+      if (needToNavigate) {
+        navigateToLogin();
+      }
       return;
     }
 
@@ -81,7 +81,8 @@ class JwtInterceptor extends Interceptor {
       html.document.cookie = 'refresh_token=$refreshToken';
       var response = await dio.get('${ApiConfig.baseUrl}/auth/refresh-token');
       parseJwt(response.data['token'], needToNavigate: true);
-      bool success = await prefs.setString('accessToken', response.data['token']);
+      bool success =
+          await prefs.setString('accessToken', response.data['token']);
       return success ? response.data['token'] : null;
     } catch (e) {
       if (e is DioException &&
@@ -91,16 +92,18 @@ class JwtInterceptor extends Interceptor {
     }
   }
 
-  parseJwt(String? token, {bool needToRefresh = false, bool needToNavigate = false}) {
-    if (token == null) {
-      if (needToRefresh && needToNavigate) {
-        refreshAccessToken(null).then((_) => parseJwt(token));
-      } else {
-        return;
-      }
+  parseJwt(String? token,
+      {bool needToRefresh = false, bool needToNavigate = false}) {
+    if (needToRefresh) {
+      refreshAccessToken(null, needToNavigate);
+      return;
     }
 
-    var payloadMap = validateJwtAndReturnPayload(token!);
+    if (token == null) {
+      return;
+    }
+
+    var payloadMap = validateJwtAndReturnPayload(token);
 
     if (payloadMap == null) {
       if (needToNavigate) {
@@ -162,8 +165,7 @@ class JwtInterceptor extends Interceptor {
   Dio addInterceptors(Dio dio) {
     dio.interceptors.add(InterceptorsWrapper(
         onRequest: JwtInterceptor().onRequest,
-        onError: JwtInterceptor().onError)
-    );
+        onError: JwtInterceptor().onError));
 
     return dio;
   }

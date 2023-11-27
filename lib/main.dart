@@ -1,7 +1,8 @@
 import 'package:cay_khe/ui/common/utils/index.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'ui/router.dart';
 
 void main() {
@@ -14,12 +15,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SharedPreferences.getInstance().then((prefs) {
-      String? accessToken = prefs.getString('accessToken');
-      JwtInterceptor().parseJwt(accessToken, needToRefresh: true, needToNavigate: false);
-    });
+    return FutureBuilder(
+      future: SharedPreferences.getInstance(),
+      builder:
+          (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          String? accessToken = snapshot.data?.getString('accessToken');
+          JwtInterceptor().parseJwt(accessToken,
+              needToRefresh: false, needToNavigate: false);
+          return buildMaterialApp();
+        } else {
+          return const CircularProgressIndicator(); // or some other placeholder widget
+        }
+      },
+    );
+  }
+
+  Widget buildMaterialApp() {
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
