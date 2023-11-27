@@ -3,19 +3,18 @@ import 'package:cay_khe/repositories/post_aggregation_repository.dart';
 import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
 import 'package:cay_khe/ui/widgets/pagination.dart';
 import 'package:cay_khe/ui/widgets/post_feed_item.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cay_khe/models/post_aggregation.dart';
 
 import '../../../dtos/notify_type.dart';
-import '../../../models/user.dart';
 import '../../common/utils/message_from_exception.dart';
 import '../../widgets/notification.dart';
 
 class PostsView extends StatefulWidget {
-  const PostsView({super.key, this.indexSelected = 0});
+  const PostsView({super.key, this.indexSelected = 0, required this.queryParams});
+  final Map<String, String> queryParams;
   final int indexSelected;
   @override
   _PostsViewState createState() => _PostsViewState();
@@ -23,7 +22,7 @@ class PostsView extends StatefulWidget {
 
 class _PostsViewState extends State<PostsView> {
   final PostAggregatioRepository postAggregatioRepository = PostAggregatioRepository();
-  late ResultCount<PostAggregation> resultCount;
+  late ResultCount<PostAggregation> resultCount = ResultCount(resultList: [], count: 0);
   List<NavigationPost> listSelectBtn = [
     NavigationPost(index: 0, text: "Mới nhất"),
     NavigationPost(index: 1, text: "Đang theo dõi"),
@@ -32,6 +31,7 @@ class _PostsViewState extends State<PostsView> {
   ];
   @override
   Widget build(BuildContext context) {
+
     _loadResult();
     listSelectBtn[widget.indexSelected].isSelected = true;
     return LayoutBuilder(
@@ -54,14 +54,15 @@ class _PostsViewState extends State<PostsView> {
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: Container(
-                          child: Column(
+                          child: resultCount.resultList.isEmpty ?
+                            const Center(child:CircularProgressIndicator()) : Column(
                             children: [
                               Column(
-                                children:resultCount.resultList.map<Widget>((e) {
-                                  return PostFeedItem();
-                                }).toList()
+                                  children:resultCount.resultList.map((e) {
+                                    return PostFeedItem(postAggregation: e);
+                                  }).toList()
                               ),
-                              Pagination(routeStr: "", totalItem: 101)
+                              Pagination(routeStr: "", totalItem: resultCount.count)
                             ],
                           ),
                         ),
@@ -79,9 +80,13 @@ class _PostsViewState extends State<PostsView> {
   }
 
   void _loadResult() {
-    var future = postAggregatioRepository.getSearch(page: 1);
+    var future = postAggregatioRepository.getSearch(
+      fieldSearch: widget.queryParams['fieldSearch'] ?? '',
+      searchContent: widget.queryParams['searchContent'] ?? '',
+      sort: widget.queryParams['sort'] ?? '',
+      sortField: widget.queryParams['sortField'] ?? '',
+      page: widget.queryParams['page'] ?? '1');
     future.then((response) {
-
       resultCount = ResultCount.fromJson(response.data, PostAggregation.fromJson);
     }).catchError((error) {
       String message = getMessageFromException(error);

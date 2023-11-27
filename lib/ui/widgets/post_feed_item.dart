@@ -1,8 +1,11 @@
+import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class PostFeedItem extends StatelessWidget {
-
+  final PostAggregation postAggregation;
+  const PostFeedItem({required this.postAggregation});
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -40,11 +43,11 @@ class PostFeedItem extends StatelessWidget {
                             Padding(
                               padding: EdgeInsets.only(right: 8),
                               child: InkWell(
-                                child: Text('Full name'),
+                                child: Text(postAggregation.user.displayName),
                                 onTap: () {},
                               ),
                             ),
-                            Text("02/12/2023")
+                            Text(DateFormat('dd/MM/yyyy').format(postAggregation.updatedAt))
                           ],
                         ),
                         Padding(
@@ -53,7 +56,7 @@ class PostFeedItem extends StatelessWidget {
                             child: Align(
                               alignment: Alignment.topLeft,
                               child: Text(
-                                "Title",
+                                postAggregation.title,
                                 style: TextStyle(fontSize: 24),
                                 softWrap: true,
                               ),
@@ -67,11 +70,9 @@ class PostFeedItem extends StatelessWidget {
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
-                              children: [
-                                tagBtn()
-                              ],
+                              children: postAggregation.tags.map((e) => tagBtn(e)).toList(),
                             ),
-                            Text("8")
+                            Text(postAggregation.score.toString())
                           ],
                         )
                       ],
@@ -84,7 +85,7 @@ class PostFeedItem extends StatelessWidget {
         });
   }
 
-  Widget tagBtn() {
+  Widget tagBtn(String text) {
     return TextButton(
       onPressed: (){},
       style: ButtonStyle(
@@ -104,7 +105,7 @@ class PostFeedItem extends StatelessWidget {
           EdgeInsets.all(4), // your padding value here
         ),
       ),
-      child: Text('Example', style: TextStyle(color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),),
+      child: Text(text, style: TextStyle(color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),),
     );
   }
 }

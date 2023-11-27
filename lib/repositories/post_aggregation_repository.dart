@@ -11,8 +11,12 @@ class PostAggregatioRepository {
   }
 
   Future<Response<dynamic>> getSearch({
-    String fieldSearch = "", String searchContent = "", String sort = "", String sortField = "", int page = 1
+    required String fieldSearch,
+    required String searchContent,
+    required String sort,
+    required String sortField,
+    required String page
   }) async {
-    return dio.get('/search?searchField=&search=&sort=&sortField=&page=1');
+    return dio.get('/search?searchField=$fieldSearch&search=$searchContent&sort=$sort&sortField=$sortField&page=$page');
   }
 }

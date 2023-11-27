@@ -10,7 +10,7 @@ class Pagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int totalPasge = (totalItem/20).toInt() + 1;
+    int totalPasge = (totalItem/2).ceil();
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
@@ -18,19 +18,25 @@ class Pagination extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(20),
             child: Center(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   selectedPage > 1 ? pageBtn(text: "<", route: "route") : Container(),
+                  SizedBox(width: 8,),
                   selectedPage > 1 ? pageBtn(text: "1", route: "route"): Container(),
+                  SizedBox(width: 8,),
                   selectedPage > 3 ? pageBtn(text: "...",): Container(),
-                  selectedPage > 3 ? pageBtn(text: (selectedPage - 1).toString(), route: "route"): Container(),
+                  SizedBox(width: 8,),
+                  selectedPage > 2 ? pageBtn(text: (selectedPage - 1).toString(), route: "route"): Container(),
+                  SizedBox(width: 8,),
                   pageBtn(text: selectedPage.toString(), route: "route", isSelect: true),
+                  SizedBox(width: 8,),
                   selectedPage < totalPasge - 1 ? pageBtn(text: (selectedPage + 1).toString(), route: "route"): Container(),
-                  selectedPage < totalPasge - 1 ? pageBtn(text: "..."): Container(),
+                  SizedBox(width: 8,),
+                  selectedPage < totalPasge - 2 ? pageBtn(text: "..."): Container(),
+                  SizedBox(width: 8,),
                   selectedPage < totalPasge ? pageBtn(text: totalPasge.toString(), route: "route"): Container(),
+                  SizedBox(width: 8,),
                   selectedPage < totalPasge ? pageBtn(text: ">", route: "route"): Container(),
                 ],
               ),

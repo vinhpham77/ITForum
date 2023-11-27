@@ -33,12 +33,13 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      pageBuilder: (context, state) => const MaterialPage<void>(
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
         key: ValueKey('home'),
         child: ScreenWithHeaderAndFooter(
-          body: PostsView(),
+          body: PostsView(queryParams: {'page': '3'}),
         ),
-      ),
+      );},
     ),
     GoRoute(
       path: '/not-found',
@@ -110,20 +111,23 @@ final appRouter = GoRouter(
     ),
     GoRoute(
         path: '/posts',
-        pageBuilder: (context, state) => const MaterialPage<void>(
+        pageBuilder: (context, state) {
+            return MaterialPage<void>(
               key: ValueKey('posts'),
               child: ScreenWithHeaderAndFooter(
-                body: Text("posts"),
+                body: PostsView(queryParams: {}),
               ),
-            ),
+            );
+          },
         routes: [
           GoRoute(
               path: ':pid',
               pageBuilder: (context, state) => MaterialPage<void>(
                   key: state.pageKey,
                   child: ScreenWithHeaderAndFooter(
-                    body: Text('Details ${state.pathParameters['pid']!}'),
-                  )),
+                    body: Text("Detail " + state.pathParameters['pid']!),
+                  )
+              ),
               routes: [
                 GoRoute(
                   path: 'edit',
@@ -192,7 +196,28 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
+    GoRoute(
+      path: "/viewposts/:query",
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: ValueKey("viewposts"),
+            child: ScreenWithHeaderAndFooter(
+              body: PostsView(queryParams: convertQuery(query: state.pathParameters["query"] ?? "")),
+            )
+        );},
+    ),
   ],
   errorPageBuilder: (context, state) =>
       const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
 );
+
+Map<String, String> convertQuery({required String query}){
+  Map<String, String> params = {};
+  query.split("&").forEach((param) {
+    List<String> keyValue = param.split("=");
+    if (keyValue.length == 2) {
+      params[keyValue[0]] = keyValue[1];
+    }
+  });
+  return params;
+}
