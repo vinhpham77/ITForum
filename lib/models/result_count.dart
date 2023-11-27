@@ -6,7 +6,7 @@ class ResultCount<T> {
 
   factory ResultCount.fromJson(Map<String, dynamic> json, T Function(Map<String, dynamic>) fromJsonT) {
     return ResultCount(
-        resultList: json['resultList'].map<T>((e) => fromJsonT(e as Map<String, dynamic>)).toList(),
+        resultList: json['resultList'] == null ? [] : json['resultList'].map<T>((e) => fromJsonT(e as Map<String, dynamic>)).toList(),
         count: json['count']
     );
   }

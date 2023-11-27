@@ -40,7 +40,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('home'),
         child: ScreenWithHeaderAndFooter(
-          body: PostsView(),
+          body: PostsView(params: {}),
         ),
       ),
     ),
@@ -84,7 +84,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('search'),
         child: ScreenWithHeaderAndFooter(
-          body: Text("search"),
+          body: SearchView(params: {}),
         ),
       ),
     ),
@@ -129,7 +129,7 @@ final appRouter = GoRouter(
         pageBuilder: (context, state) => const MaterialPage<void>(
               key: ValueKey('posts'),
               child: ScreenWithHeaderAndFooter(
-                body: Text("posts"),
+                body: PostsView(params: {}),
               ),
             ),
         routes: [
@@ -231,3 +231,14 @@ final appRouter = GoRouter(
   errorPageBuilder: (context, state) =>
       const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
 );
+
+Map<String, String> convertQuery({required String query}){
+  Map<String, String> params = {};
+  query.split("&").forEach((param) {
+    List<String> keyValue = param.split("=");
+    if (keyValue.length == 2) {
+      params[keyValue[0]] = keyValue[1];
+    }
+  });
+  return params;
+}

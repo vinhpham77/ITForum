@@ -207,11 +207,12 @@ class _SearchViewState extends State<SearchView> {
                                         ],
                                       );
                                     else {
+                                      if(resultCount.resultList.isEmpty || resultCount == null)
+                                        return Center(child: Text("Không có bài viết nào"));
                                       int totalPasge = (resultCount.count/limitPage).ceil();
-
                                       if(page > totalPasge)
                                         return Center(child: Text("Lỗi! Tổng số trang là $totalPasge, không thể truy cập trang $page", style: TextStyle(color: Colors.red),));
-                                      return Center(child: Text("Không có bài viết nào"));
+
                                     }
                                   }
                                   if(snapshot.hasError) {
