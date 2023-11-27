@@ -1,5 +1,6 @@
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 import 'package:cay_khe/ui/views/cu_series/cu_series_view.dart';
+import 'package:cay_khe/ui/views/details_page/postDetails.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
@@ -111,23 +112,20 @@ final appRouter = GoRouter(
     ),
     GoRoute(
         path: '/posts',
-        pageBuilder: (context, state) {
-            return MaterialPage<void>(
+        pageBuilder: (context, state) => const MaterialPage<void>(
               key: ValueKey('posts'),
               child: ScreenWithHeaderAndFooter(
                 body: PostsView(queryParams: {}),
               ),
-            );
-          },
+            ),
         routes: [
           GoRoute(
               path: ':pid',
               pageBuilder: (context, state) => MaterialPage<void>(
                   key: state.pageKey,
                   child: ScreenWithHeaderAndFooter(
-                    body: Text("Detail " + state.pathParameters['pid']!),
-                  )
-              ),
+                    body: Text('Details ${state.pathParameters['pid']!}'),
+                  )),
               routes: [
                 GoRoute(
                   path: 'edit',
@@ -197,6 +195,14 @@ final appRouter = GoRouter(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
     GoRoute(
+      path: '/post/postdetail',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('postdetail'),
+        child: ScreenWithHeaderAndFooter(
+            body:PostDetailsPage()),
+      ),
+    ),
+    GoRoute(
       path: "/viewposts/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
@@ -207,6 +213,7 @@ final appRouter = GoRouter(
         );},
     ),
   ],
+
   errorPageBuilder: (context, state) =>
       const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
 );
