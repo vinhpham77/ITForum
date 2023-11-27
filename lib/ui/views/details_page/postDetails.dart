@@ -4,24 +4,36 @@ import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/tag_repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
+import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
-
+import 'package:go_router/go_router.dart';
+import '../../../dtos/jwt_payload.dart';
 import '../../../models/post.dart';
+import 'package:markdown/markdown.dart' as markdown;
+import 'TableOfContents.dart';
 // import 'package:share_plus/share_plus.dart';
 
 class PostDetailsPage extends StatefulWidget {
-  const PostDetailsPage({super.key});
+  final String id;
+
+  const PostDetailsPage({Key? key, required this.id}) : super(key: key);
 
   @override
   State<PostDetailsPage> createState() => _PostDetailsPage();
 }
 
 class _PostDetailsPage extends State<PostDetailsPage> {
+  String? username = JwtPayload.sub;
+
+  late bool typeVote = false;
+  bool hasVoted = true;
   int score = 0;
   bool isBookmarked = false;
+  bool isHovered = false;
+  bool isLoading = true;
 
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
@@ -32,22 +44,24 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _nickNameController = TextEditingController();
   final TextEditingController _updateAtController = TextEditingController();
-  final TextEditingController _titlePostSameAuthor = TextEditingController();
 
   late DateTime upDateAt;
-
+  late List<DateTime> listDateTime;
+  late List<Post> posts;
   Tag? selectedTag;
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
-  String id = '654d3e139d8e142b7fadc7ca';
+
   late List<String> listTitlePost;
 
   @override
   void initState() {
     super.initState();
-    _loadPost();
+    _loadPost(widget.id);
+    print(JwtPayload.sub);
   }
 
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
@@ -108,13 +122,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               icon: const Icon(
                 Icons.arrow_drop_up,
               ),
-              onPressed: () => _updateVote(1),
+              onPressed: () => _upVote(),
               iconSize: 36),
           Text('$score', style: const TextStyle(fontSize: 20)),
           IconButton(
             icon: const Icon(Icons.arrow_drop_down),
             iconSize: 36,
-            onPressed: () => _updateVote(-1),
+            onPressed: () => _downVote(),
           ),
         ],
       ),
@@ -151,49 +165,60 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _buildColumn2() {
-    var postPreview = Column(
-      children: [
-        Container(
-          height: 600,
-          decoration: const BoxDecoration(
-              //   color: Colors.white,
-              ),
-          child: Markdown(
-            data: getMarkdown(),
-            styleSheet:
-                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-              textScaleFactor: 1.4,
-              h1: Theme.of(context)
-                  .textTheme
-                  .headlineMedium!
-                  .copyWith(fontSize: 32),
-              h2: Theme.of(context)
-                  .textTheme
-                  .headlineSmall!
-                  .copyWith(fontSize: 28),
-              h3: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(fontSize: 20),
-              h6: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontSize: 13),
-              p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
-              blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey.shade700,
+    // _builderTitlePostContent();
+    var postPreview = isLoading
+        ? Container(
+            height: 600,
+            alignment: Alignment.center,
+            child: CircularProgressIndicator(),
+          )
+        : Column(
+            children: [
+              Container(
+                height: 600,
+                decoration: const BoxDecoration(
+                    //   color: Colors.white,
+                    ),
+                child: Markdown(
+                  data: getMarkdown(),
+                  styleSheet:
+                      MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                    textScaleFactor: 1.4,
+                    h1: Theme.of(context)
+                        .textTheme
+                        .headlineMedium!
+                        .copyWith(fontSize: 48),
+                    h2: Theme.of(context)
+                        .textTheme
+                        .headlineSmall!
+                        .copyWith(fontSize: 22),
+                    h3: Theme.of(context)
+                        .textTheme
+                        .titleLarge!
+                        .copyWith(fontSize: 18),
+                    h6: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(fontSize: 13),
+                    p: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(fontSize: 14),
+                    blockquote:
+                        Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey.shade700,
+                            ),
+                    // Custom blockquote style
+                    listBullet: const TextStyle(
+                        fontSize: 16), // Custom list item bullet style
                   ),
-              // Custom blockquote style
-              listBullet: const TextStyle(
-                  fontSize: 16), // Custom list item bullet style
-            ),
-            softLineBreak: true,
-          ),
-        ),
-      ],
-    );
+                  softLineBreak: true,
+                ),
+              ),
+            ],
+          );
     return Container(
       width: 800,
       child: Column(
@@ -201,12 +226,41 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         mainAxisSize: MainAxisSize.max,
         children: [
           _builderAuthortPostContent(),
-          const SizedBox(
-            height: 10,
+          // const SizedBox(
+          //   height: 10,
+          // ),
+
+          // _buildMenuAnchor(),
+          SingleChildScrollView(
+            physics: NeverScrollableScrollPhysics(), // Disable scrolling
+            child: postPreview,
           ),
-          _builderTitlePostContent(),
-          postPreview,
           // Mở rộng chiều rộng của container để text tự động xuống hàng
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuAnchor() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Row(
+        children: [
+          PopupMenuButton<String>(
+            itemBuilder: (BuildContext context) {
+              return {'Option 1', 'Option 2'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: MenuItemButton(label: choice),
+                );
+              }).toList();
+            },
+            child: TextButton(
+              onPressed: () {},
+              child: Text('Open Menu'),
+            ),
+          ),
+          // Add more buttons or widgets as needed
         ],
       ),
     );
@@ -217,7 +271,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
     // String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
     String content = _contentController.text;
-    return '$content';
+    h1:
+    TextStyle(fontSize: 54);
+    return '$title \n $content';
   }
 
   // Chuyển đổi chuỗi thành Instant
@@ -231,17 +287,25 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     return outputDateString;
   }
 
-  Future<void> _loadPost() async {
+  Future<void> _loadPost(String id) async {
+    // print('Loading post with ID: $id');
+    setState(() {
+      isLoading = true;
+    });
     var future = postRepository.getOneDetails(id);
     future.then((response) {
-      PostDetailDTO postDetailDTO = PostDetailDTO.fromJson(response.data);
-      _contentController.text = postDetailDTO.content;
-      _titleController.text = postDetailDTO.title;
-      _nameController.text = postDetailDTO.user.displayName;
-      _nickNameController.text = '@${postDetailDTO.user.username}';
-      upDateAt = postDetailDTO.updatedAt;
-      _updateAtController.text = convertDateString(upDateAt.toString());
-      _loadPostsByTheSameAuthor(postDetailDTO.user.username);
+      setState(() {
+        PostDetailDTO postDetailDTO = PostDetailDTO.fromJson(response.data);
+        _contentController.text = postDetailDTO.content;
+        _titleController.text = postDetailDTO.title;
+        _nameController.text = postDetailDTO.user.displayName;
+        _nickNameController.text = '@${postDetailDTO.user.username}';
+        upDateAt = postDetailDTO.updatedAt;
+        _updateAtController.text = convertDateString(upDateAt.toString());
+        score = postDetailDTO.score;
+        _loadPostsByTheSameAuthor(postDetailDTO.user.username);
+        isLoading = false;
+      });
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
@@ -251,14 +315,14 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Future<void> _loadPostsByTheSameAuthor(String authorName) async {
     var future = postRepository.getPostsSameAuthor(authorName);
     future.then((response) {
-      print(response.data);
-      List<Map<String, dynamic>> jsonDataList =
-          List<Map<String, dynamic>>.from(response.data);
-      
-      List<Post> posts =
-          jsonDataList.map((json) => Post.fromJson(json)).toList();
-      listTitlePost = posts.map((post) => post.title).toList();
-      print(listTitlePost);
+      setState(() {
+        List<Map<String, dynamic>> jsonDataList =
+            List<Map<String, dynamic>>.from(response.data);
+
+        posts = jsonDataList.map((json) => Post.fromJson(json)).toList();
+        listTitlePost = posts.map((post) => post.title).toList();
+        listDateTime = posts.map((post) => post.updatedAt).toList();
+      });
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
@@ -305,7 +369,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       padding: EdgeInsets.all(0.0),
       child: Text(
         _titleController.text,
-        style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -358,7 +422,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             SizedBox(
               width: 16,
             ),
-          Text(_nickNameController.text)  ,
+            Text(_nickNameController.text),
           ]),
         ),
         SizedBox(
@@ -457,10 +521,46 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     );
   }
 
-  void _updateVote(int value) {
-    setState(() {
-      score += value;
+  Future<bool> checkVote(String postId, String username)  async{
+    var future= postRepository.checkVote(postId, username);
+    future.then((response) {
+      print(response.data);
+      return Future<bool>.value(true);
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
+      return Future<bool>.value(false);
     });
+    return  Future<bool>.value(false);
+
+  }
+
+  void _upVote() async {
+    if(JwtPayload.sub==null)
+    {
+      appRouter.go('/login');
+      // GoRouter.of(context).go('/login');
+    }
+    else {
+      print(JwtPayload.sub!);
+      hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+      if (hasVoted == false || (hasVoted && typeVote == false)) {
+        setState(() {
+          score = score + 1;
+        });
+      }
+    }
+
+  }
+
+
+
+  void _downVote() {
+    if (hasVoted == false || hasVoted && typeVote == true) {
+      setState(() {
+        score = score - 1;
+      });
+    }
   }
 
   void _toggleBookmark() {
@@ -492,14 +592,39 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     );
   }
 
+  List<String> extractHeadingsFromMarkdown(String markdownText) {
+    List<String> headings = [];
+
+    // Parse nội dung Markdown
+    List<markdown.Node> nodes = markdown.Document(
+      extensionSet: markdown.ExtensionSet.gitHubWeb,
+    ).parseLines(markdownText.split('\n'));
+
+    // Lặp qua các nút để trích xuất tiêu đề
+    for (var node in nodes) {
+      if (node is markdown.Element && node.tag == 'h1') {
+        headings.add(node.textContent);
+      } else if (node is markdown.Element && node.tag == 'h2') {
+        headings.add(node.textContent);
+      } else if (node is markdown.Element && node.tag == 'h3') {
+        headings.add(node.textContent);
+      }
+      // Thêm các điều kiện cho các cấp tiêu đề khác (h4, h5, ...)
+    }
+
+    return headings;
+  }
+
   Widget _tableOfContents() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _titletableOfContents(),
-        _bodyTableOfContents(),
-      ],
-    );
+    // Lấy danh sách tiêu đề từ nội dung Markdown
+    List<String> headings =
+        extractHeadingsFromMarkdown(_contentController.text);
+
+    // Tạo một ScrollController
+    ScrollController _scrollController = ScrollController();
+
+    return TableOfContents(
+        headings: headings, scrollController: _scrollController);
   }
 
   Widget _relatedArticles() {
@@ -508,7 +633,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         children: <Widget>[
           _titleRelatedArticles(),
           _bodyRelatedArticles(),
-
         ]);
   }
 
@@ -545,99 +669,167 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var title in listTitlePost)
-            Column(
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: title,
-                    // Các thuộc tính khác của TextStyle có thể được thêm vào ở đây
+          for (var post in posts)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => _openRelatedArticle(post.id),
+                          child: RichText(
+                            text: TextSpan(
+                              text: post.title,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w200,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                _feedItem(),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                    child: Text(convertDateString(post.updatedAt.toString())),
+                  ),
+                  // _feedItem(),
+                  Container(
+                    height: 1,
+                    width: 300,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
     );
   }
 
+  void _openRelatedArticle(String postId) {
+    GoRouter.of(context).go('/posts/$postId');
+    _loadPost(postId);
+  }
+
+  Widget _test() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+      child: Column(
+        children: [
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) {
+              setState(() {
+                textColor = Colors.black;
+              });
+            },
+            onExit: (_) {
+              setState(() {
+                textColor = Colors.grey;
+              });
+            },
+            child: Text('Hello'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _feedItem() {
-    return const Row(
-      children: [
-        Tooltip(
-          message: "Lượt xem",
-          child: Row(
-            children: [
-              Icon(
-                Icons.remove_red_eye, // Mã Unicode của biểu tượng con mắt
-                color: Color.fromARGB(255, 212, 211, 211),
-                // Màu của biểu tượng,
-                size: 18,
-              ),
-              SizedBox(
-                width: 6,
-              ),
-              Text('30'),
-            ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+      child: const Row(
+        children: [
+          Tooltip(
+            message: "Lượt xem",
+            child: Row(
+              children: [
+                Icon(
+                  Icons.remove_red_eye, // Mã Unicode của biểu tượng con mắt
+                  color: Color.fromARGB(255, 212, 211, 211),
+                  // Màu của biểu tượng,
+                  size: 18,
+                ),
+                SizedBox(
+                  width: 6,
+                ),
+                Text('30'),
+              ],
+            ),
           ),
-        ),
-        SizedBox(width: 12),
-        Tooltip(
-          message: "Bình luận",
-          child: Row(
-            children: [
-              Icon(
-                Icons.comment, // Mã Unicode của biểu tượng con mắt
-                color: Color.fromARGB(255, 212, 211, 211),
-                // Màu của biểu tượng,
-                size: 18,
-              ),
-              SizedBox(
-                width: 6,
-              ),
-              Text('18'),
-            ],
+          SizedBox(width: 12),
+          Tooltip(
+            message: "Bình luận",
+            child: Row(
+              children: [
+                Icon(
+                  Icons.comment, // Mã Unicode của biểu tượng con mắt
+                  color: Color.fromARGB(255, 212, 211, 211),
+                  // Màu của biểu tượng,
+                  size: 18,
+                ),
+                SizedBox(
+                  width: 6,
+                ),
+                Text('18'),
+              ],
+            ),
           ),
-        ),
-        SizedBox(width: 12),
-        Tooltip(
-          message: "Đã bookmark",
-          child: Row(
-            children: [
-              Icon(
-                Icons.bookmark, // Mã Unicode của biểu tượng con mắt
-                color: Color.fromARGB(255, 212, 211, 211),
-                // Màu của biểu tượng,
-                size: 18,
-              ),
-              SizedBox(
-                width: 6,
-              ),
-              Text('12'),
-            ],
+          SizedBox(width: 12),
+          Tooltip(
+            message: "Đã bookmark",
+            child: Row(
+              children: [
+                Icon(
+                  Icons.bookmark, // Mã Unicode của biểu tượng con mắt
+                  color: Color.fromARGB(255, 212, 211, 211),
+                  // Màu của biểu tượng,
+                  size: 18,
+                ),
+                SizedBox(
+                  width: 6,
+                ),
+                Text('12'),
+              ],
+            ),
           ),
-        ),
-        SizedBox(width: 12),
-        Tooltip(
-          message: "Điểm",
-          child: Row(
-            children: [
-              Icon(
-                Icons.score, // Mã Unicode của biểu tượng con mắt
-                color: Color.fromARGB(255, 212, 211, 211),
-                // Màu của biểu tượng,
-                size: 18,
-              ),
-              SizedBox(
-                width: 6,
-              ),
-              Text('9'),
-            ],
+          SizedBox(width: 12),
+          Tooltip(
+            message: "Điểm",
+            child: Row(
+              children: [
+                Icon(
+                  Icons.score, // Mã Unicode của biểu tượng con mắt
+                  color: Color.fromARGB(255, 212, 211, 211),
+                  // Màu của biểu tượng,
+                  size: 18,
+                ),
+                SizedBox(
+                  width: 6,
+                ),
+                Text('9'),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -705,4 +897,24 @@ Widget _titleRelatedArticles() {
       )
     ],
   );
+}
+
+class MenuItemButton extends StatelessWidget {
+  final String label;
+
+  const MenuItemButton({
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        // Handle the press for the menu item
+        // You can perform any action or navigation here
+        print('Pressed: $label');
+      },
+      child: Text(label),
+    );
+  }
 }

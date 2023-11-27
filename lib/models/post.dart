@@ -1,5 +1,5 @@
 class Post {
-  String? id;
+  String id;
   String title;
   List<String> tags;
   String content;

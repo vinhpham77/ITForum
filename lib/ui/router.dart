@@ -12,7 +12,7 @@ import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
 import 'package:cay_khe/ui/views/user_use/register_page.dart';
 import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
-import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
+import 'package:cay_khe/ui/widgets/screen_with_header_and_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,7 +40,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('home'),
         child: ScreenWithHeaderAndFooter(
-          body: PostsView(params: {}),
+          body: PostsView(),
         ),
       ),
     ),
@@ -84,7 +84,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('search'),
         child: ScreenWithHeaderAndFooter(
-          body: SearchView(params: {}),
+          body: Text("search"),
         ),
       ),
     ),
@@ -129,7 +129,7 @@ final appRouter = GoRouter(
         pageBuilder: (context, state) => const MaterialPage<void>(
               key: ValueKey('posts'),
               child: ScreenWithHeaderAndFooter(
-                body: PostsView(params: {}),
+                body: Text("posts"),
               ),
             ),
         routes: [
@@ -138,7 +138,7 @@ final appRouter = GoRouter(
               pageBuilder: (context, state) => MaterialPage<void>(
                   key: state.pageKey,
                   child: ScreenWithHeaderAndFooter(
-                    body: Text('Details ${state.pathParameters['pid']!}'),
+                    body: PostDetailsPage(id: state.pathParameters['pid']!),
                   )),
               routes: [
                 GoRoute(
@@ -209,14 +209,6 @@ final appRouter = GoRouter(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
     GoRoute(
-      path: '/post/postdetail',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-        key: ValueKey('postdetail'),
-        child: ScreenWithHeaderAndFooter(
-            body:PostDetailsPage()),
-      ),
-    ),
-    GoRoute(
       path: "/viewposts/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
@@ -230,7 +222,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),
         child: ScreenWithHeaderAndFooter(
-          body: UserProfile(username: state.pathParameters['pid']!),
+          body: UserProfile(username: state.pathParameters['username']!),
         ),
       ),
     )
@@ -239,14 +231,3 @@ final appRouter = GoRouter(
   errorPageBuilder: (context, state) =>
       const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
 );
-
-Map<String, String> convertQuery({required String query}){
-  Map<String, String> params = {};
-  query.split("&").forEach((param) {
-    List<String> keyValue = param.split("=");
-    if (keyValue.length == 2) {
-      params[keyValue[0]] = keyValue[1];
-    }
-  });
-  return params;
-}

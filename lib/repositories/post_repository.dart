@@ -48,4 +48,8 @@ class PostRepository {
   Future<Response<dynamic>> getPostsSameAuthor(String authorName) async {
     return dio.get('/postsSameAuthor/$authorName');
   }
+  Future<Response<dynamic>> checkVote(String postId, String userName) async {
+    return dio.get('/checkVote', queryParameters: { 'id': postId,'userName': userName,});
+  }
+
 }
