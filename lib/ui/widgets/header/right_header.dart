@@ -1,3 +1,4 @@
+import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,12 +12,12 @@ class ItemMenu {
 
 class RightHeader extends StatefulWidget {
   const RightHeader({super.key});
-
   @override
   State<RightHeader> createState() => _RightHeaderState();
 }
 
 class _RightHeaderState extends State<RightHeader> {
+
   List<ItemMenu> createMenu = [
     ItemMenu(name: "Bài viết", icon: Icons.create, route: "/publish/post"),
     ItemMenu(name: "Series", icon: Icons.list, route: "/publish/series"),
@@ -24,7 +25,7 @@ class _RightHeaderState extends State<RightHeader> {
   ];
 
   List<ItemMenu> profilerMenu = [
-    ItemMenu(name: "Trang cá nhân", icon: Icons.person, route: "/publish/post"),
+    ItemMenu(name: "Trang cá nhân", icon: Icons.person, route: "/profile/${JwtPayload.sub}"),
     ItemMenu(
         name: "Đổi mật khẩu", icon: Icons.change_circle, route: "/changepass"),
     ItemMenu(name: "Quên mật khẩu", icon: Icons.vpn_key, route: "/forgotpass"),
@@ -43,7 +44,6 @@ class _RightHeaderState extends State<RightHeader> {
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [

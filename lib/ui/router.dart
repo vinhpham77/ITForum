@@ -5,6 +5,7 @@ import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
+import 'package:cay_khe/ui/views/user_profile/user_profile_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
@@ -35,13 +36,12 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
+      pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('home'),
         child: ScreenWithHeaderAndFooter(
           body: PostsView(params: {}),
         ),
-      );},
+      ),
     ),
     GoRoute(
       path: '/not-found',
@@ -213,6 +213,14 @@ final appRouter = GoRouter(
             )
         );},
     ),
+    GoRoute(path: '/profile/:username',
+      pageBuilder: (context, state) => MaterialPage<void>(
+        key: UniqueKey(),
+        child: ScreenWithHeaderAndFooter(
+          body: UserProfile(username: state.pathParameters['pid']!),
+        ),
+      ),
+    )
   ],
 
   errorPageBuilder: (context, state) =>

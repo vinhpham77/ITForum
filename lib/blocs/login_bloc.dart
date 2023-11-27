@@ -7,7 +7,6 @@ import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import jwtInterceptor
 import '../ui/common/utils/jwt_interceptor.dart';
 
 class LoginBloc {
@@ -48,7 +47,7 @@ class LoginBloc {
 
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString('refreshToken', response.data['token']);
-        JwtInterceptor().refreshAccessToken(prefs).then((_) => _ != null);
+        JwtInterceptor().refreshAccessToken(prefs, false).then((_) => _ != null);
       });
 
       return true;

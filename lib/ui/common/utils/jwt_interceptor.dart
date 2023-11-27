@@ -18,7 +18,7 @@ class JwtInterceptor extends Interceptor {
       RequestOptions options, RequestInterceptorHandler handler) async {
     var prefs = await SharedPreferences.getInstance();
     String? accessToken =
-        prefs.getString('accessToken') ?? await refreshAccessToken(prefs);
+        prefs.getString('accessToken') ?? await refreshAccessToken(prefs, true);
 
     options.headers['Authorization'] = 'Bearer $accessToken';
     super.onRequest(options, handler);
@@ -31,7 +31,7 @@ class JwtInterceptor extends Interceptor {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       Dio dio = Dio();
-      String accessToken = await refreshAccessToken(prefs);
+      String accessToken = await refreshAccessToken(prefs, true);
 
       RequestOptions requestOptions = err.requestOptions;
       requestOptions.headers['Authorization'] = 'Bearer $accessToken';
@@ -66,12 +66,15 @@ class JwtInterceptor extends Interceptor {
     appRouter.go('/login');
   }
 
-  Future<dynamic> refreshAccessToken(SharedPreferences? prefs) async {
+  Future<dynamic> refreshAccessToken(SharedPreferences? prefs, bool needToNavigate) async {
+    print('1');
     prefs ??= await SharedPreferences.getInstance();
     String? refreshToken = prefs.getString('refreshToken');
 
     if (refreshToken == null) {
-      navigateToLogin();
+      if (needToNavigate) {
+        navigateToLogin();
+      }
       return;
     }
 
@@ -92,15 +95,17 @@ class JwtInterceptor extends Interceptor {
   }
 
   parseJwt(String? token, {bool needToRefresh = false, bool needToNavigate = false}) {
-    if (token == null) {
-      if (needToRefresh && needToNavigate) {
-        refreshAccessToken(null).then((_) => parseJwt(token));
-      } else {
-        return;
-      }
+    print('2');
+    if (needToRefresh) {
+      refreshAccessToken(null, needToNavigate);
+      return;
     }
 
-    var payloadMap = validateJwtAndReturnPayload(token!);
+    if (token == null) {
+      return;
+    }
+
+    var payloadMap = validateJwtAndReturnPayload(token);
 
     if (payloadMap == null) {
       if (needToNavigate) {
