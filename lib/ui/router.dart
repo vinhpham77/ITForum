@@ -1,5 +1,6 @@
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 import 'package:cay_khe/ui/views/cu_series/cu_series_view.dart';
+import 'package:cay_khe/ui/views/details_page/postDetails.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
@@ -192,7 +193,16 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
+    GoRoute(
+      path: '/post/postdetail',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('postdetail'),
+        child: ScreenWithHeaderAndFooter(
+            body:PostDetailsPage()),
+      ),
+    ),
   ],
+
   errorPageBuilder: (context, state) =>
       const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
 );

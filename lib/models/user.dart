@@ -7,11 +7,11 @@ class User {
   String email;
 
   bool? gender;
-
+  //
   DateTime? birthdate;
-
+  //
   String? avatarUrl;
-
+  //
   String? bio;
   String role;
 
@@ -35,11 +35,12 @@ class User {
       username: json['username'],
       email: json['email'],
       gender: json['gender'],
-      birthdate: DateTime.parse(json['birthdate']),
+      birthdate: json['birthdate'] != null ? DateTime.parse(json['birthdate']) : null,
       avatarUrl: json['avatarUrl'],
       bio: json['bio'],
       role: json['role'],
       displayName: json['displayName'],
     );
   }
+
 }

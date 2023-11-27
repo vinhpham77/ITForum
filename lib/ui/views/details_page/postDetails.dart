@@ -7,6 +7,9 @@ import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:intl/intl.dart';
+
+import '../../../models/post.dart';
 // import 'package:share_plus/share_plus.dart';
 
 class PostDetailsPage extends StatefulWidget {
@@ -19,20 +22,29 @@ class PostDetailsPage extends StatefulWidget {
 class _PostDetailsPage extends State<PostDetailsPage> {
   int score = 0;
   bool isBookmarked = false;
+
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
   final postRepository = PostRepository();
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final tagRepository = TagRepository();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nickNameController = TextEditingController();
+  final TextEditingController _updateAtController = TextEditingController();
+  final TextEditingController _titlePostSameAuthor = TextEditingController();
+
+  late DateTime upDateAt;
+
   Tag? selectedTag;
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
-  String id = '6562e98f3f5baa104a327aa8';
+  String id = '654d3e139d8e142b7fadc7ca';
+  late List<String> listTitlePost;
+
   @override
   void initState() {
     super.initState();
-    print('init');
     _loadPost();
   }
 
@@ -44,18 +56,20 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           color: Colors.white,
           child: Center(
             child: SizedBox(
-              width: 1200,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-
-                  // _buildColumn1(),
-                  // const SizedBox(width: 50),
+              width: 1500,
+              child: Padding(
+                padding: const EdgeInsets.all(50.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    _buildColumn1(),
+                    const SizedBox(width: 20),
                     _buildColumn2(),
-                  // const SizedBox(width: 50),
-                  // _buildColumn3(),
-                ],
+                    const SizedBox(width: 20),
+                    _buildColumn3(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -66,7 +80,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   Widget _buildColumn1() {
     return Container(
-      width: 100,
+      width: 80,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -140,24 +154,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     var postPreview = Column(
       children: [
         Container(
-          height: 500,
+          height: 600,
           decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
+              //   color: Colors.white,
               ),
-            ],
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
           child: Markdown(
             data: getMarkdown(),
             styleSheet:
@@ -195,17 +195,18 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ],
     );
     return Container(
-      width: 600,
+      width: 800,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.max,
         children: [
           _builderAuthortPostContent(),
-          _builderTitlePostContent(),
           const SizedBox(
             height: 10,
           ),
-          postPreview, // Mở rộng chiều rộng của container để text tự động xuống hàng
+          _builderTitlePostContent(),
+          postPreview,
+          // Mở rộng chiều rộng của container để text tự động xuống hàng
         ],
       ),
     );
@@ -214,29 +215,51 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   getMarkdown() {
     String titleRaw = _titleController.text;
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
-    String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
+    // String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
     String content = _contentController.text;
-    return '$title  \n###### $tags\n  # \n  $content';
+    return '$content';
+  }
+
+  // Chuyển đổi chuỗi thành Instant
+  String convertDateString(String inputDateString) {
+    // Chuyển đổi chuỗi thành DateTime
+    DateTime dateTime = DateTime.parse(inputDateString);
+
+    // Định dạng lại DateTime theo định dạng mong muốn
+    String outputDateString = DateFormat("MMMM d, y h:mm a").format(dateTime);
+
+    return outputDateString;
   }
 
   Future<void> _loadPost() async {
-    print('a');
     var future = postRepository.getOneDetails(id);
-
     future.then((response) {
-      print('b');
-      if (response.data == null) print('null');
-      else
-      print('co du lieu');
       PostDetailDTO postDetailDTO = PostDetailDTO.fromJson(response.data);
-      print(postDetailDTO.content);
-      print('after postdetails');
-      setState(() {
-        _titleController.text = postDetailDTO.title;
-        _contentController.text = postDetailDTO.content;
-      });
+      _contentController.text = postDetailDTO.content;
+      _titleController.text = postDetailDTO.title;
+      _nameController.text = postDetailDTO.user.displayName;
+      _nickNameController.text = '@${postDetailDTO.user.username}';
+      upDateAt = postDetailDTO.updatedAt;
+      _updateAtController.text = convertDateString(upDateAt.toString());
+      _loadPostsByTheSameAuthor(postDetailDTO.user.username);
     }).catchError((error) {
-      print("loi khong lay duo du lieu");
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
+    });
+  }
+
+  Future<void> _loadPostsByTheSameAuthor(String authorName) async {
+    var future = postRepository.getPostsSameAuthor(authorName);
+    future.then((response) {
+      print(response.data);
+      List<Map<String, dynamic>> jsonDataList =
+          List<Map<String, dynamic>>.from(response.data);
+      
+      List<Post> posts =
+          jsonDataList.map((json) => Post.fromJson(json)).toList();
+      listTitlePost = posts.map((post) => post.title).toList();
+      print(listTitlePost);
+    }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
     });
@@ -278,29 +301,11 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _builderTitlePostContent() {
-    return const Padding(
-      padding: EdgeInsets.all(8.0),
+    return Padding(
+      padding: EdgeInsets.all(0.0),
       child: Text(
-        "Tìm hiểu về lập trình dự báo theo chuỗi thời gian từ tổng quát đến chi tiết",
-        style: TextStyle(
-          fontWeight: FontWeight.w800, // in đậm
-          fontSize: 40.0, // kích thước chữ
-        ),
-      ),
-    );
-  }
-
-  Widget _builderContent() {
-    return Container(
-      child: RichText(
-        text: const TextSpan(
-          text:
-              'Mỗi người sinh ra đã có một số phận khác nhau, mang trong mình những ước mơ, hoài bão khác nhau và con đường hoàn thiện bản thân khác nhau. Trên con đường đó, chúng ta sẽ gặp không ít những thất bại cũng như thành công. Tuy nhiên, sau những điều đó, ta lại tìm thấy giá trị cao đẹp của bản thân cũng như cuộc sống của mình. Thành công là việc mỗi người đạt được mục tiêu, ước mơ mà bản thân mình đề ra sau một quá trình dài cố gắng, phấn đấu không ngừng nghỉ. Còn thất bại đối lập với thành công, là cảm giác buồn bã, thất vọng khi chúng ta không đạt được thành quả mong muốn. Thành công và thất bại là những điều mà con người ai cũng sẽ gặp phải trên con đường hoàn thiện bản thân, thực hiện mục tiêu của mình. Thành công của mỗi người đều được đánh đổi bằng những khó khăn, thử thách và cả những lần vấp ngã, nản chí. Thất bại càng cay đắng, đau khổ bao nhiêu thì thành công càng rực rỡ bấy nhiêu, những giá trị cao đẹp chúng ta nhận lại càng ngọt ngào bấy nhiêu. Sau những khó khăn, thất bại, ta sẽ rút ra được những bài học vô cùng quý giá trong cuộc sống mà không có bất cứ trường lớp nào có thể dạy ta, từ đó ta có thêm những bài học căn bản để hoàn thiện bản thân mình, tạo ra những giá trị tốt đẹp nhất cho cuộc sống của mình. Nếu xã hội con người ai cũng có cho mình một ý chí kiên cường, vượt lên thất bại để đến thành công thì xã hội ấy sẽ tốt đẹp và phát triển phồn thịnh hơn. Là một người học sinh được sống trong hoàn cảnh mới, thời bình của đất nước, chúng ta phải có nhận thức đúng đắn về việc rèn luyện, trau dồi bản thân mình để cống hiến những điều tốt đẹp nhất cho quê hương, đất nước. Bên cạnh đó, để cuộc sống tốt đẹp hơn, ta cần phải sống chan hòa, yêu thương mọi người xung quanh để xây dựng một xã hội văn minh, tiến bộ. Thất bại là mẹ thành công, không có thất bại sẽ không có thành công và giá trị con người không được nâng lên. Chúng ta hãy sống với tinh thần cầu tiến, ý chí mạnh mẽ vượt qua khó khăn, thử thách để có được thành quả ngọt ngào cho bản thân mình.Bài 2Trong cuộc sống bộn bề và tấp nập, đã có bao lần chúng ta vấp ngã để trở nên trưởng thành, vững bước trên đường đời cam go. Phải trải qua những thất bại, ta mới đúc rút được kinh nghiệm vươn tới thành công, và cũng qua những sai lầm dẫn tới thất bại, ta mới hiểu được, giá trị của thành công nằm ở chỗ nào. Thành công là những kết quả khả quan sau một quá trình dài gây dựng, phát triển. Đối với một đứa trẻ, thành công là khi được điểm mười đỏ chói sau những đêm dài thức khuya học tập. Với một doanh nhân, thành công tỉ lệ thuận với số dư tài khoản, với danh tiếng và địa vị.Ngược lại, thất bại là khi ta không đạt được mục tiêu mong muốn, gặp khó khăn, trắc trở khiến ra nhụt chí. Hai khái niệm tưởng chừng xa lạ này lại luôn song hành tồn tại và bổ trợ tương thông cho nhau, tạo nên một xã hội hoàn chỉnh, đòi hỏi con người không ngừng phấn đấu và hoàn thiện bản thân. Có những người sau thất bại có khả năng sửa chữa lỗi lầm, vững bước trên con đường tiến tới thành công. Trong khi đó, thất bại thường quật ngã những người chưa có ý chí và quyết tâm vững vàng, dễ từ bỏ. Có được thành công hay không hoàn toàn phụ thuộc vào bản thân mỗi chúng ta.Nói về thành công, nhiều người nghĩ ngay đến tiền bạc, danh vọng, điều đó không sai nhưng chẳng phải trường hợp nào cũng tuyệt đối như vậy. Một người ốm yếu nằm trên giường, thành công không phải có từng núi tiền xếp dưới chân mà là can đảm chiến thắng bệnh tật, giành lại sự sống từ tay tử thần. Sự thành công bắt buộc phải trả giá bằng những mất mát, những lần thất bại đau đớn để từ đó có thể tích lũy thêm hành trang vào đời. Trải qua gian nan thử thách, ý chí con người được tôi rèn, tâm hồn trở nên mạnh mẽ và khát khao thành công được hun đúc thành động lực. Để trở thành một diễn viên xiếc lão luyện, kể làm sao hết những lần tập luyện thất bại, những chấn thương thể xác đau đớn vô biên. Ánh đèn sân khấu lấp lánh ngoài kia là sự thành công, nhưng để chạm tới nó, ắt hẳn phải trải qua những năm tháng khổ luyện, những giọt nước mắt và thậm chí là đổ máu. Phải có thất bại thì mới có thành công, và thành công chỉ trọn vẹn khi con đường dẫn tới nó có nhiều gai nhọnThất bại là điều hiển nhiên trong cuộc đời mỗi con người. Do thiếu kinh nghiệm, thiếu hiểu biết, do còn non nớt chưa có người dẫn đường chỉ lối, do chưa đủ quyết tâm, động lực vượt qua khó khăn,... Người tài giỏi không phải người chưa từng thất bại, mà là người biết đứng lên sau những vấp ngã, trưởng thành và hoàn thiện sau những cú trượt dài. Thành công được tạo nên bởi kinh nghiệm, tinh thần học hỏi và tâm huyết của mỗi người. Không một cây ăn trái nào có thể đậu quả mà không bắt nguồn từ một thân cây nhỏ bé, yếu ớt. Quan trọng rằng khi bão giông ập tới, khi bị dồn vào bước đường cùng, cây con ấy có dám đứng thẳng, có dám cắm sâu rễ vào lòng đất, có dám đương đầu với gió dập sóng vùi để vươn tới ngày đâm hoa kết trái hay không. Cổ nhân có câu "Thất bại là mẹ thành công", thất bại chính là nền tảng cốt cán cho thành công, từng nấc thang dẫn tới thành công có vững chắc hay không đều phụ thuộc vào việc bản thân đã học được những gì qua thất bại.Không con đường nào dẫn tới thành công mà chỉ trải đầy hoa hồng. Những gập ghềnh khó khăn của cuộc sống chính là những bài học quý giá, thất bại có thể làm con đường dẫn tới thành công chậm lại, nhưng nhờ có nó, ta sẽ không bị vấp ngã lần nữa, tâm trí cũng đanh thép hơn, sẵn sàng đối mặt với mọi thử thách. Vì vậy, đừng sợ khó, sợ khổ, sợ thất bại, sợ người đời cười chê mà để lỡ những cơ hội của mình. Một bản nhạc hay cần có khúc trầm khúc bổng, một quyển sách hay cần có những tình huống vui buồn đan xen, và một con người hoàn hảo là khi họ đã trải qua đủ hỉ nộ ái ố để có thể ngồi trên đỉnh vinh quang.Thành công đến quá sớm, thành công được người khác sắp đặt cho, nản chí khi thất bại, sợ hãi không dám đối mặt với thất bại, đó là ranh giới chúng ta cần vượt qua khi nhắc tới thành công và thất bại. Hãy nhớ rằng, thước đo của thành công không nằm ở chỗ bạn có bao nhiêu tiền, đi xe gì, nhà cao bao nhiêu, mà là khi đứng trước sóng gió cuộc đời, bạn mỉm cười thảnh thơi đối mặt, vì thất bại đã cho bạn đủ sức mạnh trưởng thành.',
-          style: TextStyle(
-              // Các thuộc tính văn bản như font, size, màu sắc, độ dày, ...
-              // Đặt softWrap thành true để cho phép tự động xuống hàng
-              ),
-        ),
+        _titleController.text,
+        style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -346,14 +351,14 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget _buildUserProfile() {
     return Column(
       children: [
-        const SizedBox(
-          width: 200,
+        SizedBox(
+          // width: 200,
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text("Thành Quốc"),
+            Text(_nameController.text),
             SizedBox(
               width: 16,
             ),
-            Text("@quoc1907"),
+          Text(_nickNameController.text)  ,
           ]),
         ),
         SizedBox(
@@ -376,16 +381,34 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _buildIconWithText(IconData icon, String text) {
-    return Row(
-      children: [
-        Container(
-          width: 26,
-          height: 26,
-          child: Center(child: Icon(icon)),
-        ),
-        const SizedBox(width: 2),
-        Center(child: Text(text)),
-      ],
+    String messageValue = "";
+    switch (icon) {
+      case Icons.star:
+        messageValue = 'reputation';
+        break;
+      case Icons.verified_user_sharp:
+        messageValue = 'Người theo dõi';
+        break;
+      case Icons.pending_actions:
+        messageValue = 'Bài viết';
+        break;
+      default:
+        messageValue = 'Default Message';
+    }
+    ;
+    return Tooltip(
+      message: messageValue,
+      child: Row(
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            child: Center(child: Icon(icon)),
+          ),
+          const SizedBox(width: 2),
+          Center(child: Text(text)),
+        ],
+      ),
     );
   }
 
@@ -424,10 +447,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget _buildPostDetails() {
     return Container(
       padding: const EdgeInsets.all(2),
-      child: const Row(
+      child: Row(
         children: [
           Column(
-            children: [Text("Đã đăng vào: 17 giờ trước")],
+            children: [Text(_updateAtController.text)],
           ),
         ],
       ),
@@ -447,10 +470,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _sharePost() {
-    String postTitle =
-        'Tiêu đề bài viết'; // Thay thế bằng tiêu đề thực tế của bài viết
-    String postLink =
-        'https://example.com/bai-viet'; // Thay thế bằng liên kết thực tế của bài viết
+    // String postTitle =
+    //     'Tiêu đề bài viết'; // Thay thế bằng tiêu đề thực tế của bài viết
+    // String postLink =
+    //     'https://example.com/bai-viet'; // Thay thế bằng liên kết thực tế của bài viết
 
     // Share.share('Check out this post: $postTitle\n$postLink');
   }
@@ -458,169 +481,164 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   onPressed() {
     // Hàm này sẽ được gọi khi người dùng nhấn vào một trong những hành động cụ thể
   }
-}
 
-Widget _buildColumn3() {
-  return Container(
-    width: 300,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_tableOfContents(), _relatedArticles()],
-    ),
-  );
-}
-
-Widget _tableOfContents() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _titletableOfContents(),
-      _bodyTableOfContents(),
-    ],
-  );
-}
-
-Widget _relatedArticles() {
-  return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        _titleRelatedArticles(),
-        _bodyRelatedArticles(),
-        _feedItem(),
-        _ownerArticles()
-      ]);
-}
-
-Widget _titletableOfContents() {
-  return Row(
-    //crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-      const Text(
-        "Mục lục",
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+  Widget _buildColumn3() {
+    return Container(
+      width: 300,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [_tableOfContents(), _relatedArticles()],
       ),
-      const SizedBox(
-        width: 10,
-      ),
-      Container(
-        height: 20,
-        width: 100,
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey,
-              width: 1.0, // Độ dày của border
+    );
+  }
+
+  Widget _tableOfContents() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _titletableOfContents(),
+        _bodyTableOfContents(),
+      ],
+    );
+  }
+
+  Widget _relatedArticles() {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _titleRelatedArticles(),
+          _bodyRelatedArticles(),
+
+        ]);
+  }
+
+  Widget _titletableOfContents() {
+    return Row(
+      //crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        const Text(
+          "Mục lục",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Container(
+          height: 20,
+          width: 100,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey,
+                width: 1.0, // Độ dày của border
+              ),
             ),
           ),
-        ),
-      )
-    ],
-  );
-}
+        )
+      ],
+    );
+  }
+
 //// open cac bai viet lien quan
 
-Widget _bodyRelatedArticles() {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-    child: SizedBox(
+  Widget _bodyRelatedArticles() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
       child: Column(
         children: [
-          RichText(
-              text: const TextSpan(
-            text:
-                '[CI-CD] Triển Khai Ứng Dụng Node.js lên Cloud Run với GitHub Actions',
-          ))
+          for (var title in listTitlePost)
+            Column(
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: title,
+                    // Các thuộc tính khác của TextStyle có thể được thêm vào ở đây
+                  ),
+                ),
+                _feedItem(),
+              ],
+            ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
-Widget _feedItem() {
-  return const Row(
-    children: [
-      Tooltip(
-        message: "Lượt xem",
-        child: Row(
-          children: [
-            Icon(
-              Icons.remove_red_eye, // Mã Unicode của biểu tượng con mắt
-              color: Color.fromARGB(255, 212, 211, 211), // Màu của biểu tượng,
-              size: 18,
-            ),
-            SizedBox(
-              width: 6,
-            ),
-            Text('30'),
-          ],
+  Widget _feedItem() {
+    return const Row(
+      children: [
+        Tooltip(
+          message: "Lượt xem",
+          child: Row(
+            children: [
+              Icon(
+                Icons.remove_red_eye, // Mã Unicode của biểu tượng con mắt
+                color: Color.fromARGB(255, 212, 211, 211),
+                // Màu của biểu tượng,
+                size: 18,
+              ),
+              SizedBox(
+                width: 6,
+              ),
+              Text('30'),
+            ],
+          ),
         ),
-      ),
-      SizedBox(width: 12),
-      Tooltip(
-        message: "Bình luận",
-        child: Row(
-          children: [
-            Icon(
-              Icons.comment, // Mã Unicode của biểu tượng con mắt
-              color: Color.fromARGB(255, 212, 211, 211), // Màu của biểu tượng,
-              size: 18,
-            ),
-            SizedBox(
-              width: 6,
-            ),
-            Text('18'),
-          ],
+        SizedBox(width: 12),
+        Tooltip(
+          message: "Bình luận",
+          child: Row(
+            children: [
+              Icon(
+                Icons.comment, // Mã Unicode của biểu tượng con mắt
+                color: Color.fromARGB(255, 212, 211, 211),
+                // Màu của biểu tượng,
+                size: 18,
+              ),
+              SizedBox(
+                width: 6,
+              ),
+              Text('18'),
+            ],
+          ),
         ),
-      ),
-      SizedBox(width: 12),
-      Tooltip(
-        message: "Đã bookmark",
-        child: Row(
-          children: [
-            Icon(
-              Icons.bookmark, // Mã Unicode của biểu tượng con mắt
-              color: Color.fromARGB(255, 212, 211, 211), // Màu của biểu tượng,
-              size: 18,
-            ),
-            SizedBox(
-              width: 6,
-            ),
-            Text('12'),
-          ],
+        SizedBox(width: 12),
+        Tooltip(
+          message: "Đã bookmark",
+          child: Row(
+            children: [
+              Icon(
+                Icons.bookmark, // Mã Unicode của biểu tượng con mắt
+                color: Color.fromARGB(255, 212, 211, 211),
+                // Màu của biểu tượng,
+                size: 18,
+              ),
+              SizedBox(
+                width: 6,
+              ),
+              Text('12'),
+            ],
+          ),
         ),
-      ),
-      SizedBox(width: 12),
-      Tooltip(
-        message: "Điểm",
-        child: Row(
-          children: [
-            Icon(
-              Icons.score, // Mã Unicode của biểu tượng con mắt
-              color: Color.fromARGB(255, 212, 211, 211), // Màu của biểu tượng,
-              size: 18,
-            ),
-            SizedBox(
-              width: 6,
-            ),
-            Text('9'),
-          ],
+        SizedBox(width: 12),
+        Tooltip(
+          message: "Điểm",
+          child: Row(
+            children: [
+              Icon(
+                Icons.score, // Mã Unicode của biểu tượng con mắt
+                color: Color.fromARGB(255, 212, 211, 211),
+                // Màu của biểu tượng,
+                size: 18,
+              ),
+              SizedBox(
+                width: 6,
+              ),
+              Text('9'),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
-
-class _ownerArticles extends StatefulWidget {
-  @override
-  State<_ownerArticles> createState() => _MyWidgetState();
-}
-
-class _MyWidgetState extends State<_ownerArticles> {
-  Color textColor = Colors.grey;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ownArticles("Thành Quốc 1907");
+      ],
+    );
   }
 
   Widget _ownArticles(String text) {
