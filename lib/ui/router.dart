@@ -123,7 +123,7 @@ final appRouter = GoRouter(
               pageBuilder: (context, state) => MaterialPage<void>(
                   key: state.pageKey,
                   child: ScreenWithHeaderAndFooter(
-                    body: Text('Details ${state.pathParameters['pid']!}'),
+                    body: PostDetailsPage(id: state.pathParameters['pid']!),
                   )),
               routes: [
                 GoRoute(
@@ -193,14 +193,8 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
-    GoRoute(
-      path: '/post/postdetail',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-        key: ValueKey('postdetail'),
-        child: ScreenWithHeaderAndFooter(
-            body:PostDetailsPage()),
-      ),
-    ),
+
+
   ],
 
   errorPageBuilder: (context, state) =>
