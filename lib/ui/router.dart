@@ -4,6 +4,7 @@ import 'package:cay_khe/ui/views/details_page/postDetails.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
+import 'package:cay_khe/ui/views/posts/question_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
 import 'package:cay_khe/ui/views/user_profile/user_profile_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
@@ -60,12 +61,23 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/question',
-      pageBuilder: (context, state) => const MaterialPage<void>(
+      pageBuilder: (context, state) => MaterialPage<void>(
         key: ValueKey('question'),
         child: ScreenWithHeaderAndFooter(
-          body: Text("question"),
+          body: QuestionView(params: {}),
         ),
       ),
+    ),
+    GoRoute(
+        path: '/viewquestion/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: state.pageKey,
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(params: convertQuery(
+                    query: state.pathParameters["query"] ?? "")),
+              ));
+        }
     ),
     GoRoute(
       path: '/search',
@@ -75,16 +87,17 @@ final appRouter = GoRouter(
           body: SearchView(params: {}),
         ),
       ),
-      routes: [
-        GoRoute(
-          path: ':pid',
-          pageBuilder: (context, state) => MaterialPage<void>(
-              key: state.pageKey,
-              child: ScreenWithHeaderAndFooter(
-                body: Text(state.pathParameters['pid']!),
-              )),
-        ),
-      ],
+    ),
+    GoRoute(
+      path: '/viewsearch/:query',
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: state.pageKey,
+            child: ScreenWithHeaderAndFooter(
+              body: SearchView(params: convertQuery(
+                  query: state.pathParameters["query"] ?? "")),
+            ));
+      }
     ),
     GoRoute(
       path: '/publish/post',
