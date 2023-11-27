@@ -4,6 +4,7 @@ import 'package:cay_khe/ui/views/details_page/postDetails.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
+import 'package:cay_khe/ui/views/user_profile/user_profile_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
@@ -201,6 +202,14 @@ final appRouter = GoRouter(
             body:PostDetailsPage()),
       ),
     ),
+    GoRoute(path: '/profile/:username',
+      pageBuilder: (context, state) => MaterialPage<void>(
+        key: UniqueKey(),
+        child: ScreenWithHeaderAndFooter(
+          body: UserProfile(username: state.pathParameters['pid']!),
+        ),
+      ),
+    )
   ],
 
   errorPageBuilder: (context, state) =>

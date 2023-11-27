@@ -21,7 +21,27 @@ class _TagDropdownState extends State<TagDropdown> {
     final List<DropdownMenuEntry<Tag>> tagEntries = widget.tags.map((Tag tag) {
       return DropdownMenuEntry<Tag>(
         value: tag,
-        label: '#${tag.name} - ${tag.description}',
+        labelWidget: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '#${tag.name}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Colors.black87,
+              ),
+            ),
+            Text(
+              tag.description,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.black45,
+              ),
+            ),
+          ],
+        ),
+        label: tag.name,
       );
     }).toList();
 
@@ -34,7 +54,6 @@ class _TagDropdownState extends State<TagDropdown> {
       ),
       hintText: widget.label,
       // max width as able
-      width: 228,
       dropdownMenuEntries: tagEntries,
       onSelected: (Tag? tag) {
         widget.onTagSelected(tag!);
