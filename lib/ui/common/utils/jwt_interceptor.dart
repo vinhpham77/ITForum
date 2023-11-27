@@ -1,18 +1,14 @@
 import 'dart:convert';
+import 'dart:html' as html;
 
 import 'package:cay_khe/api_config.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:html' as html;
 
 import '../../../dtos/jwt_payload.dart';
 
 class JwtInterceptor extends Interceptor {
-  BuildContext context = navigatorKey.currentContext!;
-
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
@@ -66,7 +62,8 @@ class JwtInterceptor extends Interceptor {
     appRouter.go('/login');
   }
 
-  Future<dynamic> refreshAccessToken(SharedPreferences? prefs, bool needToNavigate) async {
+  Future<dynamic> refreshAccessToken(
+      SharedPreferences? prefs, bool needToNavigate) async {
     print('1');
     prefs ??= await SharedPreferences.getInstance();
     String? refreshToken = prefs.getString('refreshToken');
@@ -84,7 +81,8 @@ class JwtInterceptor extends Interceptor {
       html.document.cookie = 'refresh_token=$refreshToken';
       var response = await dio.get('${ApiConfig.baseUrl}/auth/refresh-token');
       parseJwt(response.data['token'], needToNavigate: true);
-      bool success = await prefs.setString('accessToken', response.data['token']);
+      bool success =
+          await prefs.setString('accessToken', response.data['token']);
       return success ? response.data['token'] : null;
     } catch (e) {
       if (e is DioException &&
@@ -94,8 +92,8 @@ class JwtInterceptor extends Interceptor {
     }
   }
 
-  parseJwt(String? token, {bool needToRefresh = false, bool needToNavigate = false}) {
-    print('2');
+  parseJwt(String? token,
+      {bool needToRefresh = false, bool needToNavigate = false}) {
     if (needToRefresh) {
       refreshAccessToken(null, needToNavigate);
       return;
@@ -167,8 +165,7 @@ class JwtInterceptor extends Interceptor {
   Dio addInterceptors(Dio dio) {
     dio.interceptors.add(InterceptorsWrapper(
         onRequest: JwtInterceptor().onRequest,
-        onError: JwtInterceptor().onError)
-    );
+        onError: JwtInterceptor().onError));
 
     return dio;
   }

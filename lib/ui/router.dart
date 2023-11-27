@@ -11,7 +11,7 @@ import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
 import 'package:cay_khe/ui/views/user_use/register_page.dart';
 import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
-import 'package:cay_khe/ui/widgets/ScreenWithHeaderAndFooter.dart';
+import 'package:cay_khe/ui/widgets/screen_with_header_and_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -217,7 +217,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),
         child: ScreenWithHeaderAndFooter(
-          body: UserProfile(username: state.pathParameters['pid']!),
+          body: UserProfile(username: state.pathParameters['username']!),
         ),
       ),
     )
