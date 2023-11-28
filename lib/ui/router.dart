@@ -34,15 +34,15 @@ class NavigationDestination {
 final appRouter = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
-    // GoRoute(
-    //   path: '/',
-    //   pageBuilder: (context, state) => const MaterialPage<void>(
-    //     key: ValueKey('home'),
-    //     child: ScreenWithHeaderAndFooter(
-    //       body: PostsView(),
-    //     ),
-    //   ),
-    // ),
+    GoRoute(
+      path: '/',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('home'),
+        child: ScreenWithHeaderAndFooter(
+          body: PostsView(params: {}),
+        ),
+      ),
+    ),
     GoRoute(
       path: '/not-found',
       pageBuilder: (context, state) => const MaterialPage<void>(
@@ -60,31 +60,43 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/question',
-      pageBuilder: (context, state) => const MaterialPage<void>(
+      pageBuilder: (context, state) => MaterialPage<void>(
         key: ValueKey('question'),
         child: ScreenWithHeaderAndFooter(
-          body: Text("question"),
+          body: QuestionView(params: {}),
         ),
       ),
+    ),
+    GoRoute(
+        path: '/viewquestion/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: state.pageKey,
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(params: convertQuery(
+                    query: state.pathParameters["query"] ?? "")),
+              ));
+        }
     ),
     GoRoute(
       path: '/search',
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('search'),
         child: ScreenWithHeaderAndFooter(
-          body: Text("search"),
+          body: SearchView(params: {}),
         ),
       ),
-      routes: [
-        GoRoute(
-          path: ':pid',
-          pageBuilder: (context, state) => MaterialPage<void>(
-              key: state.pageKey,
-              child: ScreenWithHeaderAndFooter(
-                body: Text(state.pathParameters['pid']!),
-              )),
-        ),
-      ],
+    ),
+    GoRoute(
+      path: '/viewsearch/:query',
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: state.pageKey,
+            child: ScreenWithHeaderAndFooter(
+              body: SearchView(params: convertQuery(
+                  query: state.pathParameters["query"] ?? "")),
+            ));
+      }
     ),
     GoRoute(
       path: '/publish/post',
@@ -116,7 +128,7 @@ final appRouter = GoRouter(
         pageBuilder: (context, state) => const MaterialPage<void>(
               key: ValueKey('posts'),
               child: ScreenWithHeaderAndFooter(
-                body: Text("posts"),
+                body: PostsView(params: {}),
               ),
             ),
         routes: [
@@ -195,16 +207,16 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
-    // GoRoute(
-    //   path: "/viewposts/:query",
-    //   pageBuilder: (context, state) {
-    //     return MaterialPage<void>(
-    //         key: ValueKey("viewposts"),
-    //         child: ScreenWithHeaderAndFooter(
-    //           body: PostsView(params: convertQuery(query: state.pathParameters["query"] ?? "")),
-    //         )
-    //     );},
-    // ),
+    GoRoute(
+      path: "/viewposts/:query",
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: ValueKey("viewposts"),
+            child: ScreenWithHeaderAndFooter(
+              body: PostsView(params: convertQuery(query: state.pathParameters["query"] ?? "")),
+            )
+        );},
+    ),
     GoRoute(path: '/profile/:username',
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),
@@ -218,3 +230,14 @@ final appRouter = GoRouter(
   errorPageBuilder: (context, state) =>
       const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
 );
+
+Map<String, String> convertQuery({required String query}){
+  Map<String, String> params = {};
+  query.split("&").forEach((param) {
+    List<String> keyValue = param.split("=");
+    if (keyValue.length == 2) {
+      params[keyValue[0]] = keyValue[1];
+    }
+  });
+  return params;
+}

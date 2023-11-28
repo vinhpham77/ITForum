@@ -3,86 +3,112 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../common/utils/date_time.dart';
+
 class PostFeedItem extends StatelessWidget {
   final PostAggregation postAggregation;
   const PostFeedItem({required this.postAggregation});
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-        builder: (context, constraints){
-          return Container(
-            width: constraints.maxWidth,
-            decoration: BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(
-                      color: Color.fromRGBO(217, 217, 217, 1),
-                    )
-                )
-            ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.account_circle),
-                      iconSize: 32,
-                      splashRadius: 16,
-                      tooltip: 'Profiler',
-                    ),
+    return Container(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () {},
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: _buildPostImage(postAggregation.user.avatarUrl ?? ""),
                   ),
-                  Container(
-                    width: constraints.maxWidth - 56,
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(right: 8),
-                              child: InkWell(
-                                child: Text(postAggregation.user.displayName),
-                                onTap: () {},
-                              ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () {},
+                            child: Text(
+                              postAggregation.user.displayName,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black87),
                             ),
-                            Text(DateFormat('dd/MM/yyyy').format(postAggregation.updatedAt))
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
-                          child: InkWell(
-                            child: Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                postAggregation.title,
-                                style: TextStyle(fontSize: 24),
-                                softWrap: true,
-                              ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            getTimeAgo(postAggregation.updatedAt),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
                             ),
-                            onTap: () {}
-                          )
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: postAggregation.tags.map((e) => tagBtn(e)).toList(),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2, bottom: 4),
+                        child: InkWell(
+                          onTap: () {},
+                          child: Text(
+                            postAggregation.title,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
                             ),
-                            Text(postAggregation.score.toString())
-                          ],
+                            softWrap: true,
+                          ),
                         )
-                      ],
-                    ),
-                  )
-                ],
-              ),
+
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(children: [
+                            for (var tag in postAggregation.tags)
+                              Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                          ]),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Icon(
+                                postAggregation.score < 0
+                                    ? Icons.arrow_downward
+                                    : Icons.arrow_upward,
+                                size: 16,
+                                color: Colors.black87,
+                              ),
+                              Text('${postAggregation.score}', style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           );
-        });
+
   }
 
   Widget tagBtn(String text) {
@@ -107,5 +133,26 @@ class PostFeedItem extends StatelessWidget {
       ),
       child: Text(text, style: TextStyle(color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),),
     );
+  }
+  Widget _buildPostImage(String avatarUrl) {
+    if (avatarUrl != null) {
+      return Image.network(
+        avatarUrl!,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
+          return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
+        },
+      );
+    } else {
+      return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
+    }
   }
 }

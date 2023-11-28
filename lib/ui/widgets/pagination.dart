@@ -1,6 +1,9 @@
+import 'package:cay_khe/dtos/limit_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart' as go;
+
+import '../router.dart';
 
 class Pagination extends StatelessWidget {
   int selectedPage;
@@ -12,7 +15,7 @@ class Pagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int totalPasge = (totalItem/2).ceil();
+    int totalPasge = (totalItem/limitPage).ceil();
     if(params.isEmpty)
       params = {'page': '1'};
     return LayoutBuilder(
@@ -47,7 +50,7 @@ class Pagination extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(4),
       child: TextButton(
-        onPressed: (route == "" || isSelect) ? null : () => go.GoRouter.of(context).go(route),
+        onPressed: (route == "" || isSelect) ? null : () => appRouter.go(route),
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all(Colors.white),
           side: MaterialStateProperty.all(
