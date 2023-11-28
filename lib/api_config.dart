@@ -4,5 +4,7 @@
   static const String postsEndpoint = 'posts';
   static const String loginEndpoint='auth';
   static const String seriesEndpoint = 'series';
+  static const String votesEndpoint = 'votes';
+
 }
 

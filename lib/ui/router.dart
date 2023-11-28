@@ -34,15 +34,15 @@ class NavigationDestination {
 final appRouter = GoRouter(
   navigatorKey: navigatorKey,
   routes: [
-    GoRoute(
-      path: '/',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-        key: ValueKey('home'),
-        child: ScreenWithHeaderAndFooter(
-          body: PostsView(),
-        ),
-      ),
-    ),
+    // GoRoute(
+    //   path: '/',
+    //   pageBuilder: (context, state) => const MaterialPage<void>(
+    //     key: ValueKey('home'),
+    //     child: ScreenWithHeaderAndFooter(
+    //       body: PostsView(),
+    //     ),
+    //   ),
+    // ),
     GoRoute(
       path: '/not-found',
       pageBuilder: (context, state) => const MaterialPage<void>(
@@ -195,16 +195,16 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
           key: ValueKey('resetpass'), child: ResetPasswordPage()),
     ),
-    GoRoute(
-      path: "/viewposts/:query",
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewposts"),
-            child: ScreenWithHeaderAndFooter(
-              body: PostsView(params: convertQuery(query: state.pathParameters["query"] ?? "")),
-            )
-        );},
-    ),
+    // GoRoute(
+    //   path: "/viewposts/:query",
+    //   pageBuilder: (context, state) {
+    //     return MaterialPage<void>(
+    //         key: ValueKey("viewposts"),
+    //         child: ScreenWithHeaderAndFooter(
+    //           body: PostsView(params: convertQuery(query: state.pathParameters["query"] ?? "")),
+    //         )
+    //     );},
+    // ),
     GoRoute(path: '/profile/:username',
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),

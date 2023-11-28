@@ -1,8 +1,12 @@
+import 'dart:js_util';
+
 import 'package:cay_khe/dtos/notify_type.dart';
+import 'package:cay_khe/dtos/vote_dto.dart';
 import 'package:cay_khe/models/post_detail_dto.dart';
 import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/tag_repository.dart';
+import 'package:cay_khe/repositories/vote_repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
@@ -10,9 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share/share.dart';
 import '../../../dtos/jwt_payload.dart';
 import '../../../models/post.dart';
 import 'package:markdown/markdown.dart' as markdown;
+import '../../../models/vote.dart';
 import 'TableOfContents.dart';
 // import 'package:share_plus/share_plus.dart';
 
@@ -27,9 +33,9 @@ class PostDetailsPage extends StatefulWidget {
 
 class _PostDetailsPage extends State<PostDetailsPage> {
   String? username = JwtPayload.sub;
+  String idVote = '';
+  bool typeVote = false;
 
-  late bool typeVote = false;
-  bool hasVoted = true;
   int score = 0;
   bool isBookmarked = false;
   bool isHovered = false;
@@ -41,13 +47,14 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final tagRepository = TagRepository();
+  final voteRepository = VoteRepository();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _nickNameController = TextEditingController();
   final TextEditingController _updateAtController = TextEditingController();
 
-  late DateTime upDateAt;
-  late List<DateTime> listDateTime;
-  late List<Post> posts;
+   DateTime upDateAt =DateTime.now();
+   List<DateTime> listDateTime=[];
+   List<Post> posts=[];
   Tag? selectedTag;
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
@@ -152,7 +159,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.facebook),
-            onPressed: _sharePost,
+            onPressed: _shareFacebook,
           ),
           const SizedBox(width: 16),
           IconButton(
@@ -521,45 +528,98 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     );
   }
 
-  Future<bool> checkVote(String postId, String username)  async{
-    var future= postRepository.checkVote(postId, username);
-    future.then((response) {
-      print(response.data);
+  Future<bool> checkVote(String postId, String username) async {
+    Future<bool> isFuture;
+    var future = voteRepository.checkVote(postId, username);
+    isFuture = future.then((response) {
+      Vote vote= Vote.fromJson(response.data);
+      idVote=vote.id;
+      typeVote=vote.type;
       return Future<bool>.value(true);
     }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
+      print('checkvoteloi');
+      // String message = getMessageFromException(error);
+      // showTopRightSnackBar(context, message, NotifyType.error);
       return Future<bool>.value(false);
     });
-    return  Future<bool>.value(false);
-
+    return isFuture;
   }
 
   void _upVote() async {
-    if(JwtPayload.sub==null)
-    {
+    bool hasVoted ;
+    if (JwtPayload.sub == null) {
       appRouter.go('/login');
       // GoRouter.of(context).go('/login');
-    }
-    else {
-      print(JwtPayload.sub!);
+    } else {
       hasVoted = await checkVote(widget.id, JwtPayload.sub!);
-      if (hasVoted == false || (hasVoted && typeVote == false)) {
+      print("hasvote: ");
+      print(hasVoted);
+      if (hasVoted == false) {
+        print("create");
         setState(() {
           score = score + 1;
         });
+        VoteDTO voteDTO = VoteDTO(
+            postId: widget.id,
+            username: JwtPayload.sub,
+            type: true,
+            updatedAt: DateTime.now());
+        voteRepository.createVote(voteDTO);
+      } else {
+        if ((hasVoted==true && typeVote == false)) {
+          print("update");
+          print("id vote: ");
+          print(idVote);
+          setState(() {
+            score = score + 1;
+          });
+          VoteDTO voteDTO = VoteDTO(
+              postId: widget.id,
+              username: JwtPayload.sub,
+              type: true,
+              updatedAt: DateTime.now());
+          voteRepository.updateVote(idVote, voteDTO);
+        }
       }
     }
-
   }
 
-
-
-  void _downVote() {
-    if (hasVoted == false || hasVoted && typeVote == true) {
-      setState(() {
-        score = score - 1;
-      });
+  void _downVote() async {
+    bool hasVoted ;
+    if (JwtPayload.sub == null) {
+      appRouter.go('/login');
+      // GoRouter.of(context).go('/login');
+    } else {
+      hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+      print("hasvote: ");
+      print(hasVoted);
+      if (hasVoted == false) {
+        print("create");
+        setState(() {
+          score = score -1;
+        });
+        VoteDTO voteDTO = VoteDTO(
+            postId: widget.id,
+            username: JwtPayload.sub,
+            type: false,
+            updatedAt: DateTime.now());
+        voteRepository.createVote(voteDTO);
+      } else {
+        if ((hasVoted==true && typeVote == true)) {
+          print("update");
+          print("id vote: ");
+          print(idVote);
+          setState(() {
+            score = score -1;
+          });
+          VoteDTO voteDTO = VoteDTO(
+              postId: widget.id,
+              username: JwtPayload.sub,
+              type: false,
+              updatedAt: DateTime.now());
+          voteRepository.updateVote(idVote, voteDTO);
+        }
+      }
     }
   }
 
@@ -577,7 +637,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
     // Share.share('Check out this post: $postTitle\n$postLink');
   }
+  void _shareFacebook() {
+    String postTitle = _titleController.text; // Thay thế bằng tiêu đề thực tế của bài viết
+    String postLink = 'https://example.com/posts/${widget.id}'; // Thay thế bằng liên kết thực tế của bài viết
 
+    Share.share('Check out this post: $postTitle\n$postLink');
+  }
   onPressed() {
     // Hàm này sẽ được gọi khi người dùng nhấn vào một trong những hành động cụ thể
   }
