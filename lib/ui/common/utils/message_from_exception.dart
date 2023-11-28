@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 
 String getMessageFromException(dynamic err) {
-
   var error = err;
 
   if (err is DioException) {

@@ -64,7 +64,6 @@ class JwtInterceptor extends Interceptor {
 
   Future<dynamic> refreshAccessToken(
       SharedPreferences? prefs, bool needToNavigate) async {
-    print('1');
     prefs ??= await SharedPreferences.getInstance();
     String? refreshToken = prefs.getString('refreshToken');
 
@@ -79,6 +78,8 @@ class JwtInterceptor extends Interceptor {
       Dio dio = Dio();
       dio.options.extra['withCredentials'] = true;
       html.document.cookie = 'refresh_token=$refreshToken';
+      dio.options.extra['Cookie'] = html.document.cookie;
+
       var response = await dio.get('${ApiConfig.baseUrl}/auth/refresh-token');
       parseJwt(response.data['token'], needToNavigate: true);
       bool success =

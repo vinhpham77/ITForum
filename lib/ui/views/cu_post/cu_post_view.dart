@@ -41,18 +41,29 @@ class _CuPostState extends State<CuPost> {
   final int _right = 1;
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
+  bool isLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadTags();
-    _loadPost();
     headingP1 = widget.id == null ? 'Tạo' : 'Sửa';
-    headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
+
+    Future.wait([_loadTags(), _loadPost()]).then((value) {
+      headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
+      isLoaded = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (headingP1 == 'Sửa' && widget.id != null && isLoaded) {
+      return _buildCuPost(context);
+    }
+
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Center _buildCuPost(BuildContext context) {
     return Center(
       child: Container(
         width: 1200,
@@ -232,6 +243,7 @@ class _CuPostState extends State<CuPost> {
       ],
     );
   }
+
   Column _buildPostEditingTab() {
     return Column(
       children: [
@@ -376,6 +388,7 @@ class _CuPostState extends State<CuPost> {
       ],
     );
   }
+
   Container _buildActionContainer() {
     return Container(
         margin: const EdgeInsets.only(top: 12),
@@ -468,7 +481,7 @@ class _CuPostState extends State<CuPost> {
     return false;
   }
 
-  void _loadTags() {
+  Future<void> _loadTags() async {
     var future = tagRepository.get();
 
     future.then((response) {
@@ -489,7 +502,7 @@ class _CuPostState extends State<CuPost> {
     });
   }
 
-  void _loadPost() {
+  Future<void> _loadPost() async {
     if (widget.id == null) {
       return;
     }
@@ -499,7 +512,9 @@ class _CuPostState extends State<CuPost> {
     future.then((response) {
       Post post = Post.fromJson(response.data);
       if (JwtPayload.sub != post.createdBy) {
+        Navigator.pop(context);
         appRouter.go('/forbidden');
+        return;
       }
 
       setState(() {
@@ -515,8 +530,16 @@ class _CuPostState extends State<CuPost> {
         }).toList();
       });
     }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
+      if (error is DioException) {
+        if (error.response?.statusCode == 404) {
+          appRouter.go('/not-found');
+        } else if (error.response?.statusCode == 403) {
+          appRouter.go('/forbidden');
+        } else {
+          String message = getMessageFromException(error);
+          showTopRightSnackBar(context, message, NotifyType.error);
+        }
+      }
     });
   }
 }
