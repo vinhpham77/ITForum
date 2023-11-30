@@ -1,3 +1,4 @@
+import 'package:cay_khe/ui/common/utils/app_constants.dart';
 import 'package:cay_khe/ui/widgets/header.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,9 @@ class ScreenWithHeaderAndFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
+    var screenSize = MediaQuery
+        .of(context)
+        .size;
     return Scaffold(
         appBar: PreferredSize(
             preferredSize: Size(screenSize.width, 60), child: const Header()),
@@ -22,7 +25,12 @@ class ScreenWithHeaderAndFooter extends StatelessWidget {
             color: Colors.black12.withOpacity(0.05),
             child: Column(
               children: [
-                body,
+                Container(
+                  constraints: const BoxConstraints(
+                    minHeight: headerHeight + 300,
+                  ),
+                  child: body,
+                ),
                 const Footer(),
               ],
             ),
