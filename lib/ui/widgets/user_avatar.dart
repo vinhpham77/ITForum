@@ -2,31 +2,31 @@ import 'package:flutter/material.dart';
 
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
-  final double radius;
+  final double size;
 
   const UserAvatar({
     super.key,
     this.imageUrl,
-    required this.radius,
+    required this.size,
   });
 
   @override
   Widget build(BuildContext context) {
     return Image.network(
       imageUrl ?? '',
-      width: radius,
-      height: radius,
+      width: size,
+      height: size,
       fit: BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
           return child;
         }
         return Icon(Icons.account_circle_rounded,
-            size: radius, color: Colors.black54);
+            size: size, color: Colors.black54);
       },
       errorBuilder: (context, error, stackTrace) {
         return Icon(Icons.account_circle_rounded,
-            size: radius, color: Colors.black54);
+            size: size, color: Colors.black54);
       },
     );
   }
