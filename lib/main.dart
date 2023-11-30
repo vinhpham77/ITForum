@@ -46,7 +46,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        primaryColor: Colors.black,
+        primaryColor: Colors.deepPurple,
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+          iconTheme: IconThemeData(color: Colors.black),
+        ),
       ),
       routeInformationParser: appRouter.routeInformationParser,
       routeInformationProvider: appRouter.routeInformationProvider,

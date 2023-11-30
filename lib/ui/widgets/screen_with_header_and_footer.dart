@@ -27,7 +27,7 @@ class ScreenWithHeaderAndFooter extends StatelessWidget {
               children: [
                 Container(
                   constraints: const BoxConstraints(
-                    minHeight: headerHeight + 300,
+                    minHeight: headerHeight + 292,
                   ),
                   child: body,
                 ),
