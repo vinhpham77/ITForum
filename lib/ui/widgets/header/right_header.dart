@@ -1,4 +1,5 @@
 import 'package:cay_khe/dtos/jwt_payload.dart';
+import 'package:cay_khe/ui/router.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,6 +45,7 @@ class _RightHeaderState extends State<RightHeader> {
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
+    print(JwtPayload.displayName);
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -86,7 +88,16 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ),
         const SizedBox(width: 10),
-        widgetSignIn(),
+        (JwtPayload.displayName == null) ? SizedBox(
+          height: 36,
+          width: 100,
+          child: FloatingActionButton(
+            hoverColor: Colors.black38,
+            backgroundColor: Colors.black,
+            onPressed: () => appRouter.go('/login'),
+            child: Text("Đăng Nhập", style: TextStyle(color: Colors.white),),
+          ),
+        ) : widgetSignIn(),
         SizedBox(width: screenSize.width / 10),
       ],
     );
