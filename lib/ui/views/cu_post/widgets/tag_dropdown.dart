@@ -31,6 +31,7 @@ class _TagDropdownState extends State<TagDropdown> {
                 fontWeight: FontWeight.w400,
                 color: Colors.black87,
               ),
+              maxLines: 1,
             ),
             Text(
               tag.description,
@@ -38,6 +39,7 @@ class _TagDropdownState extends State<TagDropdown> {
                 fontSize: 12,
                 color: Colors.black45,
               ),
+              softWrap: true,
             ),
           ],
         ),
@@ -53,7 +55,6 @@ class _TagDropdownState extends State<TagDropdown> {
         floatingLabelBehavior: FloatingLabelBehavior.never,
       ),
       hintText: widget.label,
-      // max width as able
       dropdownMenuEntries: tagEntries,
       onSelected: (Tag? tag) {
         widget.onTagSelected(tag!);

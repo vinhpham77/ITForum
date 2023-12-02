@@ -70,10 +70,11 @@ class _RightHeaderState extends State<RightHeader> {
             hoverColor: Colors.black38,
             backgroundColor: Colors.black,
             onPressed: () {
-              if(searchController.text == '')
-                GoRouter.of(context).go('/search');
-              else
-                GoRouter.of(context).go('/viewsearch/searchContent=${searchController.text}');
+              if(searchController.text == '') {
+                appRouter.go('/search');
+              } else {
+                appRouter.go('/viewsearch/searchContent=${searchController.text}');
+              }
             },
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(

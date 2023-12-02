@@ -3,6 +3,7 @@ import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/post_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/tag.dart';
+import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/common/utils/index.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
@@ -47,7 +48,6 @@ class _CuPostState extends State<CuPost> {
   void initState() {
     super.initState();
     headingP1 = widget.id == null ? 'Tạo' : 'Sửa';
-
     Future.wait([_loadTags(), _loadPost()]).then((value) {
       headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
       isLoaded = true;
@@ -56,7 +56,7 @@ class _CuPostState extends State<CuPost> {
 
   @override
   Widget build(BuildContext context) {
-    if (headingP1 == 'Sửa' && widget.id != null && isLoaded) {
+    if (isLoaded) {
       return _buildCuPost(context);
     }
 
@@ -66,7 +66,7 @@ class _CuPostState extends State<CuPost> {
   Center _buildCuPost(BuildContext context) {
     return Center(
       child: Container(
-        width: 1200,
+        width: maxContent,
         margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
         child: Form(
           key: _formKey,
@@ -327,22 +327,20 @@ class _CuPostState extends State<CuPost> {
                   },
                 ),
               if (selectedTags.length < 3)
-                SizedBox(
-                  child: TagDropdown(
-                      tags: allTags,
-                      onTagSelected: (tag) {
-                        setState(() {
-                          if (tag.name == 'HoiDap') {
-                            headingP2 = 'câu hỏi';
-                          }
-                          selectedTags.add(tag);
-                          allTags.remove(tag);
-                        });
-                      },
-                      label: selectedTags.isEmpty
-                          ? 'Gắn một đến ba thẻ...'
-                          : "Gắn thêm thẻ khác..."),
-                ),
+                TagDropdown(
+                    tags: allTags,
+                    onTagSelected: (tag) {
+                      setState(() {
+                        if (tag.name == 'HoiDap') {
+                          headingP2 = 'câu hỏi';
+                        }
+                        selectedTags.add(tag);
+                        allTags.remove(tag);
+                      });
+                    },
+                    label: selectedTags.isEmpty
+                        ? 'Gắn một đến ba thẻ...'
+                        : "Gắn thêm thẻ khác..."),
             ],
           ),
         ),

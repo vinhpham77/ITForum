@@ -1,13 +1,11 @@
 import 'package:cay_khe/models/post_aggregation.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../common/utils/date_time.dart';
 
 class PostFeedItem extends StatelessWidget {
   final PostAggregation postAggregation;
-  const PostFeedItem({required this.postAggregation});
+  const PostFeedItem({super.key, required this.postAggregation});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -115,9 +113,9 @@ class PostFeedItem extends StatelessWidget {
     return TextButton(
       onPressed: (){},
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(244, 244, 245, 1)),
+        backgroundColor: MaterialStateProperty.all(const Color.fromRGBO(244, 244, 245, 1)),
         side: MaterialStateProperty.all(
-          BorderSide(
+          const BorderSide(
             color: Color.fromRGBO(233, 233, 235, 1), // your color here
             width: 1,
           ),
@@ -128,31 +126,27 @@ class PostFeedItem extends StatelessWidget {
           ),
         ),
         padding: MaterialStateProperty.all(
-          EdgeInsets.all(4), // your padding value here
+          const EdgeInsets.all(4), // your padding value here
         ),
       ),
-      child: Text(text, style: TextStyle(color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),),
+      child: Text(text, style: const TextStyle(color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),),
     );
   }
   Widget _buildPostImage(String avatarUrl) {
-    if (avatarUrl != null) {
-      return Image.network(
-        avatarUrl!,
-        width: 48,
-        height: 48,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-          return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
-        },
-      );
-    } else {
-      return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
+    return Image.network(
+      avatarUrl,
+      width: 48,
+      height: 48,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
+      },
+    );
     }
-  }
 }

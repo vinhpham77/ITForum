@@ -2,7 +2,7 @@ import 'package:cay_khe/blocs/post_bloc.dart';
 import 'package:cay_khe/dtos/limit_page.dart';
 import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/models/result_count.dart';
-import 'package:cay_khe/ui/common/utils/app_constants.dart';
+import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:flutter/material.dart';
 
