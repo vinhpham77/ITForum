@@ -88,16 +88,17 @@ class JwtInterceptor extends Interceptor {
     } catch (e) {
       if (e is DioException &&
           (e.response?.statusCode == 406 || e.response?.statusCode == 412)) {
-        navigateToLogin();
+        if (needToNavigate) {
+          navigateToLogin();
+        }
       }
     }
   }
 
-  parseJwt(String? token,
-      {bool needToRefresh = false, bool needToNavigate = false}) {
+  Future<void> parseJwt(String? token,
+      {bool needToRefresh = false, bool needToNavigate = false}) async {
     if (needToRefresh) {
-      refreshAccessToken(null, needToNavigate);
-      return;
+      return await refreshAccessToken(null, needToNavigate);
     }
 
     if (token == null) {

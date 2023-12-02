@@ -5,7 +5,7 @@ class LeftHeader extends StatefulWidget {
   const LeftHeader({super.key});
 
   @override
-  _LeftHeaderState createState() => _LeftHeaderState();
+  State<LeftHeader> createState() => _LeftHeaderState();
 }
 
 class _LeftHeaderState extends State<LeftHeader> {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../common/app_constants.dart';
+
 class Footer extends StatelessWidget {
   const Footer({super.key});
   @override
@@ -13,14 +15,14 @@ class Footer extends StatelessWidget {
               child: Expanded(
             child: Container(
               constraints: const BoxConstraints(
-                maxWidth: 1180,
+                maxWidth: maxContent,
               ),
               child: const Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: EdgeInsets.only(top: 20, bottom: 20),
                   child: Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 40),
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +217,7 @@ class Footer extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "@ Starfruit",
+                              "@Starfruit",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -289,7 +291,7 @@ class Footer extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 40),
+                        padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [],

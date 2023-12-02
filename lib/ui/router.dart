@@ -74,11 +74,11 @@ final appRouter = GoRouter(
           return MaterialPage<void>(
               key: state.pageKey,
               child: ScreenWithHeaderAndFooter(
-                body: QuestionView(params: convertQuery(
-                    query: state.pathParameters["query"] ?? "")),
+                body: QuestionView(
+                    params: convertQuery(
+                        query: state.pathParameters["query"] ?? "")),
               ));
-        }
-    ),
+        }),
     GoRoute(
       path: '/search',
       pageBuilder: (context, state) => const MaterialPage<void>(
@@ -89,16 +89,16 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-      path: '/viewsearch/:query',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: state.pageKey,
-            child: ScreenWithHeaderAndFooter(
-              body: SearchView(params: convertQuery(
-                  query: state.pathParameters["query"] ?? "")),
-            ));
-      }
-    ),
+        path: '/viewsearch/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: state.pageKey,
+              child: ScreenWithHeaderAndFooter(
+                body: SearchView(
+                    params: convertQuery(
+                        query: state.pathParameters["query"] ?? "")),
+              ));
+        }),
     GoRoute(
       path: '/publish/post',
       pageBuilder: (context, state) => const MaterialPage<void>(
@@ -214,11 +214,14 @@ final appRouter = GoRouter(
         return MaterialPage<void>(
             key: ValueKey("viewposts"),
             child: ScreenWithHeaderAndFooter(
-              body: PostsView(params: convertQuery(query: state.pathParameters["query"] ?? "")),
-            )
-        );},
+              body: PostsView(
+                  params:
+                      convertQuery(query: state.pathParameters["query"] ?? "")),
+            ));
+      },
     ),
-    GoRoute(path: '/profile/:username',
+    GoRoute(
+      path: '/profile/:username',
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),
         child: ScreenWithHeaderAndFooter(
@@ -227,12 +230,12 @@ final appRouter = GoRouter(
       ),
     )
   ],
-
-  errorPageBuilder: (context, state) =>
-      const MaterialPage<void>(key: ValueKey('not-found'), child: NotFound()),
+  errorPageBuilder: (context, state) => const MaterialPage<void>(
+      key: ValueKey('not-found'),
+      child: ScreenWithHeaderAndFooter(body: NotFound())),
 );
 
-Map<String, String> convertQuery({required String query}){
+Map<String, String> convertQuery({required String query}) {
   Map<String, String> params = {};
   query.split("&").forEach((param) {
     List<String> keyValue = param.split("=");

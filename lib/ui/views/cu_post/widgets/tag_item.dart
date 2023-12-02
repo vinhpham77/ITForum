@@ -4,7 +4,7 @@ class CustomTagItem extends StatelessWidget {
   final String tagName;
   final VoidCallback onDelete;
 
-  const CustomTagItem({
+  const   CustomTagItem({
     super.key,
     required this.tagName,
     required this.onDelete,
@@ -17,7 +17,6 @@ class CustomTagItem extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(left: 16),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('#', style: TextStyle(fontSize: 16)),

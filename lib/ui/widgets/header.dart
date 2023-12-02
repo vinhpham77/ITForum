@@ -1,3 +1,4 @@
+import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/widgets/header/left_header.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,7 @@ class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: headerHeight,
       decoration: BoxDecoration(
         border: const Border(
           bottom: BorderSide(
