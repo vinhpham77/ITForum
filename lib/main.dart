@@ -16,9 +16,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: loadJwt(),
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+      future: SharedPreferences.getInstance(),
+      builder:
+          (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
+          String? accessToken = snapshot.data?.getString('accessToken');
+          JwtInterceptor().parseJwt(accessToken,
+              needToRefresh: false, needToNavigate: false);
           return buildMaterialApp();
         } else {
           return const MaterialApp(
@@ -33,34 +37,13 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Future<void> loadJwt() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('accessToken');
-    await JwtInterceptor()
-        .parseJwt(accessToken, needToRefresh: true, needToNavigate: false);
-  }
-
   Widget buildMaterialApp() {
     return MaterialApp.router(
       title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        primaryColor: Colors.deepPurple,
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-          iconTheme: IconThemeData(color: Colors.black),
-        ),
+        primaryColor: Colors.black,
       ),
       routeInformationParser: appRouter.routeInformationParser,
       routeInformationProvider: appRouter.routeInformationProvider,
