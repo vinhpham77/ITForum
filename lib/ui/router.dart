@@ -61,7 +61,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/question',
-      pageBuilder: (context, state) => MaterialPage<void>(
+      pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('question'),
         child: ScreenWithHeaderAndFooter(
           body: QuestionView(params: {}),
@@ -135,11 +135,14 @@ final appRouter = GoRouter(
         routes: [
           GoRoute(
               path: ':pid',
-              pageBuilder: (context, state) => MaterialPage<void>(
-                  key: state.pageKey,
-                  child: ScreenWithHeaderAndFooter(
-                    body: PostDetailsPage(id: state.pathParameters['pid']!),
-                  )),
+              pageBuilder: (context, state) {
+                print('2');
+                return MaterialPage<void>(
+                      key: state.pageKey,
+                      child: ScreenWithHeaderAndFooter(
+                        body: PostDetailsPage(id: state.pathParameters['pid']!),
+                      ));
+              },
               routes: [
                 GoRoute(
                   path: 'edit',
@@ -186,6 +189,14 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('login'),
         child: LoginPage(),
+      ),
+    ),
+    GoRoute(
+      name: 'onepost',
+      path: '/onepost',
+      pageBuilder: (context, state) =>  MaterialPage<void>(
+        key: ValueKey('onepost'),
+        child: Text("test")
       ),
     ),
     GoRoute(

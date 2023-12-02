@@ -1,5 +1,7 @@
-import 'package:cay_khe/ui/common/utils/app_constants.dart';
+
 import 'package:flutter/material.dart';
+
+import '../../common/app_constants.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key, required String username});
