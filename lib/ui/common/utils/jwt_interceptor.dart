@@ -71,7 +71,7 @@ class JwtInterceptor extends Interceptor {
       if (needToNavigate) {
         navigateToLogin();
       }
-      return;
+      return '';
     }
 
     try {
@@ -83,7 +83,7 @@ class JwtInterceptor extends Interceptor {
       var response = await dio.get('${ApiConfig.baseUrl}/auth/refresh-token');
       parseJwt(response.data['token'], needToNavigate: true);
       bool success =
-          await prefs.setString('accessToken', response.data['token']);
+      await prefs.setString('accessToken', response.data['token']);
       return success ? response.data['token'] : null;
     } catch (e) {
       if (e is DioException &&
@@ -93,12 +93,15 @@ class JwtInterceptor extends Interceptor {
         }
       }
     }
+
+    return null;
   }
 
-  Future<void> parseJwt(String? token,
-      {bool needToRefresh = false, bool needToNavigate = false}) async {
+  parseJwt(String? token,
+      {bool needToRefresh = false, bool needToNavigate = false}) {
     if (needToRefresh) {
-      return await refreshAccessToken(null, needToNavigate);
+      refreshAccessToken(null, needToNavigate);
+      return;
     }
 
     if (token == null) {
