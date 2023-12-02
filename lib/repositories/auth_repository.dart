@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:cay_khe/api_config.dart';
 import 'package:dio/dio.dart';
 
-class UserRepository {
+class AuthRepository {
   late Dio dio;
   final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.loginEndpoint}";
 
-  UserRepository() {
+  AuthRepository() {
     dio = Dio(BaseOptions(baseUrl: baseUrl));
   }
   // Phương thức để thực hiện đăng nhập
@@ -56,4 +56,5 @@ class UserRepository {
       data: {'username': username, 'newPassword': newPassword, 'otp': otp},
     );
   }
+
 }

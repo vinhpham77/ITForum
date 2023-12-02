@@ -5,6 +5,7 @@
   static const String loginEndpoint='auth';
   static const String seriesEndpoint = 'series';
   static const String votesEndpoint = 'votes';
-
+  static const String bookmarksEndpoint = 'bookmarks';
+  static const String usersEndpoint = 'users';
 }
 

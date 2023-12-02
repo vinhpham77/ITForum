@@ -1,26 +1,33 @@
-import 'dart:js_util';
+import 'dart:js_interop';
 
-import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/vote_dto.dart';
+import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/models/post_detail_dto.dart';
 import 'package:cay_khe/models/tag.dart';
+import 'package:cay_khe/repositories/bookmark_repository.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/tag_repository.dart';
+import 'package:cay_khe/repositories/auth_repository.dart';
 import 'package:cay_khe/repositories/vote_repository.dart';
-import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
-import 'package:cay_khe/ui/widgets/notification.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share/share.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../../../dtos/jwt_payload.dart';
+import '../../../dtos/notify_type.dart';
 import '../../../models/post.dart';
 import 'package:markdown/markdown.dart' as markdown;
+import '../../../models/user.dart';
 import '../../../models/vote.dart';
+import '../../../repositories/user_repository.dart';
 import 'TableOfContents.dart';
 // import 'package:share_plus/share_plus.dart';
+
+import 'package:url_launcher/url_launcher.dart';
 
 class PostDetailsPage extends StatefulWidget {
   final String id;
@@ -32,14 +39,21 @@ class PostDetailsPage extends StatefulWidget {
 }
 
 class _PostDetailsPage extends State<PostDetailsPage> {
-  String? username = JwtPayload.sub;
+  bool enableButton = true;
+  bool statevote = false;
+  String avatarUrl = '';
+  bool upvote = false;
+  bool downvote = false;
+
+  String usernames = JwtPayload.sub ?? ' ';
   String idVote = '';
   bool typeVote = false;
-
+  bool isCheckBookmark = false;
   int score = 0;
   bool isBookmarked = false;
   bool isHovered = false;
   bool isLoading = true;
+  String usernamePost = '';
 
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
@@ -48,13 +62,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final TextEditingController _titleController = TextEditingController();
   final tagRepository = TagRepository();
   final voteRepository = VoteRepository();
+  final bookmarkRepository = BookmarkRepository();
+  final userRepository = UserRepository();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _nickNameController = TextEditingController();
   final TextEditingController _updateAtController = TextEditingController();
 
-   DateTime upDateAt =DateTime.now();
-   List<DateTime> listDateTime=[];
-   List<Post> posts=[];
+  DateTime upDateAt = DateTime.now();
+  List<DateTime> listDateTime = [];
+  List<Post> posts = [];
   Tag? selectedTag;
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
@@ -64,8 +80,11 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   @override
   void initState() {
     super.initState();
-    _loadPost(widget.id);
+    print("JWT: ");
     print(JwtPayload.sub);
+    print(JwtPayload.displayName);
+    print("end jwt");
+    _loadPost(widget.id);
   }
 
   @override
@@ -129,14 +148,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               icon: const Icon(
                 Icons.arrow_drop_up,
               ),
-              onPressed: () => _upVote(),
-              iconSize: 36),
+              onPressed: () => !statevote ? _upVote() : null,
+              iconSize: 36,
+              color: upvote ? Colors.blue : null),
           Text('$score', style: const TextStyle(fontSize: 20)),
           IconButton(
-            icon: const Icon(Icons.arrow_drop_down),
-            iconSize: 36,
-            onPressed: () => _downVote(),
-          ),
+              icon: const Icon(Icons.arrow_drop_down),
+              iconSize: 36,
+              onPressed: () => !statevote ? _downVote() : null,
+              color: downvote ? Colors.blue : null),
         ],
       ),
     );
@@ -146,9 +166,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: IconButton(
-        icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
-        onPressed: _toggleBookmark,
-      ),
+          icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+          onPressed: _toggleBookmark,
+          color: isBookmarked ? Colors.blue : null),
     );
   }
 
@@ -159,12 +179,14 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.facebook),
-            onPressed: _shareFacebook,
+            onPressed: () =>
+                _shareFacebook('http://localhost:8000/posts/${widget.id}'),
           ),
           const SizedBox(width: 16),
           IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: _sharePost,
+            icon: const Icon(Icons.link),
+            onPressed: () =>
+                _sharePost('http://localhost:8000/posts/${widget.id}'),
           ),
         ],
       ),
@@ -177,7 +199,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         ? Container(
             height: 600,
             alignment: Alignment.center,
-            child: CircularProgressIndicator(),
+            child: const CircularProgressIndicator(),
           )
         : Column(
             children: [
@@ -239,10 +261,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
           // _buildMenuAnchor(),
           SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(), // Disable scrolling
+            physics: const NeverScrollableScrollPhysics(), // Disable scrolling
             child: postPreview,
           ),
-          // Mở rộng chiều rộng của container để text tự động xuống hàng
         ],
       ),
     );
@@ -278,45 +299,98 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
     // String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
     String content = _contentController.text;
+    print("start content");
+    print(content);
+    print("end content");
     h1:
     TextStyle(fontSize: 54);
     return '$title \n $content';
   }
 
-  // Chuyển đổi chuỗi thành Instant
   String convertDateString(String inputDateString) {
-    // Chuyển đổi chuỗi thành DateTime
     DateTime dateTime = DateTime.parse(inputDateString);
-
-    // Định dạng lại DateTime theo định dạng mong muốn
     String outputDateString = DateFormat("MMMM d, y h:mm a").format(dateTime);
 
     return outputDateString;
   }
 
   Future<void> _loadPost(String id) async {
-    // print('Loading post with ID: $id');
     setState(() {
       isLoading = true;
     });
     var future = postRepository.getOneDetails(id);
     future.then((response) {
-      setState(() {
+      setState(() async {
         PostDetailDTO postDetailDTO = PostDetailDTO.fromJson(response.data);
         _contentController.text = postDetailDTO.content;
+        print(response.data);
         _titleController.text = postDetailDTO.title;
+
         _nameController.text = postDetailDTO.user.displayName;
         _nickNameController.text = '@${postDetailDTO.user.username}';
+        usernamePost = postDetailDTO.user.username;
         upDateAt = postDetailDTO.updatedAt;
         _updateAtController.text = convertDateString(upDateAt.toString());
         score = postDetailDTO.score;
-        _loadPostsByTheSameAuthor(postDetailDTO.user.username);
-        isLoading = false;
+        await _loadPostsByTheSameAuthor(postDetailDTO.user.username);
       });
     }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
+      print("lỗi");
+      // String message = getMessageFromException(error);
+      // showTopRightSnackBar(context, message, NotifyType.error);
     });
+    await _loadCheckVote(widget.id, usernames);
+    await _loadCheckBookmark(widget.id, usernames);
+    print("usernamepost: $usernamePost");
+    await _loadAvatar(usernamePost);
+    isLoading = false;
+  }
+
+  Future<void> _loadCheckVote(String postId, String username) async {
+    if (username != null) {
+      print("ten: $usernames");
+      var futureVote = await voteRepository.checkVote(widget.id, username!);
+      print("start vote");
+      print(futureVote.data);
+      print("end vote");
+      if (futureVote.data is Map<String, dynamic>) {
+        Vote vote = Vote.fromJson(futureVote.data);
+        upvote = vote.type;
+        downvote = !vote.type;
+      } else {
+        print('Dữ liệu không phải là Map<String, dynamic>: ${futureVote.data}');
+        upvote = false;
+        downvote = false;
+      }
+    } else {
+      upvote = false;
+      downvote = false;
+    }
+  }
+
+  Future<void> _loadCheckBookmark(String postId, String username) async {
+    Response<dynamic> response =
+        await bookmarkRepository.checkBookmark(widget.id, username!);
+    if (response.statusCode == 200) {
+      setState(() {
+        print("bookmark $isBookmarked");
+        isBookmarked = response.data;
+      });
+    } else {
+      throw Exception('Failed to check bookmark: ${response.statusCode}');
+    }
+  }
+
+  Future<void> _loadAvatar(String username) async {
+    var response = await userRepository.getUser(username!);
+   User user = User.fromJson(response.data);
+    if (response.statusCode == 200) {
+      setState(() {
+        avatarUrl=user.avatarUrl!;
+      });
+    } else {
+      throw Exception('Failed to check bookmark: ${response.statusCode}');
+    }
   }
 
   Future<void> _loadPostsByTheSameAuthor(String authorName) async {
@@ -331,8 +405,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         listDateTime = posts.map((post) => post.updatedAt).toList();
       });
     }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
+      // String message = getMessageFromException(error);
+      // showTopRightSnackBar(context, message, NotifyType.error);
     });
   }
 
@@ -342,7 +416,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       title: Text(title),
       trailing: PopupMenuButton(
         itemBuilder: (context) => [
-          PopupMenuItem(
+          const PopupMenuItem(
             child: Text('item1'),
             value: 'a',
           ),
@@ -382,40 +456,27 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _buildUserDetails() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildUserAvatar(),
-        const SizedBox(width: 16),
-        _buildUserProfile(),
-        const SizedBox(width: 2),
-        _buildFollowButton(),
-      ],
-    );
-  }
+    return Container(
+      height: 50,
+      child: Row(
 
-  Widget _buildUserAvatar() {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onPressed,
-          child: Container(
-            width: 40.0,
-            height: 40.0,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.blue,
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.person,
-                color: Colors.white,
-              ),
+        // mainAxisSize: MainAxisSize.min,
+        // crossAxisAlignment: CrossAxisAlignment.center,
+        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          InkWell(
+            onTap: () {},
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: _buildPostImage(avatarUrl ?? ""),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          _buildUserProfile(),
+          const SizedBox(width: 16),
+          _buildFollowButton(),
+        ],
+      ),
     );
   }
 
@@ -450,7 +511,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ],
     );
   }
-
   Widget _buildIconWithText(IconData icon, String text) {
     String messageValue = "";
     switch (icon) {
@@ -484,15 +544,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _buildFollowButton() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ElevatedButton(
+    return ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.all(16),
+            //padding: const EdgeInsets.all(16),
             backgroundColor: Colors.grey,
-            //   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -510,14 +567,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               ),
             ],
           ),
-        ),
-      ],
     );
   }
 
   Widget _buildPostDetails() {
     return Container(
-      padding: const EdgeInsets.all(2),
+      height: 50,
       child: Row(
         children: [
           Column(
@@ -532,10 +587,14 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     Future<bool> isFuture;
     var future = voteRepository.checkVote(postId, username);
     isFuture = future.then((response) {
-      Vote vote= Vote.fromJson(response.data);
-      idVote=vote.id;
-      typeVote=vote.type;
-      return Future<bool>.value(true);
+      if (response.data == null) {
+        return Future<bool>.value(false);
+      } else {
+        Vote vote = Vote.fromJson(response.data);
+        idVote = vote.id;
+        typeVote = vote.type;
+        return Future<bool>.value(true);
+      }
     }).catchError((error) {
       print('checkvoteloi');
       // String message = getMessageFromException(error);
@@ -546,103 +605,170 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _upVote() async {
-    bool hasVoted ;
+    bool hasVoted;
     if (JwtPayload.sub == null) {
       appRouter.go('/login');
-      // GoRouter.of(context).go('/login');
+      //GoRouter.of(context).go('/login');
     } else {
-      hasVoted = await checkVote(widget.id, JwtPayload.sub!);
-      print("hasvote: ");
-      print(hasVoted);
-      if (hasVoted == false) {
-        print("create");
+      if (statevote == false) {
         setState(() {
-          score = score + 1;
+          statevote = true;
         });
-        VoteDTO voteDTO = VoteDTO(
-            postId: widget.id,
-            username: JwtPayload.sub,
-            type: true,
-            updatedAt: DateTime.now());
-        voteRepository.createVote(voteDTO);
-      } else {
-        if ((hasVoted==true && typeVote == false)) {
-          print("update");
-          print("id vote: ");
-          print(idVote);
-          setState(() {
-            score = score + 1;
-          });
+        hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+        if (hasVoted == false) {
           VoteDTO voteDTO = VoteDTO(
               postId: widget.id,
               username: JwtPayload.sub,
               type: true,
               updatedAt: DateTime.now());
-          voteRepository.updateVote(idVote, voteDTO);
+          await voteRepository.createVote(voteDTO);
+          var postScore =
+              await postRepository.updateScore(widget.id, score + 1);
+          Post post = Post.fromJson(postScore.data);
+          setState(() {
+            score = post.score;
+            upvote = true;
+            downvote = false;
+          });
+        } else {
+          if (hasVoted == true && typeVote == true) {
+            var postScore =
+                await postRepository.updateScore(widget.id, score - 1);
+            Post post = Post.fromJson(postScore.data);
+            setState(() {
+              score = post.score;
+              upvote = false;
+              downvote = false;
+            });
+            await voteRepository.deleteVote(idVote);
+          } else {
+            if (hasVoted == true && typeVote == false) {
+              var postScore =
+                  await postRepository.updateScore(widget.id, score + 1);
+              Post post = Post.fromJson(postScore.data);
+              setState(() {
+                score = post.score;
+                upvote = false;
+                downvote = false;
+              });
+              await voteRepository.deleteVote(idVote);
+            }
+          }
         }
+        setState(() {
+          statevote = false;
+        });
       }
     }
   }
 
   void _downVote() async {
-    bool hasVoted ;
+    bool hasVoted;
     if (JwtPayload.sub == null) {
       appRouter.go('/login');
-      // GoRouter.of(context).go('/login');
+      GoRouter.of(context).go('/login');
     } else {
-      hasVoted = await checkVote(widget.id, JwtPayload.sub!);
-      print("hasvote: ");
-      print(hasVoted);
-      if (hasVoted == false) {
-        print("create");
+      if (statevote == false) {
         setState(() {
-          score = score -1;
+          statevote == true;
         });
-        VoteDTO voteDTO = VoteDTO(
-            postId: widget.id,
-            username: JwtPayload.sub,
-            type: false,
-            updatedAt: DateTime.now());
-        voteRepository.createVote(voteDTO);
-      } else {
-        if ((hasVoted==true && typeVote == true)) {
-          print("update");
-          print("id vote: ");
-          print(idVote);
-          setState(() {
-            score = score -1;
-          });
+
+        hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+        if (hasVoted == false) {
           VoteDTO voteDTO = VoteDTO(
               postId: widget.id,
               username: JwtPayload.sub,
               type: false,
               updatedAt: DateTime.now());
-          voteRepository.updateVote(idVote, voteDTO);
+          await voteRepository.createVote(voteDTO);
+          var postScore =
+              await postRepository.updateScore(widget.id, score - 1);
+
+          Post post = Post.fromJson(postScore.data);
+          setState(() {
+            score = post.score;
+            downvote = true;
+            upvote = false;
+          });
+        } else {
+          if (hasVoted == true && typeVote == false) {
+            var postScore =
+                await postRepository.updateScore(widget.id, score + 1);
+            Post post = Post.fromJson(postScore.data);
+            setState(() {
+              score = post.score;
+              upvote = false;
+              downvote = false;
+            });
+            await voteRepository.deleteVote(idVote);
+          } else {
+            if (hasVoted == true && typeVote == true) {
+              var postScore =
+                  await postRepository.updateScore(widget.id, score - 1);
+              Post post = Post.fromJson(postScore.data);
+              setState(() {
+                score = post.score;
+                downvote = false;
+                upvote = false;
+              });
+
+              await voteRepository.deleteVote(idVote);
+            }
+          }
         }
+        setState(() {
+          statevote = false;
+        });
       }
     }
   }
 
-  void _toggleBookmark() {
-    setState(() {
-      isBookmarked = !isBookmarked;
-    });
+  Future<void> _toggleBookmark() async {
+    if (JwtPayload.sub != null) {
+      if (isBookmarked == true) {
+        var unBookmark =
+            await bookmarkRepository.unBookmark(widget.id, JwtPayload.sub!);
+        //delete postid trong list post;
+        //update bookmarks
+        setState(() {
+          isBookmarked = !isBookmarked;
+        });
+      } else {
+        if (isBookmarked == false) {
+          var addbookmark =
+              await bookmarkRepository.addBookmark(widget.id, JwtPayload.sub!);
+          setState(() {
+            isBookmarked = !isBookmarked;
+          });
+        }
+      }
+    } else {
+      ////
+      appRouter.go('/login');
+      // String message = "Bạn chưa đăng nhập";
+      //  showTopRightSnackBar(context, message, NotifyType.error);
+    }
   }
 
-  void _sharePost() {
-    // String postTitle =
-    //     'Tiêu đề bài viết'; // Thay thế bằng tiêu đề thực tế của bài viết
-    // String postLink =
-    //     'https://example.com/bai-viet'; // Thay thế bằng liên kết thực tế của bài viết
-
-    // Share.share('Check out this post: $postTitle\n$postLink');
+  void _sharePost(String url) {
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Link đã được sao chép')),
+    );
   }
-  void _shareFacebook() {
-    String postTitle = _titleController.text; // Thay thế bằng tiêu đề thực tế của bài viết
-    String postLink = 'https://example.com/posts/${widget.id}'; // Thay thế bằng liên kết thực tế của bài viết
 
-    Share.share('Check out this post: $postTitle\n$postLink');
+  void _shareFacebook(String url) async {
+    url =
+        'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
+    final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
+
+    if (await canLaunchUrlString(fbUrl)) {
+      await launchUrlString(fbUrl);
+    } else {
+      throw 'Could not launch $fbUrl';
+    }
   }
+
   onPressed() {
     // Hàm này sẽ được gọi khi người dùng nhấn vào một trong những hành động cụ thể
   }
@@ -793,34 +919,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     _loadPost(postId);
   }
 
-  Widget _test() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-      child: Column(
-        children: [
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) {
-              setState(() {
-                textColor = Colors.black;
-              });
-            },
-            onExit: (_) {
-              setState(() {
-                textColor = Colors.grey;
-              });
-            },
-            child: Text('Hello'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _feedItem() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-      child: const Row(
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
+      child: Row(
         children: [
           Tooltip(
             message: "Lượt xem",
@@ -896,6 +998,31 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildPostImage(String avatarUrl) {
+    if (avatarUrl != null) {
+      return Image.network(
+        avatarUrl!,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
+          return const Icon(Icons.account_circle_rounded,
+              size: 48, color: Colors.black54);
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.account_circle_rounded,
+              size: 48, color: Colors.black54);
+        },
+      );
+    } else {
+      return const Icon(Icons.account_circle_rounded,
+          size: 48, color: Colors.black54);
+    }
   }
 
   Widget _ownArticles(String text) {
@@ -977,7 +1104,6 @@ class MenuItemButton extends StatelessWidget {
       onPressed: () {
         // Handle the press for the menu item
         // You can perform any action or navigation here
-        print('Pressed: $label');
       },
       child: Text(label),
     );

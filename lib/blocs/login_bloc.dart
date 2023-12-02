@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:cay_khe/dtos/notify_type.dart';
-import 'package:cay_khe/repositories/user_Repository.dart';
+import 'package:cay_khe/repositories/auth_repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
@@ -13,7 +13,7 @@ class LoginBloc {
   final StreamController _userController = StreamController();
   final StreamController _passController = StreamController();
   StreamController<String> loginStatusController = StreamController();
-  final UserRepository _userRepository = UserRepository();
+  final AuthRepository _userRepository = AuthRepository();
 
   Stream get userStream => _userController.stream;
 

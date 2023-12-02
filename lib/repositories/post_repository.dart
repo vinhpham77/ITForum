@@ -3,6 +3,8 @@ import "package:cay_khe/dtos/post_dto.dart";
 import 'package:dio/dio.dart';
 import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
 
+import '../models/post.dart';
+
 class PostRepository {
   late Dio dio;
 
@@ -50,6 +52,10 @@ class PostRepository {
   }
   Future<Response<dynamic>> checkVote(String postId, String userName) async {
     return dio.get('/checkVote', queryParameters: { 'id': postId,'userName': userName,});
+  }
+  Future<Response<dynamic>> updateScore(String idPost, int  score) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    return dio.put('/updateScore', queryParameters: { 'id': idPost,'score':score });
   }
 
 }

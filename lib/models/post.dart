@@ -31,4 +31,16 @@ class Post {
       updatedAt: DateTime.parse(json['updatedAt']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'createdBy':createdBy,
+      'score':score,
+      'title': title,
+      'content': content,
+      'tags': tags,
+      'isPrivate': isPrivate,
+      'updatedAt': updatedAt
+    };
+  }
 }

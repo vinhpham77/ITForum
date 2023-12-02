@@ -20,6 +20,9 @@ class VoteRepository {
   Future<Response<dynamic>> get() async {
     return dio.get('');
   }
+   Future<Response<dynamic>> getId(String postId) async {
+     return dio.get('',queryParameters: { 'postId': postId});
+   }
 
   Future<Response<dynamic>> checkVote(String postId, String username) async {
 
@@ -31,7 +34,11 @@ class VoteRepository {
 
   }
   Future<Response<dynamic>> updateVote(String id, VoteDTO voteDTO) async {
-    return dio.patch('/updateVote/$id',data: voteDTO.toJson());
+    return dio.post('/updateVote/$id',data: voteDTO.toJson());
 
   }
+   Future<Response<dynamic>> deleteVote(String id) async {
+     return dio.delete('/deleteVote/$id');
+
+   }
 }

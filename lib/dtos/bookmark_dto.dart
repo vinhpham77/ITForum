@@ -1,18 +1,12 @@
 import 'dart:js_interop';
 
-class BookMarkDto{
-  final  String postId;
+class BookMarkDto {
+  final List<String> postIds;
   final String username;
 
-  BookMarkDto({
-    required this.postId,
-    required this.username
-  });
+  BookMarkDto({required this.postIds, required this.username});
+
   Map<String, dynamic> toJson() {
-    return {
-      'id': postId,
-      'username': username
-    };
+    return {'postIds': postIds, 'username': username};
   }
 }
-
