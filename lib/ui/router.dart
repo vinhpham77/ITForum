@@ -61,7 +61,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/question',
-      pageBuilder: (context, state) => MaterialPage<void>(
+      pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('question'),
         child: ScreenWithHeaderAndFooter(
           body: QuestionView(params: {}),

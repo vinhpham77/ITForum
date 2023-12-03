@@ -4,6 +4,7 @@ class Series {
   String content;
   List<String> postIds;
   int score;
+  int commentCount;
   bool isPrivate;
   String createdBy;
   DateTime updatedAt;
@@ -14,6 +15,7 @@ class Series {
     required this.content,
     required this.postIds,
     required this.score,
+    required this.commentCount,
     required this.isPrivate,
     required this.createdBy,
     required this.updatedAt,
@@ -26,6 +28,7 @@ class Series {
       content: json['content'],
       postIds: List<String>.from(json['postIds']),
       score: json['score'],
+      commentCount: json['commentCount'],
       isPrivate: json['isPrivate'],
       createdBy: json['createdBy'],
       updatedAt: DateTime.parse(json['updatedAt']),
