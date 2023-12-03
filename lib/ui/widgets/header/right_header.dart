@@ -45,7 +45,6 @@ class _RightHeaderState extends State<RightHeader> {
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
-    print(JwtPayload.displayName);
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [

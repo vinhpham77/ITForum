@@ -98,7 +98,7 @@ class JwtInterceptor extends Interceptor {
   Future<void> parseJwt(String? token,
       {bool needToRefresh = false, bool needToNavigate = false}) async {
     if (needToRefresh) {
-      refreshAccessToken(null, needToNavigate);
+      await refreshAccessToken(null, needToNavigate);
       return;
     }
 
