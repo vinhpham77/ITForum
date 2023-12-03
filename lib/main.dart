@@ -36,9 +36,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        primaryColor: Colors.black,
+        brightness: Brightness.light,
+        colorScheme: const ColorScheme.light().copyWith(
+          primary: Colors.blueAccent,
+        ),
       ),
       routerConfig: appRouter,
       builder: (context, child) {

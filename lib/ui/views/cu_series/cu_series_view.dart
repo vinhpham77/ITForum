@@ -2,6 +2,7 @@ import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/series_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
+import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/cu_series/widgets/post_item.dart';
@@ -62,8 +63,8 @@ class _CuSeriesState extends State<CuSeries> {
   Center _buildCuSeries(BuildContext context) {
     return Center(
       child: Container(
-        width: 1200,
-        margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        constraints: const BoxConstraints(maxWidth: maxContent),
+        margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -518,7 +519,7 @@ class _CuSeriesState extends State<CuSeries> {
   }
 
   Future<void> _loadPosts() async {
-    var future = postRepository.getByUser();
+    var future = postRepository.getByUser(JwtPayload.sub!);
 
     future.then((response) {
       List<Post> posts = response.data.map<Post>((post) {

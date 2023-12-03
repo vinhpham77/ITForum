@@ -66,7 +66,7 @@ class _CuPostState extends State<CuPost> {
   Center _buildCuPost(BuildContext context) {
     return Center(
       child: Container(
-        width: maxContent,
+        constraints: const BoxConstraints(maxWidth: maxContent),
         margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
         child: Form(
           key: _formKey,

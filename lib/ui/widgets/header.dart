@@ -16,22 +16,27 @@ class _HeaderState extends State<Header> {
   Widget build(BuildContext context) {
     return Container(
       height: headerHeight,
-      decoration: BoxDecoration(
-        border: const Border(
-          bottom: BorderSide(
-            color: Colors.black12,
-            width: 1,
-          ),
-        ),
-      color: Colors.white.withOpacity(0.5),
+      decoration: const BoxDecoration (
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          )
+        ],
+      color: Colors.white,
       ),
+      child: Center(
+        child:
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            constraints: const BoxConstraints(maxWidth: maxContent),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [LeftHeader(), RightHeader()],
+            ),
+          ),
 
-      child: const Expanded(
-        // fix error: The overflowing RenderFlex has an orientation of Axis.horizontal.
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [LeftHeader(), RightHeader()],
-        ),
       ),
     );
     //);
