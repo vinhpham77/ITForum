@@ -43,6 +43,7 @@ class _CuPostState extends State<CuPost> {
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
   bool isLoaded = false;
+  double contentHeight = 370;
 
   @override
   void initState() {
@@ -67,7 +68,7 @@ class _CuPostState extends State<CuPost> {
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: maxContent),
-        margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        margin: const EdgeInsets.symmetric(horizontal: horizontalSpace, vertical: bodyVerticalSpace),
         child: Form(
           key: _formKey,
           child: Column(
@@ -184,10 +185,11 @@ class _CuPostState extends State<CuPost> {
   }
 
   Column _buildPostPreviewTab(BuildContext context) {
+    var space = (selectedTags.length == 3 ? 8 : 0);
     return Column(
       children: [
         Container(
-          height: 620,
+          height: contentHeight + 196 - space,
           decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -199,12 +201,7 @@ class _CuPostState extends State<CuPost> {
             borderRadius: BorderRadius.all(Radius.circular(8)),
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: Markdown(
             data: getMarkdown(),
             styleSheet:
@@ -245,6 +242,7 @@ class _CuPostState extends State<CuPost> {
   }
 
   Column _buildPostEditingTab() {
+
     return Column(
       children: [
         Container(
@@ -260,12 +258,7 @@ class _CuPostState extends State<CuPost> {
             ],
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
             controller: _titleController,
             validator: (value) {
@@ -276,9 +269,10 @@ class _CuPostState extends State<CuPost> {
             },
             decoration: const InputDecoration(
               hintText: 'Viết tiêu đề ở đây...',
+
               hintStyle: TextStyle(
                 color: Colors.black,
-                fontSize: 48,
+                fontSize: 36,
                 fontWeight: FontWeight.w700,
               ),
               border: InputBorder.none,
@@ -306,8 +300,8 @@ class _CuPostState extends State<CuPost> {
             color: Colors.white,
           ),
           padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
+            left: 48,
+            right: 48,
             top: 8,
             bottom: 12,
           ),
@@ -358,13 +352,8 @@ class _CuPostState extends State<CuPost> {
                 bottomRight: Radius.circular(8)),
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
-          height: 400,
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
+          height: contentHeight,
           child: TextFormField(
             controller: _contentController,
             validator: (value) {
@@ -389,7 +378,7 @@ class _CuPostState extends State<CuPost> {
 
   Container _buildActionContainer() {
     return Container(
-        margin: const EdgeInsets.only(top: 12),
+        margin: const EdgeInsets.only(top: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [

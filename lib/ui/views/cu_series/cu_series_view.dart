@@ -40,7 +40,7 @@ class _CuSeriesState extends State<CuSeries> {
   List<Post> selectedPosts = [];
   List<String> selectedPostIds = [];
   List<Post> allPosts = [];
-  final double _contentHeight = 460;
+  final double _contentHeight = 430;
 
   @override
   void initState() {
@@ -63,8 +63,9 @@ class _CuSeriesState extends State<CuSeries> {
   Center _buildCuSeries(BuildContext context) {
     return Center(
       child: Container(
+        margin: const EdgeInsets.symmetric(
+            horizontal: horizontalSpace, vertical: bodyVerticalSpace),
         constraints: const BoxConstraints(maxWidth: maxContent),
-        margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -184,7 +185,7 @@ class _CuSeriesState extends State<CuSeries> {
     return Column(
       children: [
         Container(
-          constraints: BoxConstraints(maxHeight: 152 + _contentHeight),
+          constraints: BoxConstraints(maxHeight: 128 + _contentHeight),
           decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -196,12 +197,7 @@ class _CuSeriesState extends State<CuSeries> {
             borderRadius: BorderRadius.all(Radius.circular(8)),
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: Markdown(
             data: getMarkdown(),
             styleSheet:
@@ -255,12 +251,7 @@ class _CuSeriesState extends State<CuSeries> {
             ],
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
             controller: _titleController,
             validator: (value) {
@@ -273,7 +264,7 @@ class _CuSeriesState extends State<CuSeries> {
               hintText: 'Viết tiêu đề ở đây...',
               hintStyle: TextStyle(
                 color: Colors.black,
-                fontSize: 48,
+                fontSize: 36,
                 fontWeight: FontWeight.w700,
               ),
               border: InputBorder.none,
@@ -306,12 +297,7 @@ class _CuSeriesState extends State<CuSeries> {
                 : null,
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
             controller: _contentController,
             validator: (value) {
@@ -344,7 +330,7 @@ class _CuSeriesState extends State<CuSeries> {
                     bottomLeft: Radius.circular(8),
                     bottomRight: Radius.circular(8))),
             padding: const EdgeInsets.only(
-              left: 64,
+              left: 48,
               right: 0,
               top: 8,
               bottom: 12,
@@ -363,7 +349,7 @@ class _CuSeriesState extends State<CuSeries> {
                               size: 20, color: Colors.black54, opticalSize: 20),
                         ),
                         Container(
-                          width: 64,
+                          width: 48,
                         )
                       ],
                     ),
@@ -372,22 +358,21 @@ class _CuSeriesState extends State<CuSeries> {
                   Container(
                     alignment: Alignment.center,
                     padding:
-                        const EdgeInsets.only(top: 4, bottom: 4, right: 64),
+                        const EdgeInsets.only(top: 4, bottom: 4, right: 48),
                     child: const Text(
                         'Chưa có bài viết nào. Vui lòng thêm tối thiểu 1 bài viết để chia sẻ với mọi người!'),
                   ),
                 if (selectedPosts.isNotEmpty)
                   Divider(
-                    endIndent: 64,
+                    endIndent: 48,
                     thickness: 1,
                     color: Colors.black12.withOpacity(0.05),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 64 + 4, 4),
+                  padding: const EdgeInsets.fromLTRB(4, 4, 48 + 4, 4),
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side:
-                          BorderSide(color: Colors.deepPurple.withOpacity(0.5)),
+                      side: BorderSide(color: Theme.of(context).primaryColor),
                     ),
                     onPressed: () => buildShowModalBottomSheet(context),
                     child: const Text('Thêm bài viết'),
@@ -403,7 +388,7 @@ class _CuSeriesState extends State<CuSeries> {
 
   Container _buildActionContainer() {
     return Container(
-        margin: const EdgeInsets.only(top: 12),
+        margin: const EdgeInsets.only(top: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [

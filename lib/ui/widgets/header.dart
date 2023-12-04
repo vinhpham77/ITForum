@@ -29,7 +29,7 @@ class _HeaderState extends State<Header> {
       child: Center(
         child:
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            margin: const EdgeInsets.symmetric(horizontal: horizontalSpace),
             constraints: const BoxConstraints(maxWidth: maxContent),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -9,10 +9,10 @@ class Footer extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
-          width: constraints.maxWidth,
           color: const Color.fromARGB(255, 11, 26, 51),
           child: Center(
               child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: horizontalSpace),
                 constraints: const BoxConstraints(
                   maxWidth: maxContent,
                 ),
