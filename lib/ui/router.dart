@@ -136,7 +136,6 @@ final appRouter = GoRouter(
           GoRoute(
               path: ':pid',
               pageBuilder: (context, state) {
-                print('2');
                 return MaterialPage<void>(
                       key: state.pageKey,
                       child: ScreenWithHeaderAndFooter(

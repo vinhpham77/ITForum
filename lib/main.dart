@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         colorScheme: const ColorScheme.light().copyWith(
-          primary: Colors.blueAccent,
+          primary: Colors.indigoAccent,
         ),
       ),
       routerConfig: appRouter,
