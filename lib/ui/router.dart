@@ -290,7 +290,6 @@ final appRouter = GoRouter(
                 )))
       ],
     ),
-    ),
     GoRoute(
       path: '/comment',
       pageBuilder: (context, state) => const MaterialPage<void>(
