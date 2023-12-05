@@ -12,6 +12,7 @@ import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
 import 'package:cay_khe/ui/views/user_use/register_page.dart';
 import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
+import 'package:cay_khe/ui/widgets/comment/comment_view.dart';
 import 'package:cay_khe/ui/widgets/screen_with_header_and_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -237,6 +238,15 @@ final appRouter = GoRouter(
         key: UniqueKey(),
         child: ScreenWithHeaderAndFooter(
           body: UserProfile(username: state.pathParameters['username']!),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/comment',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('comment'),
+        child: ScreenWithHeaderAndFooter(
+          body: CommentView(postId: "654d3e139d8e142b7fadc7ca"),
         ),
       ),
     )
