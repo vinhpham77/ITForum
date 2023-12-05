@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('accessToken');
     await JwtInterceptor()
-        .parseJwt(accessToken, needToRefresh: true, needToNavigate: false);
+        .parseJwt(accessToken, needToRefresh: true);
   }
 
   Widget buildMaterialApp({bool isLoading = false}) {

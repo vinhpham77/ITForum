@@ -49,6 +49,7 @@ class _CuPostState extends State<CuPost> {
   void initState() {
     super.initState();
     headingP1 = widget.id == null ? 'Tạo' : 'Sửa';
+    // TODO: implement futureBuilder
     Future.wait([_loadTags(), _loadPost()]).then((value) {
       headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
       isLoaded = true;

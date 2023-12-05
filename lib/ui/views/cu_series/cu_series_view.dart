@@ -12,6 +12,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../dtos/jwt_payload.dart';
+import '../../../models/post_aggregation.dart';
+import '../../../models/result_count.dart';
 import '../../../models/series.dart';
 import '../../../repositories/post_repository.dart';
 import '/ui/widgets/notification.dart';
@@ -37,9 +39,10 @@ class _CuSeriesState extends State<CuSeries> {
   bool _isEditing = true;
   final int _left = 3;
   final int _right = 1;
-  List<Post> selectedPosts = [];
+  List<PostAggregation> selectedPostUsers = [];
   List<String> selectedPostIds = [];
-  List<Post> allPosts = [];
+  List<PostAggregation> allPostUsers = [];
+  late ResultCount<PostAggregation> resultCount;
   final double _contentHeight = 430;
 
   @override
@@ -47,9 +50,14 @@ class _CuSeriesState extends State<CuSeries> {
     super.initState();
     operation = widget.id == null ? 'Tạo' : 'Sửa';
 
-    Future.wait([_loadSeries(), _loadPosts()]).then((value) {
+    // TODO: implement futureBuilder
+    if (widget.id != null) {
+      Future.wait([_loadSeries(), _loadPosts()]).then((value) {
+        isLoaded = true;
+      });
+    } else {
       isLoaded = true;
-    });
+    }
   }
 
   @override
@@ -338,13 +346,13 @@ class _CuSeriesState extends State<CuSeries> {
             child: Column(
               children: [
                 Column(children: [
-                  for (var post in selectedPosts)
+                  for (var postUser in selectedPostUsers)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: PostItem(post: post)),
+                        Expanded(child: PostItem(postUser: postUser)),
                         TextButton(
-                          onPressed: () => removeSelectedPost(post),
+                          onPressed: () => removeSelectedPost(postUser),
                           child: const Icon(Icons.close,
                               size: 20, color: Colors.black54, opticalSize: 20),
                         ),
@@ -354,7 +362,7 @@ class _CuSeriesState extends State<CuSeries> {
                       ],
                     ),
                 ]),
-                if (selectedPosts.isEmpty)
+                if (selectedPostUsers.isEmpty)
                   Container(
                     alignment: Alignment.center,
                     padding:
@@ -362,7 +370,7 @@ class _CuSeriesState extends State<CuSeries> {
                     child: const Text(
                         'Chưa có bài viết nào. Vui lòng thêm tối thiểu 1 bài viết để chia sẻ với mọi người!'),
                   ),
-                if (selectedPosts.isNotEmpty)
+                if (selectedPostUsers.isNotEmpty)
                   Divider(
                     endIndent: 48,
                     thickness: 1,
@@ -438,14 +446,14 @@ class _CuSeriesState extends State<CuSeries> {
 
   ListView _buildPostListView() {
     return ListView.builder(
-      itemCount: allPosts.length,
+      itemCount: allPostUsers.length,
       itemBuilder: (context, index) {
         return PostItem(
-            post: allPosts[index],
+            postUser: allPostUsers[index],
             onTap: () {
               setState(() {
-                selectedPosts.add(allPosts[index]);
-                allPosts.removeAt(index);
+                selectedPostUsers.add(allPostUsers[index]);
+                allPostUsers.removeAt(index);
               });
               Navigator.pop(context);
             });
@@ -466,7 +474,7 @@ class _CuSeriesState extends State<CuSeries> {
       return;
     }
 
-    if (operation == 'Sửa' && selectedPosts.isEmpty) {
+    if (operation == 'Sửa' && selectedPostUsers.isEmpty) {
       showTopRightSnackBar(
           context, 'Vui lòng thêm ít nhất 1 bài viết', NotifyType.warning);
       return;
@@ -500,30 +508,25 @@ class _CuSeriesState extends State<CuSeries> {
         title: _titleController.text,
         content: _contentController.text,
         isPrivate: isPrivate,
-        postIds: selectedPosts.map((post) => post.id).toList());
+        postIds: selectedPostUsers.map((post) => post.id!).toList());
   }
 
   Future<void> _loadPosts() async {
     var future = postRepository.getByUser(JwtPayload.sub!);
 
     future.then((response) {
-      List<Post> posts = response.data.map<Post>((post) {
-        return Post.fromJson(post);
-      }).toList();
+      resultCount = ResultCount.fromJson(response.data, PostAggregation.fromJson);
+      allPostUsers = resultCount.resultList.map((e) => e).toList();
 
-      List<Post> postsToAddToSelected = [];
-
-      for (int i = 0; i < posts.length; i++) {
-        if (selectedPostIds.contains(posts[i].id)) {
-          postsToAddToSelected.add(posts[i]);
-          posts.removeAt(i--);
+      allPostUsers.removeWhere((postUser) {
+        if (selectedPostIds.contains(postUser.id)) {
+          selectedPostUsers.add(postUser);
+          return true;
         }
-      }
-
-      setState(() {
-        allPosts = posts;
-        selectedPosts.addAll(postsToAddToSelected);
+        return false;
       });
+
+      setState(() {});
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
@@ -563,13 +566,13 @@ class _CuSeriesState extends State<CuSeries> {
 
   void removeSelectedPost(post) {
     setState(() {
-      selectedPosts.remove(post);
-      allPosts.add(post);
+      selectedPostUsers.remove(post);
+      allPostUsers.add(post);
     });
   }
 
   openModal() {
-    if (allPosts.isEmpty) {
+    if (allPostUsers.isEmpty) {
       return Container(
         padding: const EdgeInsets.only(top: 4, bottom: 4),
         child: Row(

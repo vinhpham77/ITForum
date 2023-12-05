@@ -59,7 +59,7 @@ class JwtInterceptor extends Interceptor {
   }
 
   Future<void> navigateToLogin() async {
-    appRouter.go('/login');
+    appRouter.push('/login');
   }
 
   Future<dynamic> refreshAccessToken(
