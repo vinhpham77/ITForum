@@ -13,12 +13,12 @@ class ItemMenu {
 
 class RightHeader extends StatefulWidget {
   const RightHeader({super.key});
+
   @override
   State<RightHeader> createState() => _RightHeaderState();
 }
 
 class _RightHeaderState extends State<RightHeader> {
-
   List<ItemMenu> createMenu = [
     ItemMenu(name: "Bài viết", icon: Icons.create, route: "/publish/post"),
     ItemMenu(name: "Series", icon: Icons.list, route: "/publish/series"),
@@ -26,7 +26,10 @@ class _RightHeaderState extends State<RightHeader> {
   ];
 
   List<ItemMenu> profilerMenu = [
-    ItemMenu(name: "Trang cá nhân", icon: Icons.person, route: "/profile/${JwtPayload.sub}"),
+    ItemMenu(
+        name: "Trang cá nhân",
+        icon: Icons.person,
+        route: "/profile/${JwtPayload.sub}"),
     ItemMenu(
         name: "Đổi mật khẩu", icon: Icons.change_circle, route: "/changepass"),
     ItemMenu(name: "Quên mật khẩu", icon: Icons.vpn_key, route: "/forgotpass"),
@@ -45,18 +48,17 @@ class _RightHeaderState extends State<RightHeader> {
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
-    print(JwtPayload.displayName);
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          height: 36,
-          constraints: const BoxConstraints(maxWidth: 240, minWidth: 40),
+          height: 34,
+          constraints: const BoxConstraints(maxWidth: 220, minWidth: 40),
           child: TextField(
             style: const TextStyle(fontSize: 16.0, color: Colors.black),
             controller: searchController,
             decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
                 hintText: 'Nhập từ khóa tìm kiếm...',
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.only(
@@ -65,15 +67,16 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ),
         SizedBox(
-          height: 36,
+          height: 34,
           child: FloatingActionButton(
             hoverColor: Colors.black38,
             backgroundColor: Colors.black,
             onPressed: () {
-              if(searchController.text == '') {
+              if (searchController.text == '') {
                 appRouter.go('/search');
               } else {
-                appRouter.go('/viewsearch/searchContent=${searchController.text}');
+                appRouter
+                    .go('/viewsearch/searchContent=${searchController.text}');
               }
             },
             shape: const RoundedRectangleBorder(
@@ -89,17 +92,20 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ),
         const SizedBox(width: 10),
-        (JwtPayload.displayName == null) ? SizedBox(
-          height: 36,
-          width: 100,
-          child: FloatingActionButton(
-            hoverColor: Colors.black38,
-            backgroundColor: Colors.black,
-            onPressed: () => appRouter.go('/login'),
-            child: Text("Đăng Nhập", style: TextStyle(color: Colors.white),),
-          ),
-        ) : widgetSignIn(),
-        SizedBox(width: screenSize.width / 10),
+        (JwtPayload.displayName == null)
+            ? Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                constraints: const BoxConstraints(minWidth: 120),
+                child: FilledButton(
+                  onPressed: () => appRouter.go('/login'),
+                  child: const Text("Đăng Nhập",
+                      style: TextStyle(color: Colors.white),
+                      softWrap: false,
+                      maxLines: 1),
+                ),
+              )
+            : widgetSignIn()
       ],
     );
   }

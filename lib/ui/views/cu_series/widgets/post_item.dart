@@ -1,14 +1,14 @@
-import 'package:cay_khe/dtos/jwt_payload.dart';
+import 'package:cay_khe/models/post_aggregation.dart';
+import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../models/post.dart';
 import '../../../common/utils/date_time.dart';
 
 class PostItem extends StatelessWidget {
-  final Post post;
+  final PostAggregation postUser;
   final VoidCallback? onTap;
 
-  const PostItem({super.key, required this.post, this.onTap});
+  const PostItem({super.key, required this.postUser, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +29,11 @@ class PostItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(50),
-            child: _buildPostImage(),
-          ),
+              borderRadius: BorderRadius.circular(50),
+              child: UserAvatar(
+                imageUrl: postUser.user.avatarUrl,
+                size: 48,
+              )),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -40,15 +42,15 @@ class PostItem extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      JwtPayload.displayName ?? post.createdBy,
-                      style: const TextStyle(
+                      postUser.user.displayName,
+                      style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          color: Colors.black87),
+                          color: Colors.indigo[700]),
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      getTimeAgo(post.updatedAt),
+                      getTimeAgo(postUser.updatedAt),
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.black54,
@@ -59,18 +61,21 @@ class PostItem extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2, bottom: 4),
                   child: Text(
-                    post.title,
+                    postUser.title,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
                 Row(
-                  mainAxisAlignment: onTap == null ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: onTap == null
+                      ? MainAxisAlignment.start
+                      : MainAxisAlignment.spaceBetween,
                   children: [
                     Row(children: [
-                      for (var tag in post.tags)
+                      for (var tag in postUser.tags)
                         Container(
                           margin: const EdgeInsets.only(right: 8),
                           padding: const EdgeInsets.symmetric(
@@ -89,19 +94,39 @@ class PostItem extends StatelessWidget {
                           ),
                         ),
                     ]),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Icon(
-                          post.score < 0
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward,
-                          size: 16,
-                          color: Colors.black87,
-                        ),
-                        Text('${post.score}', style: const TextStyle(fontSize: 12, color: Colors.black87)),
-                      ],
-                    )
+                    Row(children: [
+                      const SizedBox(width: 24),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.comment_outlined,
+                            size: 16,
+                            color: Colors.black87,
+                          ),
+                          const SizedBox(width: 2),
+                          Text('${postUser.commentCount}',
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.black87)),
+                        ],
+                      ),
+                      const SizedBox(width: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            postUser.score < 0
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward,
+                            size: 16,
+                            color: Colors.black87,
+                          ),
+                          Text('${postUser.score}',
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.black87)),
+                        ],
+                      )
+                    ])
                   ],
                 ),
               ],
@@ -110,27 +135,5 @@ class PostItem extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildPostImage() {
-    if (JwtPayload.avatarUrl != null) {
-      return Image.network(
-        JwtPayload.avatarUrl!,
-        width: 48,
-        height: 48,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-          return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
-        },
-      );
-    } else {
-      return const Icon(Icons.account_circle_rounded, size: 48, color: Colors.black54);
-    }
   }
 }

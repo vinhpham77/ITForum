@@ -1,9 +1,7 @@
 import "package:cay_khe/api_config.dart";
 import "package:cay_khe/dtos/post_dto.dart";
-import 'package:dio/dio.dart';
 import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
-
-import '../models/post.dart';
+import 'package:dio/dio.dart';
 
 class PostRepository {
   late Dio dio;
@@ -19,17 +17,22 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> delete(String id) {
-    // TODO: implement delete
-    throw UnimplementedError();
+    dio = JwtInterceptor().addInterceptors(dio);
+    return dio.delete('/$id/delete');
   }
 
-  Future<Response<dynamic>> get() async {
+  Future<Response<dynamic>> get(
+      String? username, String? page, int? limit) async {
     return dio.get('');
   }
 
-  Future<Response<dynamic>> getByUser() async {
+  Future<Response<dynamic>> getByUser(String username,
+      {int? page, int? limit, bool isQuestion = false}) async {
     dio = JwtInterceptor().addInterceptors(dio);
-    return dio.get('/by-user');
+    var optionalParams = page == null ? '' : '&page=$page';
+    optionalParams += limit == null ? '' : '&limit=$limit';
+    optionalParams += isQuestion ? '&isQuestion=$isQuestion' : '';
+    return dio.get('/by-user?username=$username$optionalParams');
   }
 
   Future<Response<dynamic>> getOne(String id) async {
@@ -44,18 +47,25 @@ class PostRepository {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.put('/$id/update', data: postDTO.toJson());
   }
-    Future<Response<dynamic>> getOneDetails(String id) async {
+
+  Future<Response<dynamic>> getOneDetails(String id) async {
     return dio.get('/postDetails/$id');
   }
+
   Future<Response<dynamic>> getPostsSameAuthor(String authorName) async {
     return dio.get('/postsSameAuthor/$authorName');
   }
+
   Future<Response<dynamic>> checkVote(String postId, String userName) async {
-    return dio.get('/checkVote', queryParameters: { 'id': postId,'userName': userName,});
-  }
-  Future<Response<dynamic>> updateScore(String idPost, int  score) async {
-    dio = JwtInterceptor().addInterceptors(dio);
-    return dio.put('/updateScore', queryParameters: { 'id': idPost,'score':score });
+    return dio.get('/checkVote', queryParameters: {
+      'id': postId,
+      'userName': userName,
+    });
   }
 
+  Future<Response<dynamic>> updateScore(String idPost, int score) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    return dio
+        .put('/updateScore', queryParameters: {'id': idPost, 'score': score});
+  }
 }

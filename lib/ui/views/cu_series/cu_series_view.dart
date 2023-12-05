@@ -2,6 +2,7 @@ import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/series_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
+import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/cu_series/widgets/post_item.dart';
@@ -11,6 +12,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../dtos/jwt_payload.dart';
+import '../../../models/post_aggregation.dart';
+import '../../../models/result_count.dart';
 import '../../../models/series.dart';
 import '../../../repositories/post_repository.dart';
 import '/ui/widgets/notification.dart';
@@ -36,19 +39,25 @@ class _CuSeriesState extends State<CuSeries> {
   bool _isEditing = true;
   final int _left = 3;
   final int _right = 1;
-  List<Post> selectedPosts = [];
+  List<PostAggregation> selectedPostUsers = [];
   List<String> selectedPostIds = [];
-  List<Post> allPosts = [];
-  final double _contentHeight = 460;
+  List<PostAggregation> allPostUsers = [];
+  late ResultCount<PostAggregation> resultCount;
+  final double _contentHeight = 430;
 
   @override
   void initState() {
     super.initState();
     operation = widget.id == null ? 'Tạo' : 'Sửa';
 
-    Future.wait([_loadSeries(), _loadPosts()]).then((value) {
+    // TODO: implement futureBuilder
+    if (widget.id != null) {
+      Future.wait([_loadSeries(), _loadPosts()]).then((value) {
+        isLoaded = true;
+      });
+    } else {
       isLoaded = true;
-    });
+    }
   }
 
   @override
@@ -62,8 +71,9 @@ class _CuSeriesState extends State<CuSeries> {
   Center _buildCuSeries(BuildContext context) {
     return Center(
       child: Container(
-        width: 1200,
-        margin: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        margin: const EdgeInsets.symmetric(
+            horizontal: horizontalSpace, vertical: bodyVerticalSpace),
+        constraints: const BoxConstraints(maxWidth: maxContent),
         child: Form(
           key: _formKey,
           child: Column(
@@ -183,7 +193,7 @@ class _CuSeriesState extends State<CuSeries> {
     return Column(
       children: [
         Container(
-          constraints: BoxConstraints(maxHeight: 152 + _contentHeight),
+          constraints: BoxConstraints(maxHeight: 128 + _contentHeight),
           decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -195,12 +205,7 @@ class _CuSeriesState extends State<CuSeries> {
             borderRadius: BorderRadius.all(Radius.circular(8)),
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: Markdown(
             data: getMarkdown(),
             styleSheet:
@@ -254,12 +259,7 @@ class _CuSeriesState extends State<CuSeries> {
             ],
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
             controller: _titleController,
             validator: (value) {
@@ -272,7 +272,7 @@ class _CuSeriesState extends State<CuSeries> {
               hintText: 'Viết tiêu đề ở đây...',
               hintStyle: TextStyle(
                 color: Colors.black,
-                fontSize: 48,
+                fontSize: 36,
                 fontWeight: FontWeight.w700,
               ),
               border: InputBorder.none,
@@ -305,12 +305,7 @@ class _CuSeriesState extends State<CuSeries> {
                 : null,
             color: Colors.white,
           ),
-          padding: const EdgeInsets.only(
-            left: 64,
-            right: 64,
-            top: 32,
-            bottom: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
             controller: _contentController,
             validator: (value) {
@@ -343,7 +338,7 @@ class _CuSeriesState extends State<CuSeries> {
                     bottomLeft: Radius.circular(8),
                     bottomRight: Radius.circular(8))),
             padding: const EdgeInsets.only(
-              left: 64,
+              left: 48,
               right: 0,
               top: 8,
               bottom: 12,
@@ -351,42 +346,41 @@ class _CuSeriesState extends State<CuSeries> {
             child: Column(
               children: [
                 Column(children: [
-                  for (var post in selectedPosts)
+                  for (var postUser in selectedPostUsers)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: PostItem(post: post)),
+                        Expanded(child: PostItem(postUser: postUser)),
                         TextButton(
-                          onPressed: () => removeSelectedPost(post),
+                          onPressed: () => removeSelectedPost(postUser),
                           child: const Icon(Icons.close,
                               size: 20, color: Colors.black54, opticalSize: 20),
                         ),
                         Container(
-                          width: 64,
+                          width: 48,
                         )
                       ],
                     ),
                 ]),
-                if (selectedPosts.isEmpty)
+                if (selectedPostUsers.isEmpty)
                   Container(
                     alignment: Alignment.center,
                     padding:
-                        const EdgeInsets.only(top: 4, bottom: 4, right: 64),
+                        const EdgeInsets.only(top: 4, bottom: 4, right: 48),
                     child: const Text(
                         'Chưa có bài viết nào. Vui lòng thêm tối thiểu 1 bài viết để chia sẻ với mọi người!'),
                   ),
-                if (selectedPosts.isNotEmpty)
+                if (selectedPostUsers.isNotEmpty)
                   Divider(
-                    endIndent: 64,
+                    endIndent: 48,
                     thickness: 1,
                     color: Colors.black12.withOpacity(0.05),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 64 + 4, 4),
+                  padding: const EdgeInsets.fromLTRB(4, 4, 48 + 4, 4),
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side:
-                          BorderSide(color: Colors.deepPurple.withOpacity(0.5)),
+                      side: BorderSide(color: Theme.of(context).primaryColor),
                     ),
                     onPressed: () => buildShowModalBottomSheet(context),
                     child: const Text('Thêm bài viết'),
@@ -402,7 +396,7 @@ class _CuSeriesState extends State<CuSeries> {
 
   Container _buildActionContainer() {
     return Container(
-        margin: const EdgeInsets.only(top: 12),
+        margin: const EdgeInsets.only(top: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -452,14 +446,14 @@ class _CuSeriesState extends State<CuSeries> {
 
   ListView _buildPostListView() {
     return ListView.builder(
-      itemCount: allPosts.length,
+      itemCount: allPostUsers.length,
       itemBuilder: (context, index) {
         return PostItem(
-            post: allPosts[index],
+            postUser: allPostUsers[index],
             onTap: () {
               setState(() {
-                selectedPosts.add(allPosts[index]);
-                allPosts.removeAt(index);
+                selectedPostUsers.add(allPostUsers[index]);
+                allPostUsers.removeAt(index);
               });
               Navigator.pop(context);
             });
@@ -480,7 +474,7 @@ class _CuSeriesState extends State<CuSeries> {
       return;
     }
 
-    if (operation == 'Sửa' && selectedPosts.isEmpty) {
+    if (operation == 'Sửa' && selectedPostUsers.isEmpty) {
       showTopRightSnackBar(
           context, 'Vui lòng thêm ít nhất 1 bài viết', NotifyType.warning);
       return;
@@ -514,30 +508,25 @@ class _CuSeriesState extends State<CuSeries> {
         title: _titleController.text,
         content: _contentController.text,
         isPrivate: isPrivate,
-        postIds: selectedPosts.map((post) => post.id).toList());
+        postIds: selectedPostUsers.map((post) => post.id!).toList());
   }
 
   Future<void> _loadPosts() async {
-    var future = postRepository.getByUser();
+    var future = postRepository.getByUser(JwtPayload.sub!);
 
     future.then((response) {
-      List<Post> posts = response.data.map<Post>((post) {
-        return Post.fromJson(post);
-      }).toList();
+      resultCount = ResultCount.fromJson(response.data, PostAggregation.fromJson);
+      allPostUsers = resultCount.resultList.map((e) => e).toList();
 
-      List<Post> postsToAddToSelected = [];
-
-      for (int i = 0; i < posts.length; i++) {
-        if (selectedPostIds.contains(posts[i].id)) {
-          postsToAddToSelected.add(posts[i]);
-          posts.removeAt(i--);
+      allPostUsers.removeWhere((postUser) {
+        if (selectedPostIds.contains(postUser.id)) {
+          selectedPostUsers.add(postUser);
+          return true;
         }
-      }
-
-      setState(() {
-        allPosts = posts;
-        selectedPosts.addAll(postsToAddToSelected);
+        return false;
       });
+
+      setState(() {});
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
@@ -577,13 +566,13 @@ class _CuSeriesState extends State<CuSeries> {
 
   void removeSelectedPost(post) {
     setState(() {
-      selectedPosts.remove(post);
-      allPosts.add(post);
+      selectedPostUsers.remove(post);
+      allPostUsers.add(post);
     });
   }
 
   openModal() {
-    if (allPosts.isEmpty) {
+    if (allPostUsers.isEmpty) {
       return Container(
         padding: const EdgeInsets.only(top: 4, bottom: 4),
         child: Row(

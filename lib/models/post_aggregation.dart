@@ -8,6 +8,7 @@ class PostAggregation {
   List<String> tags;
   String content;
   int score;
+  int commentCount;
   bool private;
   DateTime updatedAt;
   User user;
@@ -18,6 +19,7 @@ class PostAggregation {
     required this.content,
     required this.tags,
     required this.score,
+    required this.commentCount,
     required this.private,
     required this.updatedAt,
     required this.user
@@ -30,6 +32,7 @@ class PostAggregation {
       content: json['content'],
       tags: List<String>.from(json['tags']),
       score: json['score'],
+      commentCount: json['commentCount'],
       private: json['private'],
       updatedAt: DateTime.parse(json['updatedAt']),
       user: User.fromJson(json['user']),
