@@ -1,25 +1,24 @@
-import 'dart:typed_data';
 
-import 'package:cay_khe/models/user.dart';
-import 'dart:convert';
+import 'package:cay_khe/models/bookmarkInfo.dart';
 
 class Bookmark {
   final String id;
-  final List<String> postIds;
+  final List<BookmarkInfo> bookmarkInfoList;
   final String username;
 
   Bookmark({
     required this.id,
-    required this.postIds,
+    required this.bookmarkInfoList,
     required this.username,
   });
 
   factory Bookmark.fromJson(Map<String, dynamic> json) {
     return Bookmark(
         id: json['id'],
-        postIds: List<String>.from(json['postIds']),
+        bookmarkInfoList: List<BookmarkInfo>.from(json['bookmarkInfoList']),
         username: json['username']);
   }
+
 
 // Sử dụng hàm parsePostDetailDTO để chuyển đổi response.data thành đối tượng PostDetailDTO
 //   static  List<PostDetailDTO> parsePostDetailDTOList(String responseBody) {

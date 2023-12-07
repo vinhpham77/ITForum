@@ -28,6 +28,17 @@ class User {
     required this.role,
     required this.displayName,
   });
+  User.empty()
+      : id = '',
+        username = '',
+        email = '',
+        gender = null,
+        birthdate = null,
+        avatarUrl = null,
+        bio = null,
+        role = '',
+        displayName = '';
+
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(

@@ -7,5 +7,6 @@
   static const String votesEndpoint = 'votes';
   static const String bookmarksEndpoint = 'bookmarks';
   static const String usersEndpoint = 'users';
+  static const String followsEndpoint = 'follows';
 }
 

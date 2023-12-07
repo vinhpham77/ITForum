@@ -1,6 +1,7 @@
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 import 'package:cay_khe/ui/views/cu_series/cu_series_view.dart';
 import 'package:cay_khe/ui/views/details_page/postDetails.dart';
+import 'package:cay_khe/ui/views/series_detail/seriesDetail.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
@@ -136,7 +137,7 @@ final appRouter = GoRouter(
           GoRoute(
               path: ':pid',
               pageBuilder: (context, state) {
-                print('2');
+
                 return MaterialPage<void>(
                       key: state.pageKey,
                       child: ScreenWithHeaderAndFooter(
@@ -156,20 +157,25 @@ final appRouter = GoRouter(
         ]),
     GoRoute(
       path: '/series',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-        key: ValueKey('series'),
-        child: ScreenWithHeaderAndFooter(
-          body: Text("series"),
+      pageBuilder: (context, state)=>
+        const MaterialPage<void>(
+          key: ValueKey('series'),
+          child: ScreenWithHeaderAndFooter(
+            body: Text("Series"),
+          ),
         ),
-      ),
+
       routes: [
+
         GoRoute(
           path: ':pid',
-          pageBuilder: (context, state) => MaterialPage<void>(
-              key: state.pageKey,
-              child: ScreenWithHeaderAndFooter(
-                body: Text('Details ${state.pathParameters['pid']!}'),
-              )),
+          pageBuilder: (context, state)=>MaterialPage<void>(
+                key: state.pageKey,
+                child: ScreenWithHeaderAndFooter(
+
+                  body: SeriesDetail(id: state.pathParameters['pid']!),
+
+                )),
           routes: [
             GoRoute(
               path: 'edit',

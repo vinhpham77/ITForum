@@ -3,7 +3,7 @@ import "package:cay_khe/dtos/post_dto.dart";
 import 'package:dio/dio.dart';
 import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
 
-import '../models/post.dart';
+
 
 class PostRepository {
   late Dio dio;
@@ -20,7 +20,7 @@ class PostRepository {
 
   Future<Response<dynamic>> delete(String id) {
     // TODO: implement delete
-    throw UnimplementedError();
+    return dio.delete('/$id/delete');
   }
 
   Future<Response<dynamic>> get() async {
