@@ -1,6 +1,5 @@
 import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/series_user.dart';
-import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 
@@ -67,11 +66,15 @@ class SeriesTabItem extends StatelessWidget {
               ),
               Row(
                 children: [
-                  buildFieldCount(Icons.backup_table_rounded, seriesUser.postIds.length),
-                  buildFieldCount(Icons.comment_outlined, seriesUser.commentCount),
-                  buildFieldCount(seriesUser.score < 0
-                      ? Icons.trending_down_outlined
-                      : Icons.trending_up_outlined, seriesUser.score)
+                  buildFieldCount(
+                      Icons.backup_table_rounded, seriesUser.postIds.length),
+                  buildFieldCount(
+                      Icons.comment_outlined, seriesUser.commentCount),
+                  buildFieldCount(
+                      seriesUser.score < 0
+                          ? Icons.trending_down_outlined
+                          : Icons.trending_up_outlined,
+                      seriesUser.score)
                 ],
               ),
             ],
@@ -93,10 +96,10 @@ class SeriesTabItem extends StatelessWidget {
             color: Colors.grey[700],
           ),
           const SizedBox(width: 2),
-          Text('$count', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+          Text('$count',
+              style: TextStyle(fontSize: 13, color: Colors.grey[700])),
         ],
       ),
     );
   }
-
 }
