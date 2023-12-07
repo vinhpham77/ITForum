@@ -1,11 +1,11 @@
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 import 'package:cay_khe/ui/views/cu_series/cu_series_view.dart';
 import 'package:cay_khe/ui/views/details_page/postDetails.dart';
-import 'package:cay_khe/ui/views/series_detail/seriesDetail.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/question_view.dart';
+import 'package:cay_khe/ui/views/profile/profile_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
 import 'package:cay_khe/ui/views/user_profile/user_profile_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
@@ -13,6 +13,7 @@ import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
 import 'package:cay_khe/ui/views/user_use/register_page.dart';
 import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
+import 'package:cay_khe/ui/widgets/comment/comment_view.dart';
 import 'package:cay_khe/ui/widgets/screen_with_header_and_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -139,10 +140,10 @@ final appRouter = GoRouter(
               pageBuilder: (context, state) {
 
                 return MaterialPage<void>(
-                      key: state.pageKey,
-                      child: ScreenWithHeaderAndFooter(
-                        body: PostDetailsPage(id: state.pathParameters['pid']!),
-                      ));
+                    key: state.pageKey,
+                    child: ScreenWithHeaderAndFooter(
+                      body: PostDetailsPage(id: state.pathParameters['pid']!),
+                    ));
               },
               routes: [
                 GoRoute(
@@ -157,25 +158,20 @@ final appRouter = GoRouter(
         ]),
     GoRoute(
       path: '/series',
-      pageBuilder: (context, state)=>
-        const MaterialPage<void>(
-          key: ValueKey('series'),
-          child: ScreenWithHeaderAndFooter(
-            body: Text("Series"),
-          ),
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('series'),
+        child: ScreenWithHeaderAndFooter(
+          body: Text("series"),
         ),
-
+      ),
       routes: [
-
         GoRoute(
           path: ':pid',
-          pageBuilder: (context, state)=>MaterialPage<void>(
-                key: state.pageKey,
-                child: ScreenWithHeaderAndFooter(
-
-                  body: SeriesDetail(id: state.pathParameters['pid']!),
-
-                )),
+          pageBuilder: (context, state) => MaterialPage<void>(
+              key: state.pageKey,
+              child: ScreenWithHeaderAndFooter(
+                body: Text('Details ${state.pathParameters['pid']!}'),
+              )),
           routes: [
             GoRoute(
               path: 'edit',
@@ -200,10 +196,8 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'onepost',
       path: '/onepost',
-      pageBuilder: (context, state) =>  MaterialPage<void>(
-        key: ValueKey('onepost'),
-        child: Text("test")
-      ),
+      pageBuilder: (context, state) =>
+          MaterialPage<void>(key: ValueKey('onepost'), child: Text("test")),
     ),
     GoRoute(
       path: '/register',
@@ -239,10 +233,63 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/profile/:username',
+      redirect: (BuildContext context, GoRouterState state) async {
+        return '/profile/${state.pathParameters['username']}/posts';
+      },
+    ),
+    GoRoute(
+      path: '/profile/:username/posts',
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),
         child: ScreenWithHeaderAndFooter(
-          body: UserProfile(username: state.pathParameters['username']!),
+          body: Profile(
+            username: state.pathParameters['username']!,
+            selectedIndex: 0,
+            params: state.extra as Map<String, dynamic>? ?? {},
+          ),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/profile/:username/questions',
+      pageBuilder: (context, state) => MaterialPage<void>(
+        key: UniqueKey(),
+        child: ScreenWithHeaderAndFooter(
+          body: Profile(
+            username: state.pathParameters['username']!,
+            selectedIndex: 1,
+            params: state.extra as Map<String, dynamic>? ?? {},
+          ),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/profile/:username/series',
+      pageBuilder: (context, state) => MaterialPage<void>(
+        key: UniqueKey(),
+        child: ScreenWithHeaderAndFooter(
+            body: Profile(
+                username: state.pathParameters['username']!,
+                selectedIndex: 2,
+                params: state.extra as Map<String, dynamic>? ?? {})),
+      ),
+    ),
+    GoRoute(
+        path: '/profile/:username/bookmarks',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 3,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
+    GoRoute(
+      path: '/comment',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('comment'),
+        child: ScreenWithHeaderAndFooter(
+          body: CommentView(postId: "654d3e139d8e142b7fadc7ca"),
         ),
       ),
     )

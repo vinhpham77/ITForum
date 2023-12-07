@@ -18,7 +18,7 @@ class PostBloc {
 
   late BuildContext context;
 
-  PostAggregatioRepository postAggregatioRepository = PostAggregatioRepository();
+  PostAggregationRepository postAggregatioRepository = PostAggregationRepository();
   late ResultCount<PostAggregation> resultCount;
   late ResultCount<PostAggregation> resultRightCount;
 

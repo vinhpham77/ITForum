@@ -6,7 +6,7 @@ String getTimeAgo(DateTime dateTime) {
     return '${dateTime.year} thg ${dateTime.month} ${dateTime.day}, ${dateTime.hour}:${dateTime.minute} ${dateTime.hour < 12 ? "SA" : "CH"}';
   } else if (difference.inDays > 2) {
     return 'thg ${dateTime.month} ${dateTime.day}, ${dateTime.hour}:${dateTime.minute} ${dateTime.hour < 12 ? "SA" : "CH"}';
-  } else if (difference.inDays > 1) {
+  } else if (difference.inDays >= 1) {
     return 'hôm qua, ${dateTime.hour}:${dateTime.minute} ${dateTime.hour < 12 ? "SA" : "CH"}';
   } else if (difference.inHours >= 1) {
     return 'khoảng ${difference.inHours} giờ trước';

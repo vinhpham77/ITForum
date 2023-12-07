@@ -3,10 +3,10 @@ import 'package:dio/dio.dart';
 
 import "package:cay_khe/api_config.dart";
 
-class PostAggregatioRepository {
+class PostAggregationRepository {
   late Dio dio;
 
-  PostAggregatioRepository() {
+  PostAggregationRepository() {
     dio = Dio(BaseOptions(
         baseUrl: "${ApiConfig.baseUrl}/${ApiConfig.postsEndpoint}"));
   }
@@ -17,7 +17,7 @@ class PostAggregatioRepository {
     required String sort,
     required String sortField,
     required String page,
-    int? limit = null
+    int? limit
   }) async {
     return dio.get('/search?searchField=$fieldSearch&search=$searchContent&sort=$sort&sortField=$sortField&page=$page&limit=${limit ?? limitPage}');
   }

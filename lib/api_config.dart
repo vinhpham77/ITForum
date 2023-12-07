@@ -8,5 +8,7 @@
   static const String bookmarksEndpoint = 'bookmarks';
   static const String usersEndpoint = 'users';
   static const String followsEndpoint = 'follows';
+  static const String imagesEndpoint = 'images';
+  static const String commentsEndpoint = 'comments';
 }
 

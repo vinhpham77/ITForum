@@ -16,11 +16,20 @@ class SeriesRepository {
   }
 
   Future<Response<dynamic>> delete(String id) {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.delete('/$id/delete');
   }
 
   Future<Response<dynamic>> get() async {
     return dio.get('');
+  }
+
+  Future<Response<dynamic>> getByUser(String username,
+      {int? page, int? limit}) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    var optionalParams = page == null ? '' : '&page=$page';
+    optionalParams += limit == null ? '' : '&limit=$limit';
+    return dio.get('/by-user?username=$username$optionalParams');
   }
 
   Future<Response<dynamic>> getOne(String id) async {
