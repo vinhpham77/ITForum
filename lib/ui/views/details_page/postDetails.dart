@@ -1,38 +1,35 @@
-import 'dart:js_interop';
-
+import 'package:cay_khe/dtos/follow_dto.dart';
 import 'package:cay_khe/dtos/vote_dto.dart';
-import 'package:cay_khe/models/post_aggregation.dart';
-import 'package:cay_khe/models/post_detail_dto.dart';
+import 'package:cay_khe/dtos/post_detail_dto.dart';
+import 'package:cay_khe/models/bookmarkInfo.dart';
+import 'package:cay_khe/models/follow.dart';
 import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/repositories/bookmark_repository.dart';
+import 'package:cay_khe/repositories/follow_repository.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/tag_repository.dart';
-import 'package:cay_khe/repositories/auth_repository.dart';
 import 'package:cay_khe/repositories/vote_repository.dart';
+import 'package:cay_khe/ui/common/utils/date_time.dart';
 import 'package:cay_khe/ui/router.dart';
-import 'package:dio/dio.dart';
+import 'package:cay_khe/ui/views/series_detail/votes_side.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../dtos/jwt_payload.dart';
-import '../../../dtos/notify_type.dart';
 import '../../../models/post.dart';
 import 'package:markdown/markdown.dart' as markdown;
 import '../../../models/user.dart';
 import '../../../models/vote.dart';
 import '../../../repositories/user_repository.dart';
 import 'TableOfContents.dart';
-// import 'package:share_plus/share_plus.dart';
-
-import 'package:url_launcher/url_launcher.dart';
+import 'menuAnchor.dart';
 
 class PostDetailsPage extends StatefulWidget {
   final String id;
 
-  const PostDetailsPage({Key? key, required this.id}) : super(key: key);
+  const PostDetailsPage({super.key, required this.id});
 
   @override
   State<PostDetailsPage> createState() => _PostDetailsPage();
@@ -40,20 +37,23 @@ class PostDetailsPage extends StatefulWidget {
 
 class _PostDetailsPage extends State<PostDetailsPage> {
   bool enableButton = true;
-  bool statevote = false;
-  String avatarUrl = '';
-  bool upvote = false;
-  bool downvote = false;
-
-  String usernames = JwtPayload.sub ?? ' ';
+  bool stateVote = false;
+  bool upVote = false;
+  bool downVote = false;
+  String username = JwtPayload.sub ?? '';
   String idVote = '';
   bool typeVote = false;
   bool isCheckBookmark = false;
   int score = 0;
-  bool isBookmarked = false;
+  bool isBookmark = false;
   bool isHovered = false;
   bool isLoading = true;
   String usernamePost = '';
+  List<String> ListTag = [];
+  bool isFollow = false;
+  PostDetailDTO postDetailDTO = PostDetailDTO.empty();
+  String type = "bài viết";
+  bool isLoadingFollow = false;
 
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
@@ -64,9 +64,11 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final voteRepository = VoteRepository();
   final bookmarkRepository = BookmarkRepository();
   final userRepository = UserRepository();
+  final followRepository = FollowRepository();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _nickNameController = TextEditingController();
   final TextEditingController _updateAtController = TextEditingController();
+  String _currentId = "";
 
   DateTime upDateAt = DateTime.now();
   List<DateTime> listDateTime = [];
@@ -74,17 +76,41 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Tag? selectedTag;
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
-
   late List<String> listTitlePost;
+  User user = User.empty();
+  User authorPost = User.empty();
+  Follow follow = Follow.empty();
 
   @override
   void initState() {
     super.initState();
-    print("JWT: ");
-    print(JwtPayload.sub);
-    print(JwtPayload.displayName);
-    print("end jwt");
-    _loadPost(widget.id);
+
+  }
+  @override
+  void didUpdateWidget(PostDetailsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if(widget.id != _currentId){
+      _currentId = widget.id;
+      initPost(_currentId);
+    }
+  }
+
+  Future<void> initPost(String id) async {
+    setState(() {
+      isLoading = true;
+    });
+    await _loadPost(id);
+    await _loadUser(username);
+    await _loadCheckVote(id, username);
+    await _loadBookmark(id, username);
+    print("postdetail: ${postDetailDTO.user.id}");
+    await _loadFollow(user.id, postDetailDTO.user.id);
+    await _loadPostsByTheSameAuthor(authorPost.username);
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -93,21 +119,21 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       builder: (context, BoxConstraints constraints) {
         return Container(
           width: constraints.maxWidth,
-          color: Colors.white,
+          // color: Colors.white,
           child: Center(
             child: SizedBox(
-              width: 1500,
+              width: 1200,
               child: Padding(
                 padding: const EdgeInsets.all(50.0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _buildColumn1(),
+                    _postActions(),
                     const SizedBox(width: 20),
-                    _buildColumn2(),
+                    _postBody(),
                     const SizedBox(width: 20),
-                    _buildColumn3(),
+                    _sidebar(),
                   ],
                 ),
               ),
@@ -118,61 +144,40 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     );
   }
 
-  Widget _buildColumn1() {
+  Widget _postActions() {
     return Container(
       width: 80,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          _buildVoteSection(),
-          const SizedBox(
-            height: 10,
-          ),
-          _buildBookmarkSection(),
-          const SizedBox(
-            height: 10,
-          ),
-          _buildSocialShareSection(),
+          VoteSection(
+              stateVote: stateVote,
+              upVote: upVote,
+              downVote: downVote,
+              score: score,
+              onUpVote: _upVote,
+              onDownVote: _downVote),
+          const SizedBox(height: 10),
+          _buildBookmarkSection(isBookmark),
+          const SizedBox(height: 10),
+          _buildSocialShareSection(widget.id),
         ],
       ),
     );
   }
 
-  Widget _buildVoteSection() {
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: Column(
-        children: [
-          IconButton(
-              icon: const Icon(
-                Icons.arrow_drop_up,
-              ),
-              onPressed: () => !statevote ? _upVote() : null,
-              iconSize: 36,
-              color: upvote ? Colors.blue : null),
-          Text('$score', style: const TextStyle(fontSize: 20)),
-          IconButton(
-              icon: const Icon(Icons.arrow_drop_down),
-              iconSize: 36,
-              onPressed: () => !statevote ? _downVote() : null,
-              color: downvote ? Colors.blue : null),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBookmarkSection() {
+  Widget _buildBookmarkSection(bool isBookmark) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: IconButton(
-          icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
-          onPressed: _toggleBookmark,
-          color: isBookmarked ? Colors.blue : null),
+          icon: Icon(isBookmark ? Icons.bookmark : Icons.bookmark_border),
+          onPressed: () => _toggleBookmark(),
+          color: isBookmark ? Colors.blue : null),
     );
   }
 
-  Widget _buildSocialShareSection() {
+  Widget _buildSocialShareSection(String idPost) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Column(
@@ -180,117 +185,125 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           IconButton(
             icon: const Icon(Icons.facebook),
             onPressed: () =>
-                _shareFacebook('http://localhost:8000/posts/${widget.id}'),
+                _shareFacebook('http://localhost:8000/posts/${idPost}'),
           ),
           const SizedBox(width: 16),
           IconButton(
             icon: const Icon(Icons.link),
             onPressed: () =>
-                _sharePost('http://localhost:8000/posts/${widget.id}'),
+                _sharePost('http://localhost:8000/posts/${idPost}'),
           ),
+          IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () => _shareTwitter(
+                  "http://localhost:8000/posts/${idPost}",
+                  "Đã share lên Twitter")),
         ],
       ),
     );
   }
 
-  Widget _buildColumn2() {
+  void _shareTwitter(String url, String text) async {
+    final twitterUrl = 'https://twitter.com/intent/tweet?text=$text&url=$url';
+
+    if (await canLaunchUrlString(twitterUrl)) {
+      await launchUrlString(twitterUrl);
+    } else {
+      throw 'Could not launch $twitterUrl';
+    }
+  }
+
+  Widget buildTagButton(String tag) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        tag,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Colors.black54,
+        ),
+      ),
+    );
+  }
+
+  Widget _postBody() {
     // _builderTitlePostContent();
-    var postPreview = isLoading
-        ? Container(
-            height: 600,
-            alignment: Alignment.center,
-            child: const CircularProgressIndicator(),
-          )
-        : Column(
-            children: [
-              Container(
-                height: 600,
-                decoration: const BoxDecoration(
-                    //   color: Colors.white,
-                    ),
-                child: Markdown(
-                  data: getMarkdown(),
-                  styleSheet:
-                      MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                    textScaleFactor: 1.4,
-                    h1: Theme.of(context)
-                        .textTheme
-                        .headlineMedium!
-                        .copyWith(fontSize: 48),
-                    h2: Theme.of(context)
-                        .textTheme
-                        .headlineSmall!
-                        .copyWith(fontSize: 22),
-                    h3: Theme.of(context)
-                        .textTheme
-                        .titleLarge!
-                        .copyWith(fontSize: 18),
-                    h6: Theme.of(context)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(fontSize: 13),
-                    p: Theme.of(context)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(fontSize: 14),
-                    blockquote:
-                        Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey.shade700,
-                            ),
-                    // Custom blockquote style
-                    listBullet: const TextStyle(
-                        fontSize: 16), // Custom list item bullet style
-                  ),
-                  softLineBreak: true,
-                ),
+    var postPreview = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Wrap(
+            spacing: 8.0,
+            children: ListTag.map((tag) => buildTagButton(tag)).toList(),
+          ),
+        ),
+        Container(
+          decoration: const BoxDecoration(
+              //   color: Colors.white,
               ),
-            ],
-          );
-    return Container(
-      width: 800,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          _builderAuthortPostContent(),
-          // const SizedBox(
-          //   height: 10,
-          // ),
-
-          // _buildMenuAnchor(),
-          SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(), // Disable scrolling
-            child: postPreview,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuAnchor() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        children: [
-          PopupMenuButton<String>(
-            itemBuilder: (BuildContext context) {
-              return {'Option 1', 'Option 2'}.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: MenuItemButton(label: choice),
-                );
-              }).toList();
-            },
-            child: TextButton(
-              onPressed: () {},
-              child: Text('Open Menu'),
+          child: Markdown(
+            data: getMarkdown(),
+            styleSheet:
+                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              textScaleFactor: 1.4,
+              h1: Theme.of(context)
+                  .textTheme
+                  .headlineMedium!
+                  .copyWith(fontSize: 32),
+              h2: Theme.of(context)
+                  .textTheme
+                  .headlineSmall!
+                  .copyWith(fontSize: 22),
+              h3: Theme.of(context)
+                  .textTheme
+                  .titleLarge!
+                  .copyWith(fontSize: 18),
+              h6: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(fontSize: 13),
+              p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
+              blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade700,
+                  ),
+              // Custom blockquote style
+              listBullet: const TextStyle(
+                  fontSize: 16), // Custom list item bullet style
             ),
+            softLineBreak: true,
+            shrinkWrap: true,
           ),
-          // Add more buttons or widgets as needed
-        ],
-      ),
+        ),
+      ],
+    );
+    return Expanded(
+      child: isLoading
+          ? Container(
+              height: 600,
+              alignment: Alignment.center,
+              child: const CircularProgressIndicator(),
+            )
+          : Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  _builderAuthorPostContent(),
+                  postPreview,
+                  if (authorPost.id == user.id)
+                    MoreHoriz(idContent: widget.id, type: type),
+                ],
+              ),
+            ),
     );
   }
 
@@ -299,108 +312,127 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
     // String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
     String content = _contentController.text;
-    print("start content");
-    print(content);
-    print("end content");
-    h1:
-    TextStyle(fontSize: 54);
+    String tags = "#";
+    tags = tags + ListTag.join('\t#');
     return '$title \n $content';
   }
 
-  String convertDateString(String inputDateString) {
-    DateTime dateTime = DateTime.parse(inputDateString);
-    String outputDateString = DateFormat("MMMM d, y h:mm a").format(dateTime);
-
-    return outputDateString;
-  }
-
   Future<void> _loadPost(String id) async {
-    setState(() {
-      isLoading = true;
-    });
     var future = postRepository.getOneDetails(id);
     future.then((response) {
-      setState(() async {
-        PostDetailDTO postDetailDTO = PostDetailDTO.fromJson(response.data);
-        _contentController.text = postDetailDTO.content;
-        print(response.data);
-        _titleController.text = postDetailDTO.title;
-
-        _nameController.text = postDetailDTO.user.displayName;
-        _nickNameController.text = '@${postDetailDTO.user.username}';
-        usernamePost = postDetailDTO.user.username;
-        upDateAt = postDetailDTO.updatedAt;
-        _updateAtController.text = convertDateString(upDateAt.toString());
-        score = postDetailDTO.score;
-        await _loadPostsByTheSameAuthor(postDetailDTO.user.username);
-      });
+      postDetailDTO = PostDetailDTO.fromJson(response.data);
+      _contentController.text = postDetailDTO.content;
+      authorPost = postDetailDTO.user;
+      _titleController.text = postDetailDTO.title;
+      ListTag = postDetailDTO.tags;
+      _nameController.text = postDetailDTO.user.displayName;
+      _nickNameController.text = '@${postDetailDTO.user.username}';
+      usernamePost = postDetailDTO.user.username;
+      upDateAt = postDetailDTO.updatedAt;
+      _updateAtController.text = "Đã đăng vào ${getTimeAgo(upDateAt)}";
+      score = postDetailDTO.score;
     }).catchError((error) {
       print("lỗi");
       // String message = getMessageFromException(error);
       // showTopRightSnackBar(context, message, NotifyType.error);
     });
-    await _loadCheckVote(widget.id, usernames);
-    await _loadCheckBookmark(widget.id, usernames);
-    print("usernamepost: $usernamePost");
-    await _loadAvatar(usernamePost);
-    isLoading = false;
+    //isLoading = false;
+  }
+
+  Future<void> _loadUser(String username) async {
+    var futureUser = await userRepository.getUser(username);
+    if (mounted) {
+      user = User.fromJson(futureUser.data);
+    }
   }
 
   Future<void> _loadCheckVote(String postId, String username) async {
-    if (username != null) {
-      print("ten: $usernames");
-      var futureVote = await voteRepository.checkVote(widget.id, username!);
-      print("start vote");
-      print(futureVote.data);
-      print("end vote");
-      if (futureVote.data is Map<String, dynamic>) {
-        Vote vote = Vote.fromJson(futureVote.data);
-        upvote = vote.type;
-        downvote = !vote.type;
+    var futureVote = await voteRepository.checkVote(postId, username);
+    if (futureVote.data is Map<String, dynamic>) {
+      Vote vote = Vote.fromJson(futureVote.data);
+      if (mounted) {
+        upVote = vote.type;
+        downVote = !vote.type;
+      }
+    }
+  }
+
+  void _follow() async {
+    if (JwtPayload.sub == null) {
+      appRouter.go("/login");
+    } else {
+      if (isFollow == true) {
+        var future = await followRepository.checkfollow(user.id, authorPost.id);
+        if (future.data != "Follow not found") {
+          Follow follow = Follow.fromJson(future.data);
+          await followRepository.delete(follow.id);
+          if (mounted) {
+            setState(() {
+              isFollow = false;
+            });
+          }
+        }
       } else {
-        print('Dữ liệu không phải là Map<String, dynamic>: ${futureVote.data}');
-        upvote = false;
-        downvote = false;
+        FollowDTO newFollow = FollowDTO(
+            followerId: user.id,
+            followedId: authorPost.id,
+            createdAt: DateTime.now());
+        await followRepository.add(newFollow);
+        if (mounted) {
+          setState(() {
+            isFollow = true;
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> _loadFollow(String followerId, String followedId) async {
+    if (JwtPayload.sub == null) {
+      return;
+    }
+    var future = await followRepository.checkfollow(followerId, followedId);
+    if (future.data != "Follow not found") {
+      if(mounted){
+        follow = Follow.fromJson(future.data);
+        isFollow = true;
+      }
+
+    } else {
+      if (mounted) {
+        setState(() {
+          isFollow = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadBookmark(String itemId, String username) async {
+    var future = await bookmarkRepository.checkBookmark(itemId, username);
+
+    if (future.data != null && future.data is bool) {
+      bool isBookmarked = future.data;
+
+      if (mounted) {
+        isBookmark = isBookmarked;
       }
     } else {
-      upvote = false;
-      downvote = false;
+      print(" lỗi bookmark");
+      // Xử lý trường hợp dữ liệu trả về từ API không đúng
     }
-  }
+    }
 
-  Future<void> _loadCheckBookmark(String postId, String username) async {
-    Response<dynamic> response =
-        await bookmarkRepository.checkBookmark(widget.id, username!);
-    if (response.statusCode == 200) {
-      setState(() {
-        print("bookmark $isBookmarked");
-        isBookmarked = response.data;
-      });
-    } else {
-      throw Exception('Failed to check bookmark: ${response.statusCode}');
-    }
-  }
-
-  Future<void> _loadAvatar(String username) async {
-    var response = await userRepository.getUser(username!);
-   User user = User.fromJson(response.data);
-    if (response.statusCode == 200) {
-      setState(() {
-        avatarUrl=user.avatarUrl!;
-      });
-    } else {
-      throw Exception('Failed to check bookmark: ${response.statusCode}');
-    }
-  }
 
   Future<void> _loadPostsByTheSameAuthor(String authorName) async {
+
+
     var future = postRepository.getPostsSameAuthor(authorName);
     future.then((response) {
       setState(() {
         List<Map<String, dynamic>> jsonDataList =
             List<Map<String, dynamic>>.from(response.data);
-
         posts = jsonDataList.map((json) => Post.fromJson(json)).toList();
+        //  posts = posts.length > 5 ? posts.take(5).toList() : List.from(posts);
         listTitlePost = posts.map((post) => post.title).toList();
         listDateTime = posts.map((post) => post.updatedAt).toList();
       });
@@ -410,71 +442,31 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     });
   }
 
-  Widget _menuAnchor() {
-    String title = 'hành động';
-    return ListTile(
-      title: Text(title),
-      trailing: PopupMenuButton(
-        itemBuilder: (context) => [
-          const PopupMenuItem(
-            child: Text('item1'),
-            value: 'a',
-          ),
-          PopupMenuItem(child: Text('item2'), value: 'b')
-        ],
-        onSelected: (String value) {
-          setState(() {
-            title = value;
-          });
-        },
-      ),
-    );
-  }
-
-  Widget _builderAuthortPostContent() {
-    return Container(
-      height: 100,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildUserDetails(),
-          _buildPostDetails(),
-        ],
-      ),
-    );
-  }
-
-  Widget _builderTitlePostContent() {
-    return Padding(
-      padding: EdgeInsets.all(0.0),
-      child: Text(
-        _titleController.text,
-        style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-      ),
+  Widget _builderAuthorPostContent() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [_buildUserDetails(), Text(_updateAtController.text)],
     );
   }
 
   Widget _buildUserDetails() {
     return Container(
-      height: 50,
       child: Row(
-
-        // mainAxisSize: MainAxisSize.min,
-        // crossAxisAlignment: CrossAxisAlignment.center,
-        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        //  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           InkWell(
             onTap: () {},
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
-              child: _buildPostImage(avatarUrl ?? ""),
+              child: _buildPostImage(user.avatarUrl ?? ""),
             ),
           ),
           const SizedBox(width: 16),
           _buildUserProfile(),
           const SizedBox(width: 16),
-          _buildFollowButton(),
+          if (user.id != authorPost.id) _buildFollowButton(),
         ],
       ),
     );
@@ -482,26 +474,35 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   Widget _buildUserProfile() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           // width: 200,
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text(_nameController.text),
-            SizedBox(
-              width: 16,
-            ),
-            Text(_nickNameController.text),
-          ]),
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                InkWell(
+                  onTap: () {},
+                  child: Text(
+                    _nameController.text,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(_nickNameController.text),
+              ]),
         ),
         SizedBox(
           width: 200,
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            //mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildIconWithText(Icons.star, '174'),
-              const SizedBox(width: 12),
               _buildIconWithText(Icons.verified_user_sharp, '9'),
               const SizedBox(width: 12),
               _buildIconWithText(Icons.pending_actions, '4'),
@@ -511,12 +512,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ],
     );
   }
+
   Widget _buildIconWithText(IconData icon, String text) {
     String messageValue = "";
     switch (icon) {
-      case Icons.star:
-        messageValue = 'reputation';
-        break;
       case Icons.verified_user_sharp:
         messageValue = 'Người theo dõi';
         break;
@@ -526,7 +525,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       default:
         messageValue = 'Default Message';
     }
-    ;
     return Tooltip(
       message: messageValue,
       child: Row(
@@ -545,39 +543,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   Widget _buildFollowButton() {
     return ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            //padding: const EdgeInsets.all(16),
-            backgroundColor: Colors.grey,
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 12,
-                color: Colors.white,
-              ),
-              const Text(
-                "Theo dõi",
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-    );
-  }
-
-  Widget _buildPostDetails() {
-    return Container(
-      height: 50,
+      onPressed: () => _follow(),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Column(
-            children: [Text(_updateAtController.text)],
-          ),
+          isFollow ? Icon(Icons.check) : Icon(Icons.add),
+          isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
         ],
       ),
     );
@@ -610,9 +582,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       appRouter.go('/login');
       //GoRouter.of(context).go('/login');
     } else {
-      if (statevote == false) {
+      if (stateVote == false) {
         setState(() {
-          statevote = true;
+          stateVote = true;
         });
         hasVoted = await checkVote(widget.id, JwtPayload.sub!);
         if (hasVoted == false) {
@@ -627,8 +599,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           Post post = Post.fromJson(postScore.data);
           setState(() {
             score = post.score;
-            upvote = true;
-            downvote = false;
+            upVote = true;
+            downVote = false;
           });
         } else {
           if (hasVoted == true && typeVote == true) {
@@ -637,8 +609,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             Post post = Post.fromJson(postScore.data);
             setState(() {
               score = post.score;
-              upvote = false;
-              downvote = false;
+              upVote = false;
+              downVote = false;
             });
             await voteRepository.deleteVote(idVote);
           } else {
@@ -648,15 +620,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               Post post = Post.fromJson(postScore.data);
               setState(() {
                 score = post.score;
-                upvote = false;
-                downvote = false;
+                upVote = false;
+                downVote = false;
               });
               await voteRepository.deleteVote(idVote);
             }
           }
         }
         setState(() {
-          statevote = false;
+          stateVote = false;
         });
       }
     }
@@ -668,9 +640,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       appRouter.go('/login');
       GoRouter.of(context).go('/login');
     } else {
-      if (statevote == false) {
+      if (stateVote == false) {
         setState(() {
-          statevote == true;
+          stateVote == true;
         });
 
         hasVoted = await checkVote(widget.id, JwtPayload.sub!);
@@ -687,8 +659,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           Post post = Post.fromJson(postScore.data);
           setState(() {
             score = post.score;
-            downvote = true;
-            upvote = false;
+            downVote = true;
+            upVote = false;
           });
         } else {
           if (hasVoted == true && typeVote == false) {
@@ -697,8 +669,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             Post post = Post.fromJson(postScore.data);
             setState(() {
               score = post.score;
-              upvote = false;
-              downvote = false;
+              upVote = false;
+              downVote = false;
             });
             await voteRepository.deleteVote(idVote);
           } else {
@@ -708,8 +680,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               Post post = Post.fromJson(postScore.data);
               setState(() {
                 score = post.score;
-                downvote = false;
-                upvote = false;
+                downVote = false;
+                upVote = false;
               });
 
               await voteRepository.deleteVote(idVote);
@@ -717,7 +689,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           }
         }
         setState(() {
-          statevote = false;
+          stateVote = false;
         });
       }
     }
@@ -725,25 +697,22 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   Future<void> _toggleBookmark() async {
     if (JwtPayload.sub != null) {
-      if (isBookmarked == true) {
-        var unBookmark =
-            await bookmarkRepository.unBookmark(widget.id, JwtPayload.sub!);
-        //delete postid trong list post;
-        //update bookmarks
+      if (isBookmark == true) {
+        await bookmarkRepository.unBookmark(widget.id, JwtPayload.sub!);
         setState(() {
-          isBookmarked = !isBookmarked;
+          isBookmark = !isBookmark;
         });
       } else {
-        if (isBookmarked == false) {
-          var addbookmark =
-              await bookmarkRepository.addBookmark(widget.id, JwtPayload.sub!);
+        if (isBookmark == false) {
+          BookmarkInfo bookmarkInfo =
+              BookmarkInfo(itemId: widget.id, type: "posts");
+          await bookmarkRepository.addBookmark(bookmarkInfo, JwtPayload.sub!);
           setState(() {
-            isBookmarked = !isBookmarked;
+            isBookmark = !isBookmark;
           });
         }
       }
     } else {
-      ////
       appRouter.go('/login');
       // String message = "Bạn chưa đăng nhập";
       //  showTopRightSnackBar(context, message, NotifyType.error);
@@ -758,10 +727,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _shareFacebook(String url) async {
-    url =
-        'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
+    url = 'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
     final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
-
     if (await canLaunchUrlString(fbUrl)) {
       await launchUrlString(fbUrl);
     } else {
@@ -769,16 +736,27 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     }
   }
 
-  onPressed() {
-    // Hàm này sẽ được gọi khi người dùng nhấn vào một trong những hành động cụ thể
-  }
-
-  Widget _buildColumn3() {
+  Widget _sidebar() {
+    // Gọi hàm để lấy widget TableOfContents
+    Widget? tableOfContentsWidget = _tableOfContents();
     return Container(
       width: 300,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_tableOfContents(), _relatedArticles()],
+        children: [
+          _titletableOfContents(),
+          if (tableOfContentsWidget != null)
+            tableOfContentsWidget
+          else
+            const Padding(
+              padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
+              child: Text(
+                "Không có mục lục",
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          _relatedArticles(),
+        ],
       ),
     );
   }
@@ -800,22 +778,22 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       } else if (node is markdown.Element && node.tag == 'h3') {
         headings.add(node.textContent);
       }
-      // Thêm các điều kiện cho các cấp tiêu đề khác (h4, h5, ...)
     }
-
     return headings;
   }
 
-  Widget _tableOfContents() {
-    // Lấy danh sách tiêu đề từ nội dung Markdown
+  Widget? _tableOfContents() {
     List<String> headings =
         extractHeadingsFromMarkdown(_contentController.text);
-
+    if (headings.isEmpty) {
+      return null;
+    }
     // Tạo một ScrollController
-    ScrollController _scrollController = ScrollController();
-
+    ScrollController scrollController = ScrollController();
     return TableOfContents(
-        headings: headings, scrollController: _scrollController);
+      headings: headings,
+      scrollController: scrollController,
+    );
   }
 
   Widget _relatedArticles() {
@@ -838,14 +816,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         const SizedBox(
           width: 10,
         ),
-        Container(
-          height: 20,
-          width: 100,
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.grey,
-                width: 1.0, // Độ dày của border
+        Expanded(
+          child: Container(
+            height: 20,
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey,
+                  width: 1.0, // Độ dày của border
+                ),
               ),
             ),
           ),
@@ -869,20 +848,17 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () => _openRelatedArticle(post.id),
-                          child: RichText(
-                            text: TextSpan(
-                              text: post.title,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w200,
-                              ),
+                    padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () => _openRelatedArticle(post.id),
+                        child: RichText(
+                          text: TextSpan(
+                            text: post.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w200,
                             ),
                           ),
                         ),
@@ -891,13 +867,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-                    child: Text(convertDateString(post.updatedAt.toString())),
+                    child: Text(getTimeAgo(post.updatedAt)),
                   ),
                   // _feedItem(),
                   Container(
                     height: 1,
                     width: 300,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
                           color: Colors.grey,
@@ -915,8 +891,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _openRelatedArticle(String postId) {
-    GoRouter.of(context).go('/posts/$postId');
-    _loadPost(postId);
+    appRouter.go('/posts/$postId');
+    // _initState();
   }
 
   Widget _feedItem() {
@@ -947,9 +923,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             child: Row(
               children: [
                 Icon(
-                  Icons.comment, // Mã Unicode của biểu tượng con mắt
+                  Icons.comment,
                   color: Color.fromARGB(255, 212, 211, 211),
-                  // Màu của biểu tượng,
                   size: 18,
                 ),
                 SizedBox(
@@ -1048,21 +1023,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 }
 
-Widget _bodyTableOfContents() {
-  return const Padding(
-    padding: EdgeInsets.all(12.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('1. Process'),
-        Text('2. Thread'),
-        Text('3. IPc'),
-        Text('4. Time of disscustion')
-      ],
-    ),
-  );
-}
-
 ///// close cac bai viet lien quan
 Widget _titleRelatedArticles() {
   return Row(
@@ -1075,37 +1035,20 @@ Widget _titleRelatedArticles() {
       const SizedBox(
         width: 10,
       ),
-      Container(
-        height: 20,
-        width: 50,
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey,
-              width: 1.0, // Độ dày của border
+      Expanded(
+        child: Container(
+          height: 20,
+          width: 50,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey,
+                width: 1.0, // Độ dày của border
+              ),
             ),
           ),
         ),
       )
     ],
   );
-}
-
-class MenuItemButton extends StatelessWidget {
-  final String label;
-
-  const MenuItemButton({
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        // Handle the press for the menu item
-        // You can perform any action or navigation here
-      },
-      child: Text(label),
-    );
-  }
 }

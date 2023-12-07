@@ -1,5 +1,6 @@
 import "package:cay_khe/api_config.dart";
 import "package:cay_khe/dtos/post_dto.dart";
+import 'package:dio/dio.dart';
 import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
 import 'package:dio/dio.dart';
 
@@ -17,6 +18,8 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> delete(String id) {
+
+
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.delete('/$id/delete');
   }
@@ -68,4 +71,5 @@ class PostRepository {
     return dio
         .put('/updateScore', queryParameters: {'id': idPost, 'score': score});
   }
+
 }

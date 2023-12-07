@@ -1,4 +1,5 @@
 import 'package:cay_khe/dtos/comment.dart';
+import 'package:cay_khe/ui/widgets/add_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -31,7 +32,6 @@ class _CreateCommentViewState extends State<CreateCommentView> {
   bool _isEditing = true;
   final TextEditingController _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final ImageRepository _imageRepository = ImageRepository();
   final CommentRepository commentRepository = CommentRepository();
   @override
   void initState() {
@@ -193,11 +193,7 @@ class _CreateCommentViewState extends State<CreateCommentView> {
               ),),
               Column(
                 children: [
-                  IconButton(
-                    onPressed: getImage,
-                    tooltip: 'Add image',
-                    icon: Icon(Icons.image),
-                  ),
+                  AddImage(imageCallback: insertText)
                 ],
               )
             ],
@@ -262,22 +258,6 @@ class _CreateCommentViewState extends State<CreateCommentView> {
         ),
       ),
     );
-  }
-
-  Future getImage() async {
-    XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      var future = _imageRepository.upload(image);
-      future.then((response) {
-        insertText('![Tux, the Linux mascot](${ApiConfig.baseUrl}/${ApiConfig.imagesEndpoint}/${response.data.toString()})');
-      }).catchError((error) {
-        String message = getMessageFromException(error);
-        showTopRightSnackBar(context, message, NotifyType.error);
-      });
-    } else {
-      print('No image selected.');
-    }
   }
 
   void insertText(String input) {

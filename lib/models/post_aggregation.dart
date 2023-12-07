@@ -24,6 +24,17 @@ class PostAggregation {
     required this.updatedAt,
     required this.user
   });
+  PostAggregation.empty()
+      : id = null,
+        title = '',
+        content = '',
+        tags = [],
+        score = 0,
+        commentCount=0,
+        private = false,
+        updatedAt = DateTime.now(),
+        user = User.empty();
+
 
   factory PostAggregation.fromJson(Map<String, dynamic> json) {
     return PostAggregation(

@@ -1,4 +1,4 @@
-import 'dart:js_interop';
+
 
 import "package:cay_khe/api_config.dart";
 import 'package:cay_khe/dtos/vote_dto.dart';
