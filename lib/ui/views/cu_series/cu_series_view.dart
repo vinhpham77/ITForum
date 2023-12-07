@@ -43,7 +43,7 @@ class _CuSeriesState extends State<CuSeries> {
   List<String> selectedPostIds = [];
   List<PostAggregation> allPostUsers = [];
   late ResultCount<PostAggregation> resultCount;
-  final double _contentHeight = 430;
+  final double _contentHeight = 448 - bodyVerticalSpace;
 
   @override
   void initState() {
@@ -592,5 +592,12 @@ class _CuSeriesState extends State<CuSeries> {
     }
 
     return _buildPostListView();
+  }
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    _titleController.dispose();
+    super.dispose();
   }
 }

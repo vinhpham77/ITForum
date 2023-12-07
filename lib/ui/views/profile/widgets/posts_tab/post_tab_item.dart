@@ -3,8 +3,8 @@ import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 
-import '../../../common/utils/date_time.dart';
-import '../../../router.dart';
+import '../../../../common/utils/date_time.dart';
+import '../../../../router.dart';
 
 class PostTabItem extends StatelessWidget {
   final PostAggregation postUser;
@@ -26,7 +26,7 @@ class PostTabItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(50),
               child: UserAvatar(
                 imageUrl: postUser.user.avatarUrl,
-                size: 52,
+                size: 54,
               )),
           const SizedBox(width: 12),
           Column(
@@ -38,7 +38,7 @@ class PostTabItem extends StatelessWidget {
                     JwtPayload.displayName!,
                     style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w300,
                         color: Colors.indigo[700]),
                   ),
                   const SizedBox(width: 12),
@@ -47,6 +47,7 @@ class PostTabItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[700],
+                      fontWeight: FontWeight.w300,
                     ),
                   ),
                 ],
@@ -54,13 +55,14 @@ class PostTabItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: InkWell(
-                  onTap: () => appRouter.push('/posts/${postUser.id}', extra: {}),
+                  onTap: () =>
+                      appRouter.push('/posts/${postUser.id}', extra: {}),
                   hoverColor: Colors.black12,
                   child: Text(
                     postUser.title,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w400,
                       color: Colors.black87,
                     ),
                   ),
@@ -71,9 +73,9 @@ class PostTabItem extends StatelessWidget {
                   Row(children: [
                     for (var tag in postUser.tags)
                       Container(
-                        margin: const EdgeInsets.only(right: 8),
+                        margin: const EdgeInsets.only(right: 10),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(8),
@@ -81,48 +83,40 @@ class PostTabItem extends StatelessWidget {
                         child: Text(
                           tag,
                           style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w300,
                             color: Colors.black54,
                           ),
                         ),
                       ),
-                    const SizedBox(width: 24),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.comment_outlined,
-                          size: 16,
-                          color: Colors.black87,
-                        ),
-                        const SizedBox(width: 2),
-                        Text('${postUser.commentCount}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.black87)),
-                      ],
-                    ),
-                    const SizedBox(width: 4),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          postUser.score < 0
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward,
-                          size: 16,
-                          color: Colors.black87,
-                        ),
-                        Text('${postUser.score}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.black87)),
-                      ],
-                    )
+                    const SizedBox(width: 16),
+                    buildFieldCount(Icons.comment_outlined, postUser.commentCount),
+                    buildFieldCount(postUser.score < 0
+                        ? Icons.trending_down_outlined
+                        : Icons.trending_up_outlined, postUser.score),
                   ]),
                 ],
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  buildFieldCount(IconData icon, int count) {
+    return Container(
+      margin: const EdgeInsets.only(right: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: Colors.grey[700],
+          ),
+          const SizedBox(width: 2),
+          Text('$count', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
         ],
       ),
     );
