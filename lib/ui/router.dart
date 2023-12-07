@@ -7,7 +7,6 @@ import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/question_view.dart';
 import 'package:cay_khe/ui/views/profile/profile_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
-import 'package:cay_khe/ui/views/user_profile/user_profile_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';

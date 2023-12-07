@@ -30,6 +30,7 @@ class PostAggregation {
         content = '',
         tags = [],
         score = 0,
+        commentCount=0,
         private = false,
         updatedAt = DateTime.now(),
         user = User.empty();
