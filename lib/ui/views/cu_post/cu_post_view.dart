@@ -43,7 +43,7 @@ class _CuPostState extends State<CuPost> {
   List<Tag> selectedTags = [];
   List<Tag> allTags = [];
   bool isLoaded = false;
-  double contentHeight = 370;
+  double contentHeight = 382 - bodyVerticalSpace;
 
   @override
   void initState() {

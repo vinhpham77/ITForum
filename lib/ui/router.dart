@@ -5,8 +5,9 @@ import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/question_view.dart';
+import 'package:cay_khe/ui/views/profile/profile_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
-import 'package:cay_khe/ui/views/user_profile/user_profile_view.dart';
+import 'package:cay_khe/ui/views/profile/profile_view.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
@@ -231,65 +232,57 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/profile/:username',
+      redirect: (BuildContext context, GoRouterState state) async {
+        return '/profile/${state.pathParameters['username']}/posts';
+      },
+    ),
+    GoRoute(
+      path: '/profile/:username/posts',
       pageBuilder: (context, state) => MaterialPage<void>(
         key: UniqueKey(),
         child: ScreenWithHeaderAndFooter(
-          body: UserProfile(
-              username: state.pathParameters['username']!,
-              selectedIndex: 0,
-              params: state.extra as Map<String, dynamic>? ?? {}),
+          body: Profile(
+            username: state.pathParameters['username']!,
+            selectedIndex: 0,
+            params: state.extra as Map<String, dynamic>? ?? {},
+          ),
         ),
       ),
-      routes: [
-        GoRoute(
-          path: 'posts',
-          pageBuilder: (context, state) => MaterialPage<void>(
-            key: UniqueKey(),
-            child: ScreenWithHeaderAndFooter(
-              body: UserProfile(
-                username: state.pathParameters['username']!,
-                selectedIndex: 0,
-                params: state.extra as Map<String, dynamic>? ?? {},
-              ),
-            ),
-          ),
-        ),
-        GoRoute(
-          path: 'questions',
-          pageBuilder: (context, state) => MaterialPage<void>(
-            key: UniqueKey(),
-            child: ScreenWithHeaderAndFooter(
-              body: UserProfile(
-                username: state.pathParameters['username']!,
-                selectedIndex: 1,
-                params: state.extra as Map<String, dynamic>? ?? {},
-              ),
-            ),
-          ),
-        ),
-        GoRoute(
-          path: 'series',
-          pageBuilder: (context, state) => MaterialPage<void>(
-            key: UniqueKey(),
-            child: ScreenWithHeaderAndFooter(
-                body: UserProfile(
-                    username: state.pathParameters['username']!,
-                    selectedIndex: 2,
-                    params: state.extra as Map<String, dynamic>? ?? {})),
-          ),
-        ),
-        GoRoute(
-            path: 'bookmarks',
-            pageBuilder: (context, state) => MaterialPage<void>(
-                key: UniqueKey(),
-                child: ScreenWithHeaderAndFooter(
-                  body: UserProfile(
-                      username: state.pathParameters['username']!,
-                      selectedIndex: 3,
-                      params: state.extra as Map<String, dynamic>? ?? {}),
-                )))
-      ],
     ),
+    GoRoute(
+      path: '/profile/:username/questions',
+      pageBuilder: (context, state) => MaterialPage<void>(
+        key: UniqueKey(),
+        child: ScreenWithHeaderAndFooter(
+          body: Profile(
+            username: state.pathParameters['username']!,
+            selectedIndex: 1,
+            params: state.extra as Map<String, dynamic>? ?? {},
+          ),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/profile/:username/series',
+      pageBuilder: (context, state) => MaterialPage<void>(
+        key: UniqueKey(),
+        child: ScreenWithHeaderAndFooter(
+            body: Profile(
+                username: state.pathParameters['username']!,
+                selectedIndex: 2,
+                params: state.extra as Map<String, dynamic>? ?? {})),
+      ),
+    ),
+    GoRoute(
+        path: '/profile/:username/bookmarks',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 3,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
     GoRoute(
       path: '/comment',
       pageBuilder: (context, state) => const MaterialPage<void>(

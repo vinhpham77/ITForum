@@ -13,7 +13,7 @@ class CustomTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  // a button with bottom border as activated
+    // a button with bottom border as activated
     return InkWell(
       onTap: onTap,
       hoverColor: Theme.of(context).primaryColor.withOpacity(0.2),
@@ -22,7 +22,9 @@ class CustomTab extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isActive ? Theme.of(context).primaryColor : Colors.transparent,
+              color: isActive
+                  ? Theme.of(context).primaryColor
+                  : Colors.transparent,
               width: 2,
             ),
           ),
@@ -31,9 +33,4 @@ class CustomTab extends StatelessWidget {
       ),
     );
   }
-
-  // help me
-
-
-
 }
