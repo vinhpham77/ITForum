@@ -148,7 +148,6 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'edit',
                   pageBuilder: (context, state) => MaterialPage<void>(
-                      key: state.pageKey,
                       child: ScreenWithHeaderAndFooter(
                         body: CuPost(id: state.pathParameters['pid']!),
                       )),

@@ -24,9 +24,9 @@ class ScreenWithHeaderAndFooter extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                color: Colors.black12.withOpacity(0.05),
-                constraints: const BoxConstraints(
+                constraints: BoxConstraints(
                   minHeight: headerHeight + 292,
+                  minWidth: screenSize.width,
                 ),
                 child: body,
               ),

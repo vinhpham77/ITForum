@@ -116,8 +116,8 @@ class PostItem extends StatelessWidget {
                         children: [
                           Icon(
                             postUser.score < 0
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward,
+                                ? Icons.trending_down_outlined
+                                : Icons.trending_up_outlined,
                             size: 16,
                             color: Colors.black87,
                           ),
