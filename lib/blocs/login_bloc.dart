@@ -45,12 +45,12 @@ class LoginBloc {
       usernameGlobal = username;
       loginStatusController.sink.add(usernameGlobal);
 
-      SharedPreferences.getInstance().then((prefs) {
+      return SharedPreferences.getInstance().then((prefs) {
         prefs.setString('refreshToken', response.data['token']);
-        JwtInterceptor().refreshAccessToken(prefs, false).then((_) => _ != null);
+        return JwtInterceptor()
+            .refreshAccessToken(prefs, false)
+            .then((value) => value != null);
       });
-
-      return true;
     }).catchError((error) {
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);

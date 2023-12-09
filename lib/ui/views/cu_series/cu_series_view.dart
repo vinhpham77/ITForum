@@ -1,22 +1,21 @@
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/series_dto.dart';
-import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
-import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
+import 'package:cay_khe/ui/views/cu_series/bloc/cu_series_bloc.dart';
 import 'package:cay_khe/ui/views/cu_series/widgets/post_item.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../dtos/jwt_payload.dart';
-import '../../../models/post_aggregation.dart';
-import '../../../models/result_count.dart';
 import '../../../models/series.dart';
 import '../../../repositories/post_repository.dart';
 import '/ui/widgets/notification.dart';
+
+const double contentHeight = 448 - bodyVerticalSpace;
+const int _left = 4;
+const int _right = 1;
 
 class CuSeries extends StatefulWidget {
   final String? id;
@@ -28,172 +27,207 @@ class CuSeries extends StatefulWidget {
 }
 
 class _CuSeriesState extends State<CuSeries> {
-  final TextEditingController _contentController = TextEditingController();
+  final CuSeriesBloc _bloc = CuSeriesBloc(
+      postRepository: PostRepository(), seriesRepository: SeriesRepository());
   final TextEditingController _titleController = TextEditingController();
-  final seriesRepository = SeriesRepository();
-  final postRepository = PostRepository();
+  final TextEditingController _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool isLoaded = false;
-  late String operation;
-  Post? selectedPost;
-  bool _isEditing = true;
-  final int _left = 3;
-  final int _right = 1;
-  List<PostAggregation> selectedPostUsers = [];
-  List<String> selectedPostIds = [];
-  List<PostAggregation> allPostUsers = [];
-  late ResultCount<PostAggregation> resultCount;
-  final double _contentHeight = 448 - bodyVerticalSpace;
+
+  bool get isCreateMode => widget.id == null;
+
+  String get operation => isCreateMode ? 'Tạo' : 'Sửa';
 
   @override
   void initState() {
     super.initState();
-    operation = widget.id == null ? 'Tạo' : 'Sửa';
 
-    // TODO: implement futureBuilder
-    if (widget.id != null) {
-      Future.wait([_loadSeries(), _loadPosts()]).then((value) {
-        isLoaded = true;
-      });
+    if (isCreateMode) {
+      _bloc.add(InitEmptySeriesEvent());
     } else {
-      isLoaded = true;
+      _bloc.add(LoadSeriesEvent(id: widget.id!));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (operation == 'Sửa' && widget.id != null && isLoaded == false) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return _buildCuSeries(context);
+    return BlocProvider(
+        create: (context) => _bloc,
+        child: BlocListener<CuSeriesBloc, CuSeriesState>(
+          listener: (context, state) {
+            if (state is SeriesCreatedState) {
+              appRouter.go('/series/${state.series.id}/edit');
+            } else if (state is SeriesUpdatedState) {
+              appRouter.go('/series/${state.series.id}');
+            } else if (state is AddedPostState) {
+              appRouter.pop();
+            } else if (state is RemovedPostState) {
+            } else if (state is SeriesNotFoundState) {
+              showTopRightSnackBar(context, state.message, NotifyType.error);
+              appRouter.go('/not-found');
+            } else if (state is UnAuthorizedState) {
+              showTopRightSnackBar(context, state.message, NotifyType.warning);
+              appRouter.go('/forbidden');
+            } else if (state is CuSeriesLoadErrorState) {
+              showTopRightSnackBar(context, state.message, NotifyType.error);
+              appRouter.go('/');
+            } else if (state is CuOperationErrorState) {
+              showTopRightSnackBar(context, state.message, NotifyType.error);
+            }
+          },
+          child: Container(
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            constraints:
+                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+            child: BlocBuilder<CuSeriesBloc, CuSeriesState>(
+              builder: (context, state) {
+                if (state is CuSeriesSubState) {
+                  _titleController.text = state.series?.title ?? '';
+                  _contentController.text = state.series?.content ?? '';
+                  return buildBodyContainer(child: buildForm(context, state));
+                }
+
+                return buildBodyContainer(
+                  child: const CircularProgressIndicator(),
+                );
+              },
+            ),
+          ),
+        ));
   }
 
-  Center _buildCuSeries(BuildContext context) {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-            horizontal: horizontalSpace, vertical: bodyVerticalSpace),
-        constraints: const BoxConstraints(maxWidth: maxContent),
-        child: Form(
-          key: _formKey,
-          child: Column(
+  Container buildBodyContainer({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(
+          horizontal: horizontalSpace, vertical: bodyVerticalSpace),
+      constraints: const BoxConstraints(maxWidth: maxContent),
+      child: child,
+    );
+  }
+
+  Form buildForm(BuildContext context, CuSeriesSubState state) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          buildTopBarRow(state),
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    flex: _left,
-                    child: SizedBox(
-                      height: 40,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.only(
-                              left: 8,
-                              top: 8,
-                              bottom: 8,
-                            ),
-                            child: Text(
-                              '$operation series',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isEditing = !_isEditing;
-                                  });
-                                },
-                                child: Text(
-                                  'Chỉnh sửa',
-                                  style: TextStyle(
-                                    color: (_isEditing)
-                                        ? Colors.black87
-                                        : Colors.grey.shade400,
-                                    fontSize: 16,
-                                    fontWeight: (_isEditing)
-                                        ? FontWeight.w500
-                                        : FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isEditing = !_isEditing;
-                                  });
-                                },
-                                child: Text(
-                                  'Xem trước',
-                                  style: TextStyle(
-                                    color: (!_isEditing)
-                                        ? Colors.black87
-                                        : Colors.grey.shade400,
-                                    fontSize: 16,
-                                    fontWeight: (!_isEditing)
-                                        ? FontWeight.w500
-                                        : FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: _right,
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 20),
-                      height: 40,
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          GoRouter.of(context).go('/');
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    flex: _left,
-                    child: (_isEditing)
-                        ? _buildSeriesEditingTab(context)
-                        : _buildSeriesPreviewTab(context),
-                  ),
-                  Expanded(
-                    flex: _right,
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 20),
-                      height: 40,
-                      alignment: Alignment.centerRight,
-                    ),
-                  ),
-                ],
+              Expanded(
+                  flex: _left,
+                  child: state.isEditMode
+                      ? _buildSeriesEditingTab(context, state)
+                      : _buildSeriesPreviewTab(context, state)),
+              Expanded(
+                flex: _right,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 20),
+                  height: 40,
+                  alignment: Alignment.centerRight,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Column _buildSeriesPreviewTab(BuildContext context) {
+  Row buildTopBarRow(CuSeriesSubState state) {
+    return Row(
+      children: [
+        Expanded(
+          flex: _left,
+          child: SizedBox(
+            height: 40,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(
+                    left: 8,
+                    top: 8,
+                    bottom: 8,
+                  ),
+                  child: Text(
+                    '$operation series',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    buildSwitchModeButton(
+                        'Chỉnh sửa', true, state.isEditMode, state),
+                    buildSwitchModeButton(
+                        'Xem trước', false, state.isEditMode, state)
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: _right,
+          child: Container(
+            margin: const EdgeInsets.only(left: 20),
+            height: 40,
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                appRouter.go('/');
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  TextButton buildSwitchModeButton(
+      String text, bool origin, bool active, CuSeriesSubState state) {
+    return TextButton(
+      onPressed: () {
+        if (origin == active) {
+          return;
+        }
+
+        Series newSeries;
+        if (state.series == null) {
+          newSeries = Series(
+              title: _titleController.text,
+              content: _contentController.text,
+              postIds: [],
+              isPrivate: false,
+              createdBy: '',
+              updatedAt: DateTime.now(),
+              score: 0,
+              commentCount: 0,
+              id: '');
+        } else {
+          newSeries = state.series!.copyWith(
+              title: _titleController.text, content: _contentController.text);
+        }
+
+        _bloc.add(SwitchModeEvent(
+            isEditMode: origin,
+            series: newSeries,
+            selectedPostUsers: state.selectedPostUsers,
+            postUsers: state.postUsers));
+      },
+      child: Text(text, style: getTextStyle(origin == active)),
+    );
+  }
+
+  Column _buildSeriesPreviewTab(BuildContext context, state) {
     return Column(
       children: [
         Container(
-          constraints: BoxConstraints(maxHeight: 128 + _contentHeight),
+          constraints: const BoxConstraints(maxHeight: 128 + contentHeight),
           decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -207,7 +241,7 @@ class _CuSeriesState extends State<CuSeries> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: Markdown(
-            data: getMarkdown(),
+            data: getMarkdown(state),
             styleSheet:
                 MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
               textScaleFactor: 1.4,
@@ -238,12 +272,22 @@ class _CuSeriesState extends State<CuSeries> {
             softLineBreak: true,
           ),
         ),
-        _buildActionContainer()
+        _buildActionContainer(state)
       ],
     );
   }
 
-  Column _buildSeriesEditingTab(BuildContext context) {
+  TextStyle getTextStyle(bool active) {
+    if (active) {
+      return const TextStyle(
+          color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w500);
+    }
+
+    return const TextStyle(
+        color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400);
+  }
+
+  Column _buildSeriesEditingTab(BuildContext context, CuSeriesSubState state) {
     return Column(
       children: [
         Container(
@@ -261,35 +305,31 @@ class _CuSeriesState extends State<CuSeries> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
-            controller: _titleController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Vui lòng nhập tiêu đề';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(
-              hintText: 'Viết tiêu đề ở đây...',
-              hintStyle: TextStyle(
+              controller: _titleController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Vui lòng nhập tiêu đề';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                hintText: 'Viết tiêu đề ở đây...',
+                hintStyle: TextStyle(
+                  color: Colors.black,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                ),
+                border: InputBorder.none,
+              ),
+              style: const TextStyle(
                 color: Colors.black,
-                fontSize: 36,
+                fontSize: 48,
                 fontWeight: FontWeight.w700,
               ),
-              border: InputBorder.none,
-            ),
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
-            ),
-            maxLines: 1,
-            onChanged: (value) {
-              setState(() {});
-            },
-          ),
+              maxLines: 1),
         ),
         Container(
-          height: _contentHeight,
+          height: contentHeight,
           decoration: BoxDecoration(
             boxShadow: const [
               BoxShadow(
@@ -298,7 +338,7 @@ class _CuSeriesState extends State<CuSeries> {
                 offset: Offset(0, 2),
               ),
             ],
-            borderRadius: widget.id == null
+            borderRadius: isCreateMode
                 ? const BorderRadius.only(
                     bottomLeft: Radius.circular(8),
                     bottomRight: Radius.circular(8))
@@ -307,21 +347,20 @@ class _CuSeriesState extends State<CuSeries> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
-            controller: _contentController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Vui lòng nhập nội dung';
-              }
-              return null;
-            },
-            maxLines: null,
-            decoration: const InputDecoration.collapsed(
-              hintText: 'Viết nội dung ở đây...',
-            ),
-            onChanged: (value) {
-              setState(() {});
-            },
-          ),
+              controller: _contentController,
+              onChanged: (value) {
+                state.series?.content = value;
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Vui lòng nhập nội dung';
+                }
+                return null;
+              },
+              maxLines: null,
+              decoration: const InputDecoration.collapsed(
+                hintText: 'Viết nội dung ở đây...',
+              )),
         ),
         if (widget.id != null)
           Container(
@@ -346,13 +385,13 @@ class _CuSeriesState extends State<CuSeries> {
             child: Column(
               children: [
                 Column(children: [
-                  for (var postUser in selectedPostUsers)
+                  for (var postUser in state.selectedPostUsers)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(child: PostItem(postUser: postUser)),
                         TextButton(
-                          onPressed: () => removeSelectedPost(postUser),
+                          onPressed: () => _removeSelectedPost(postUser, state),
                           child: const Icon(Icons.close,
                               size: 20, color: Colors.black54, opticalSize: 20),
                         ),
@@ -362,7 +401,7 @@ class _CuSeriesState extends State<CuSeries> {
                       ],
                     ),
                 ]),
-                if (selectedPostUsers.isEmpty)
+                if (state.selectedPostUsers.isEmpty)
                   Container(
                     alignment: Alignment.center,
                     padding:
@@ -370,7 +409,7 @@ class _CuSeriesState extends State<CuSeries> {
                     child: const Text(
                         'Chưa có bài viết nào. Vui lòng thêm tối thiểu 1 bài viết để chia sẻ với mọi người!'),
                   ),
-                if (selectedPostUsers.isNotEmpty)
+                if (state.selectedPostUsers.isNotEmpty)
                   Divider(
                     endIndent: 48,
                     thickness: 1,
@@ -382,19 +421,19 @@ class _CuSeriesState extends State<CuSeries> {
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Theme.of(context).primaryColor),
                     ),
-                    onPressed: () => buildShowModalBottomSheet(context),
+                    onPressed: () => buildShowModalBottomSheet(context, state),
                     child: const Text('Thêm bài viết'),
                   ),
                 )
               ],
             ),
           ),
-        _buildActionContainer()
+        _buildActionContainer(state)
       ],
     );
   }
 
-  Container _buildActionContainer() {
+  Container _buildActionContainer(CuSeriesSubState state) {
     return Container(
         margin: const EdgeInsets.only(top: 16),
         child: Row(
@@ -402,7 +441,7 @@ class _CuSeriesState extends State<CuSeries> {
           children: [
             FilledButton(
               onPressed: () {
-                saveSeries(false);
+                saveSeries(false, state);
               },
               child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
             ),
@@ -411,7 +450,7 @@ class _CuSeriesState extends State<CuSeries> {
               child: TextButton(
                 style: TextButton.styleFrom(),
                 onPressed: () {
-                  saveSeries(true);
+                  saveSeries(true, state);
                 },
                 child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
               ),
@@ -420,7 +459,8 @@ class _CuSeriesState extends State<CuSeries> {
         ));
   }
 
-  Future<dynamic> buildShowModalBottomSheet(BuildContext context) {
+  Future<dynamic> buildShowModalBottomSheet(
+      BuildContext context, CuSeriesSubState state) {
     return showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -436,7 +476,7 @@ class _CuSeriesState extends State<CuSeries> {
                   ),
                 ),
                 Expanded(
-                  child: openModal(),
+                  child: openModal(state),
                 ),
               ],
             ),
@@ -444,137 +484,107 @@ class _CuSeriesState extends State<CuSeries> {
         });
   }
 
-  ListView _buildPostListView() {
+  ListView _buildPostListView(CuSeriesSubState state) {
     return ListView.builder(
-      itemCount: allPostUsers.length,
+      itemCount: state.postUsers.length,
       itemBuilder: (context, index) {
         return PostItem(
-            postUser: allPostUsers[index],
+            postUser: state.postUsers[index],
             onTap: () {
-              setState(() {
-                selectedPostUsers.add(allPostUsers[index]);
-                allPostUsers.removeAt(index);
-              });
-              Navigator.pop(context);
+              _addSelectedPost(state.postUsers[index], state);
             });
       },
     );
   }
 
-  getMarkdown() {
-    String titleRaw = _titleController.text;
+  getMarkdown(CuSeriesSubState state) {
+    String titleRaw = state.series?.title ?? '';
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
     String posts = '';
-    String content = _contentController.text;
+    String content = state.series?.content ?? '';
     return '$title  \n###### $posts\n  # \n  $content';
   }
 
-  saveSeries(bool isPrivate) {
+  saveSeries(bool isPrivate, CuSeriesSubState state) {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (operation == 'Sửa' && selectedPostUsers.isEmpty) {
+    if (operation == 'Sửa' && state.selectedPostUsers.isEmpty) {
       showTopRightSnackBar(
           context, 'Vui lòng thêm ít nhất 1 bài viết', NotifyType.warning);
       return;
     }
 
-    SeriesDTO seriesDTO = createDTO(isPrivate);
-
-    Future<Response<dynamic>> future;
-    if (widget.id == null) {
-      future = seriesRepository.add(seriesDTO);
+    if (isCreateMode) {
+      _bloc.add(CreateSeriesEvent(
+          seriesDTO: createDTO(isPrivate, state),
+          isEditMode: state.isEditMode,
+          series: state.series,
+          selectedPostUsers: state.selectedPostUsers,
+          postUsers: state.postUsers));
     } else {
-      future = seriesRepository.update(widget.id!, seriesDTO);
+      _bloc.add(UpdateSeriesEvent(
+          seriesDTO: createDTO(isPrivate, state),
+          isEditMode: state.isEditMode,
+          series: state.series,
+          selectedPostUsers: state.selectedPostUsers,
+          postUsers: state.postUsers));
     }
-
-    future.then((response) {
-      Series series = Series.fromJson(response.data);
-
-      if (operation == 'Tạo') {
-        appRouter.go('/series/${series.id}/edit');
-      } else {
-        appRouter.go('/series/${series.id}');
-      }
-    }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
   }
 
-  SeriesDTO createDTO(bool isPrivate) {
+  SeriesDTO createDTO(bool isPrivate, CuSeriesSubState state) {
     return SeriesDTO(
-        title: _titleController.text,
-        content: _contentController.text,
+        title: state.series?.title ?? '',
+        content: state.series?.content ?? '',
         isPrivate: isPrivate,
-        postIds: selectedPostUsers.map((post) => post.id!).toList());
+        postIds: state.selectedPostUsers.map((e) => e.id!).toList());
   }
 
-  Future<void> _loadPosts() async {
-    var future = postRepository.getByUser(JwtPayload.sub!);
-
-    future.then((response) {
-      resultCount = ResultCount.fromJson(response.data, PostAggregation.fromJson);
-      allPostUsers = resultCount.resultList.map((e) => e).toList();
-
-      allPostUsers.removeWhere((postUser) {
-        if (selectedPostIds.contains(postUser.id)) {
-          selectedPostUsers.add(postUser);
-          return true;
-        }
-        return false;
-      });
-
-      setState(() {});
-    }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
+  Series _getNewSeries(CuSeriesSubState state) {
+    if (state.series == null) {
+      return Series(
+          title: _titleController.text,
+          content: _contentController.text,
+          postIds: [],
+          isPrivate: false,
+          createdBy: '',
+          updatedAt: DateTime.now(),
+          score: 0,
+          commentCount: 0,
+          id: '');
+    } else {
+      return state.series!.copyWith(
+          title: _titleController.text, content: _contentController.text);
+    }
   }
 
-  Future<void> _loadSeries() async {
-    var future = seriesRepository.getOne(widget.id!);
+  void _removeSelectedPost(post, CuSeriesSubState state) {
+    Series newSeries = _getNewSeries(state);
 
-    future.then((response) {
-      Series series = Series.fromJson(response.data);
-
-      if (series.createdBy != JwtPayload.sub) {
-        Navigator.pop(context);
-        appRouter.go('/forbidden');
-        return;
-      }
-
-      setState(() {
-        _titleController.text = series.title;
-        _contentController.text = series.content;
-        selectedPostIds = series.postIds;
-      });
-    }).catchError((error) {
-      if (error is DioException) {
-        if (error.response?.statusCode == 404) {
-          appRouter.go('/not-found');
-        } else if (error.response?.statusCode == 403) {
-          appRouter.go('/forbidden');
-        } else {
-          String message = getMessageFromException(error);
-          showTopRightSnackBar(context, message, NotifyType.error);
-        }
-      }
-    });
+    _bloc.add(RemovePostEvent(
+        postUser: post,
+        isEditMode: state.isEditMode,
+        series: newSeries,
+        selectedPostUsers: state.selectedPostUsers,
+        postUsers: state.postUsers));
   }
 
-  void removeSelectedPost(post) {
-    setState(() {
-      selectedPostUsers.remove(post);
-      allPostUsers.add(post);
-    });
+  void _addSelectedPost(post, CuSeriesSubState state) {
+    Series newSeries = _getNewSeries(state);
+
+    _bloc.add(AddPostEvent(
+        postUser: post,
+        isEditMode: state.isEditMode,
+        series: newSeries,
+        selectedPostUsers: state.selectedPostUsers,
+        postUsers: state.postUsers));
   }
 
-  openModal() {
-    if (allPostUsers.isEmpty) {
+  openModal(CuSeriesSubState state) {
+    if (state.postUsers.isEmpty) {
       return Container(
-        padding: const EdgeInsets.only(top: 4, bottom: 4),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -591,13 +601,14 @@ class _CuSeriesState extends State<CuSeries> {
       );
     }
 
-    return _buildPostListView();
+    return _buildPostListView(state);
   }
 
   @override
   void dispose() {
-    _contentController.dispose();
-    _titleController.dispose();
     super.dispose();
+    _titleController.dispose();
+    _contentController.dispose();
+    _bloc.close();
   }
 }

@@ -49,4 +49,29 @@ class PostAggregation {
       user: User.fromJson(json['user']),
     );
   }
+
+  PostAggregation copyWith({
+    String? id,
+    String? title,
+    String? content,
+    List<String>? tags,
+    int? score,
+    int? commentCount,
+    bool? private,
+    DateTime? updatedAt,
+    User? user,
+  }) {
+    return PostAggregation(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      tags: tags ?? this.tags,
+      score: score ?? this.score,
+      commentCount: commentCount ?? this.commentCount,
+      private: private ?? this.private,
+      updatedAt: updatedAt ?? this.updatedAt,
+      user: user ?? this.user,
+    );
+  }
+
 }

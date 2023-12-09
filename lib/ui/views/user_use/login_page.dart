@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -154,13 +155,12 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void onSignInClicked(BuildContext context) async {
-    bool isValid = await bloc.isValidInfo(
-        _usernameController.text, _passwordController.text);
-
-    if (isValid) {
-      GoRouter.of(context).go("/");
-    }
+  Future<void> onSignInClicked(BuildContext context) async {
+    bloc
+        .isValidInfo(_usernameController.text, _passwordController.text)
+        .then((value) => {
+              if (value) {GoRouter.of(context).go("/")}
+            });
   }
 
   void onToggleShowPass() {
@@ -176,6 +176,4 @@ class _LoginPageState extends State<LoginPage> {
   void navigateToSignupPage(BuildContext context) {
     GoRouter.of(context).go('/register');
   }
-
- 
 }
