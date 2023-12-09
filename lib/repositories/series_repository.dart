@@ -33,11 +33,8 @@ class SeriesRepository {
   }
 
   Future<Response<dynamic>> getOne(String id) async {
-    dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/$id');
   }
-
-
   Future<Response<dynamic>> update(String id, SeriesDTO seriesDTO) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.put('/$id/update', data: seriesDTO.toJson());
@@ -47,7 +44,6 @@ class SeriesRepository {
     return dio.put('/updateScore', queryParameters: { 'id': idPost,'score':score });
   }
   Future<Response<dynamic>> totalSeries(String username) async {
-    dio = JwtInterceptor().addInterceptors(dio);
     return dio
         .get('/totalSeries/$username');
   }

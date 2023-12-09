@@ -15,13 +15,14 @@ class FollowRepository {
     return dio.post('/create', data: followDTO.toJson());
   }
   Future<Response<dynamic>> delete(String id) {
+    dio = JwtInterceptor().addInterceptors(dio);
    return dio.delete("/delete/$id",);
   }
   Future<Response<dynamic>> checkfollow(String followerId,String followedId) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/check', queryParameters: { 'followerId': followerId,'followedId': followedId,});
   }
   Future<Response<dynamic>> totalFollower(String followedId) async {
-    dio = JwtInterceptor().addInterceptors(dio);
     return dio
         .get('/totalFollower/$followedId');
   }

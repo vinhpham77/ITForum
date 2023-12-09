@@ -17,8 +17,6 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> delete(String id) {
-
-
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.delete('/$id/delete');
   }
@@ -38,7 +36,6 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> getOne(String id) async {
-    dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/$id');
   }
 
@@ -58,24 +55,14 @@ class PostRepository {
   Future<Response<dynamic>> getPostsSameAuthor(String authorName , String postId) async {
     return dio.get('/postsSameAuthor/$authorName',queryParameters: {'postId':postId});
   }
-
-  Future<Response<dynamic>> checkVote(String postId, String userName) async {
-    return dio.get('/checkVote', queryParameters: {
-      'id': postId,
-      'userName': userName,
-    });
-  }
-
   Future<Response<dynamic>> updateScore(String idPost, int score) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio
         .put('/updateScore', queryParameters: {'id': idPost, 'score': score});
   }
   Future<Response<dynamic>> totalPost(String username) async {
-    dio = JwtInterceptor().addInterceptors(dio);
+   // dio = JwtInterceptor().addInterceptors(dio);
     return dio
         .get('/totalPost/$username');
   }
-
-
 }
