@@ -20,5 +20,10 @@ class FollowRepository {
   Future<Response<dynamic>> checkfollow(String followerId,String followedId) async {
     return dio.get('/check', queryParameters: { 'followerId': followerId,'followedId': followedId,});
   }
+  Future<Response<dynamic>> totalFollower(String followedId) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    return dio
+        .get('/totalFollower/$followedId');
+  }
 
 }

@@ -1,6 +1,4 @@
 import 'dart:html';
-
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/ui/router.dart';
@@ -42,7 +40,6 @@ class _MoreHorizState extends State<MoreHoriz> {
       ],
     );
   }
-
   Widget widgetMoreHoriz() => Row(
         children: [
           MenuAnchor(
@@ -119,8 +116,6 @@ class _MoreHorizState extends State<MoreHoriz> {
       },
     );
   }
-
-
   Future<void> deleteSeries(String id, String type) async {
     var future;
     if (type == 'bài viết') {
