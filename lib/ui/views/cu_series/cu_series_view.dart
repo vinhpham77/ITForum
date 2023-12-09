@@ -88,9 +88,7 @@ class _CuSeriesState extends State<CuSeries> {
                 }
 
                 return buildBodyContainer(
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: const CircularProgressIndicator(),
                 );
               },
             ),
@@ -393,7 +391,7 @@ class _CuSeriesState extends State<CuSeries> {
                       children: [
                         Expanded(child: PostItem(postUser: postUser)),
                         TextButton(
-                          onPressed: () => removeSelectedPost(postUser, state),
+                          onPressed: () => _removeSelectedPost(postUser, state),
                           child: const Icon(Icons.close,
                               size: 20, color: Colors.black54, opticalSize: 20),
                         ),
@@ -493,12 +491,7 @@ class _CuSeriesState extends State<CuSeries> {
         return PostItem(
             postUser: state.postUsers[index],
             onTap: () {
-              _bloc.add(AddPostEvent(
-                  postUser: state.postUsers[index],
-                  isEditMode: state.isEditMode,
-                  series: state.series,
-                  selectedPostUsers: state.selectedPostUsers,
-                  postUsers: state.postUsers));
+              _addSelectedPost(state.postUsers[index], state);
             });
       },
     );
@@ -548,11 +541,42 @@ class _CuSeriesState extends State<CuSeries> {
         postIds: state.selectedPostUsers.map((e) => e.id!).toList());
   }
 
-  void removeSelectedPost(post, CuSeriesSubState state) {
+  Series _getNewSeries(CuSeriesSubState state) {
+    if (state.series == null) {
+      return Series(
+          title: _titleController.text,
+          content: _contentController.text,
+          postIds: [],
+          isPrivate: false,
+          createdBy: '',
+          updatedAt: DateTime.now(),
+          score: 0,
+          commentCount: 0,
+          id: '');
+    } else {
+      return state.series!.copyWith(
+          title: _titleController.text, content: _contentController.text);
+    }
+  }
+
+  void _removeSelectedPost(post, CuSeriesSubState state) {
+    Series newSeries = _getNewSeries(state);
+
     _bloc.add(RemovePostEvent(
         postUser: post,
         isEditMode: state.isEditMode,
-        series: state.series,
+        series: newSeries,
+        selectedPostUsers: state.selectedPostUsers,
+        postUsers: state.postUsers));
+  }
+
+  void _addSelectedPost(post, CuSeriesSubState state) {
+    Series newSeries = _getNewSeries(state);
+
+    _bloc.add(AddPostEvent(
+        postUser: post,
+        isEditMode: state.isEditMode,
+        series: newSeries,
         selectedPostUsers: state.selectedPostUsers,
         postUsers: state.postUsers));
   }

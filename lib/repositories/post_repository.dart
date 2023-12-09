@@ -39,6 +39,7 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> getOne(String id) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/$id');
   }
 

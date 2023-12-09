@@ -99,13 +99,21 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
       emit(SeriesCreatedState(series: series));
     } catch (error) {
       if (error is DioException) {
-        String message = getMessageFromException(error);
-        emit(CuOperationErrorState(
-            message: message,
-            series: event.series,
-            isEditMode: event.isEditMode,
-            postUsers: event.postUsers,
-            selectedPostUsers: event.selectedPostUsers));
+        if (error.response?.statusCode == 404) {
+          emit(const SeriesNotFoundState(message: "Không tìm thấy series"));
+        } else if (error.response?.statusCode == 403) {
+          emit(const UnAuthorizedState(
+              message:
+              "Bạn không có quyền để thực hiện chức năng trên series này"));
+        } else {
+          String message = getMessageFromException(error);
+          emit(CuOperationErrorState(
+              message: message,
+              series: event.series,
+              isEditMode: event.isEditMode,
+              postUsers: event.postUsers,
+              selectedPostUsers: event.selectedPostUsers));
+        }
       }
     }
   }
@@ -122,7 +130,6 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
       emit(SeriesUpdatedState(series: series));
     } catch (error) {
       if (error is DioException) {
-        String message = getMessageFromException(error);
         if (error.response?.statusCode == 404) {
           emit(const SeriesNotFoundState(message: "Không tìm thấy series"));
         } else if (error.response?.statusCode == 403) {
@@ -130,6 +137,7 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
               message:
                   "Bạn không có quyền để thực hiện chức năng trên series này"));
         } else {
+          String message = getMessageFromException(error);
           emit(CuOperationErrorState(
               message: message,
               series: event.series,
