@@ -2,7 +2,6 @@ import "package:cay_khe/api_config.dart";
 import "package:cay_khe/dtos/post_dto.dart";
 import 'package:dio/dio.dart';
 import 'package:cay_khe/ui/common/utils/jwt_interceptor.dart';
-import 'package:dio/dio.dart';
 
 class PostRepository {
   late Dio dio;
@@ -18,8 +17,6 @@ class PostRepository {
   }
 
   Future<Response<dynamic>> delete(String id) {
-
-
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.delete('/$id/delete');
   }
@@ -55,21 +52,17 @@ class PostRepository {
     return dio.get('/postDetails/$id');
   }
 
-  Future<Response<dynamic>> getPostsSameAuthor(String authorName) async {
-    return dio.get('/postsSameAuthor/$authorName');
+  Future<Response<dynamic>> getPostsSameAuthor(String authorName , String postId) async {
+    return dio.get('/postsSameAuthor/$authorName',queryParameters: {'postId':postId});
   }
-
-  Future<Response<dynamic>> checkVote(String postId, String userName) async {
-    return dio.get('/checkVote', queryParameters: {
-      'id': postId,
-      'userName': userName,
-    });
-  }
-
   Future<Response<dynamic>> updateScore(String idPost, int score) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio
         .put('/updateScore', queryParameters: {'id': idPost, 'score': score});
   }
-
+  Future<Response<dynamic>> totalPost(String username) async {
+   // dio = JwtInterceptor().addInterceptors(dio);
+    return dio
+        .get('/totalPost/$username');
+  }
 }

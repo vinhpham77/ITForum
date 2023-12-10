@@ -4,7 +4,7 @@ class CustomTagItem extends StatelessWidget {
   final String tagName;
   final VoidCallback onDelete;
 
-  const   CustomTagItem({
+  const CustomTagItem({
     super.key,
     required this.tagName,
     required this.onDelete,
@@ -20,15 +20,16 @@ class CustomTagItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('#', style: TextStyle(fontSize: 16)),
-            Text(tagName, style: const TextStyle(fontSize: 16, color: Colors.black87), maxLines: 1),
+            Text(tagName,
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
+                maxLines: 1),
             IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: onDelete,
-              iconSize: 20,
-              style: ButtonStyle(
-                iconColor: MaterialStateProperty.all(Colors.black54),
-              )
-            ),
+                icon: const Icon(Icons.close),
+                onPressed: onDelete,
+                iconSize: 20,
+                style: ButtonStyle(
+                  iconColor: MaterialStateProperty.all(Colors.black54),
+                )),
           ],
         ),
       ),

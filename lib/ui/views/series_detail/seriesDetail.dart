@@ -65,7 +65,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
   String username = JwtPayload.sub ?? '';
   User user = User.empty();
   User AuthorSeries = User.empty();
-
+  int totalSeries =0;
+int totalFollow=0;
   @override
   void initState() {
     super.initState();
@@ -82,8 +83,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
     await _loadScoreSeries(widget.id);
     await _loadListPost(widget.id);
     await _loadUser(username);
-    await _loadFollow(user.id, AuthorSeries.id);
+//    await _loadFollow(user.id, AuthorSeries.id);
     await _loadBookmark(widget.id, username);
+ //   await _loadTotalSeries(AuthorSeries.username);
+ //  await _loadTotalFollower(AuthorSeries.id);
   }
 
   @override
@@ -140,16 +143,19 @@ class _SeriesDetailState extends State<SeriesDetail> {
                   idPost: widget.id,
                   AuthorSeries: AuthorSeries,
                   user: user,
-                  isFollow: isFollow,
+                 // isFollow: isFollow,
                   isBookmark: isBookmark,
-                  onFollowPressed: () {
-                    _follow();
+                 // totalFollow: totalFollow,
+                 // totalSeries: totalSeries,
+                  //onFollowPressed: () {
+                   // _follow();
                     // Xử lý sự kiện khi nhấn vào nút theo dõi
-                  },
+                  //},
                   onBookmarkPressed: () {
                     _toggleBookmark();
                     // Xử lý sự kiện khi nhấn vào nút bookmark
                   },
+
                 )
               ],
             ),
@@ -235,6 +241,26 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
   }
 
+  Future<void> _loadTotalSeries(String username)async {
+    var future= await seriesRepository.totalSeries(username);
+    if(future.data is int){
+      if(mounted){
+        setState(() {
+          totalSeries= future.data;
+        });
+      }
+    }
+  }
+  Future<void> _loadTotalFollower(String followedId)async {
+    var future= await followRepository.totalFollower(followedId);
+    if(future.data is int){
+      setState(() {
+        totalFollow= future.data;
+      });
+
+    }
+  }
+
   Future<void> _loadScoreSeries(String postId) async {
     var futureSp = await spRepository.getOne(postId);
     Sp sp = Sp.fromJson(futureSp.data);
@@ -283,7 +309,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     } else {
       if (mounted) {
         setState(() {
-          isBookmark = true;
+          isBookmark = false;
         });
       }
     }
@@ -311,35 +337,36 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
   }
 
-  void _follow() async {
-    if (JwtPayload.sub == null) {
-      appRouter.go("/login");
-    } else {
-      if (isFollow == true) {
-        var future = await followRepository.checkfollow(user.id, AuthorSeries.id);
-        if (future.data != "Follow not found") {
-          Follow follow = Follow.fromJson(future.data);
-          await followRepository.delete(follow.id);
-          if (mounted) {
-            setState(() {
-              isFollow = false;
-            });
-          }
-        }
-      } else {
-        FollowDTO newFollow = FollowDTO(
-            followerId: user.id,
-            followedId: AuthorSeries.id,
-            createdAt: DateTime.now());
-        await followRepository.add(newFollow);
-        if (mounted) {
-          setState(() {
-            isFollow = true;
-          });
-        }
-      }
-    }
-  }
+  // void _follow() async {
+  //   if (JwtPayload.sub == null) {
+  //     appRouter.go("/login");
+  //   } else {
+  //     if (isFollow == true) {
+  //       var future = await followRepository.checkfollow(user.id, AuthorSeries.id);
+  //       if (future.data != "Follow not found") {
+  //         Follow follow = Follow.fromJson(future.data);
+  //         await followRepository.delete(follow.id);
+  //         if (mounted) {
+  //           setState(() {
+  //             isFollow = false;
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       FollowDTO newFollow = FollowDTO(
+  //           followerId: user.id,
+  //           followedId: AuthorSeries.id,
+  //           createdAt: DateTime.now());
+  //       await followRepository.add(newFollow);
+  //       if (mounted) {
+  //         setState(() {
+  //           isFollow = true;
+  //         });
+  //       }
+  //     }
+  //     _loadTotalFollower(AuthorSeries.id);
+  //   }
+  // }
 
   Future<void> _toggleBookmark() async {
     if (JwtPayload.sub != null) {

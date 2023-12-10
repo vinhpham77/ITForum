@@ -7,6 +7,7 @@ import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/question_view.dart';
 import 'package:cay_khe/ui/views/profile/profile_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
+import 'package:cay_khe/ui/views/series_detail/seriesDetail.dart';
 import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
@@ -169,7 +170,6 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'edit',
                   pageBuilder: (context, state) => MaterialPage<void>(
-                      key: state.pageKey,
                       child: ScreenWithHeaderAndFooter(
                         body: CuPost(id: state.pathParameters['pid']!),
                       )),
@@ -190,7 +190,7 @@ final appRouter = GoRouter(
           pageBuilder: (context, state) => MaterialPage<void>(
               key: state.pageKey,
               child: ScreenWithHeaderAndFooter(
-                body: Text('Details ${state.pathParameters['pid']!}'),
+                body: SeriesDetail(id: state.pathParameters['pid']!),
               )),
           routes: [
             GoRoute(

@@ -54,6 +54,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   PostDetailDTO postDetailDTO = PostDetailDTO.empty();
   String type = "bài viết";
   bool isLoadingFollow = false;
+  bool postsSameAuthorIsNull=false;
+  int totalPost =0;
+  int totalFollow=0;
 
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
@@ -84,12 +87,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   @override
   void initState() {
     super.initState();
-
   }
+
   @override
   void didUpdateWidget(PostDetailsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if(widget.id != _currentId){
+    if (widget.id != _currentId) {
       _currentId = widget.id;
       initPost(_currentId);
     }
@@ -103,9 +106,11 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     await _loadUser(username);
     await _loadCheckVote(id, username);
     await _loadBookmark(id, username);
-    print("postdetail: ${postDetailDTO.user.id}");
+    await _loadPostsByTheSameAuthor(authorPost.username, widget.id);
+    await _loadTotalPost(authorPost.username);
     await _loadFollow(user.id, postDetailDTO.user.id);
-    await _loadPostsByTheSameAuthor(authorPost.username);
+    print("id: ${user.id}");
+    await _loadTotalFollower(authorPost.id);
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -196,12 +201,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           IconButton(
               icon: const Icon(Icons.share),
               onPressed: () => _shareTwitter(
-                  "http://localhost:8000/posts/${idPost}",
+                  "http://localhost:8000/posts/$idPost",
                   "Đã share lên Twitter")),
         ],
       ),
     );
   }
+
 
   void _shareTwitter(String url, String text) async {
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$text&url=$url';
@@ -351,12 +357,35 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     if (futureVote.data is Map<String, dynamic>) {
       Vote vote = Vote.fromJson(futureVote.data);
       if (mounted) {
-        upVote = vote.type;
-        downVote = !vote.type;
+        setState(() {
+          upVote = vote.type;
+          downVote = !vote.type;
+        });
+
       }
     }
   }
+  Future<void> _loadTotalPost(String username)async {
+     var future= await postRepository.totalPost(username);
+     if(future.data is int){
+       if(mounted){
+         setState(() {
+           totalPost= future.data;
+         });
+       }
 
+
+     }
+  }
+  Future<void> _loadTotalFollower(String followedId)async {
+    var future= await followRepository.totalFollower(followedId);
+    if(future.data is int){
+      setState(() {
+        totalFollow= future.data;
+      });
+
+    }
+  }
   void _follow() async {
     if (JwtPayload.sub == null) {
       appRouter.go("/login");
@@ -384,6 +413,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           });
         }
       }
+      _loadTotalFollower(authorPost.id);
     }
   }
 
@@ -392,12 +422,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       return;
     }
     var future = await followRepository.checkfollow(followerId, followedId);
+    print("noi dung: ${future.data}");
     if (future.data != "Follow not found") {
-      if(mounted){
-        follow = Follow.fromJson(future.data);
-        isFollow = true;
-      }
+      if (mounted) {
+        setState(() {
+          follow = Follow.fromJson(future.data);
+          isFollow = true;
+        });
 
+      }
     } else {
       if (mounted) {
         setState(() {
@@ -420,19 +453,20 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       print(" lỗi bookmark");
       // Xử lý trường hợp dữ liệu trả về từ API không đúng
     }
-    }
+  }
 
-
-  Future<void> _loadPostsByTheSameAuthor(String authorName) async {
-
-
-    var future = postRepository.getPostsSameAuthor(authorName);
+  Future<void> _loadPostsByTheSameAuthor(
+      String authorName, String postId) async {
+    var future = postRepository.getPostsSameAuthor(authorName, postId);
     future.then((response) {
       setState(() {
         List<Map<String, dynamic>> jsonDataList =
             List<Map<String, dynamic>>.from(response.data);
         posts = jsonDataList.map((json) => Post.fromJson(json)).toList();
-        //  posts = posts.length > 5 ? posts.take(5).toList() : List.from(posts);
+        if(posts.isEmpty) {
+          postsSameAuthorIsNull=true;
+        }
+        posts = posts.length > 5 ? posts.take(5).toList() : List.from(posts);
         listTitlePost = posts.map((post) => post.title).toList();
         listDateTime = posts.map((post) => post.updatedAt).toList();
       });
@@ -503,9 +537,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildIconWithText(Icons.verified_user_sharp, '9'),
+              _buildIconWithText(Icons.verified_user_sharp, totalFollow.toString()),
               const SizedBox(width: 12),
-              _buildIconWithText(Icons.pending_actions, '4'),
+              _buildIconWithText(Icons.pending_actions, totalPost.toString()),
             ],
           ),
         ),
@@ -727,7 +761,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _shareFacebook(String url) async {
-    url = 'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
+    url =
+        'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
     final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
     if (await canLaunchUrlString(fbUrl)) {
       await launchUrlString(fbUrl);
@@ -801,6 +836,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           _titleRelatedArticles(),
+          postsSameAuthorIsNull? const Padding(
+            padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
+            child: Text("Không còn bài viết nào",style: TextStyle(fontSize: 16),),
+          ):
           _bodyRelatedArticles(),
         ]);
   }

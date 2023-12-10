@@ -48,4 +48,29 @@ class Post {
       'updatedAt': updatedAt
     };
   }
+
+  Post copyWith({
+    String? id,
+    String? title,
+    String? content,
+    List<String>? tags,
+    int? score,
+    int? commentCount,
+    bool? isPrivate,
+    String? createdBy,
+    DateTime? updatedAt,
+  }) {
+    return Post(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      tags: tags ?? this.tags,
+      score: score ?? this.score,
+      commentCount: commentCount ?? this.commentCount,
+      isPrivate: isPrivate ?? this.isPrivate,
+      createdBy: createdBy ?? this.createdBy,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
 }

@@ -1,22 +1,23 @@
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/post_dto.dart';
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
-import 'package:cay_khe/ui/common/utils/index.dart';
-import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/cu_post/widgets/tag_dropdown.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../repositories/post_repository.dart';
 import '../../../repositories/tag_repository.dart';
 import '/ui/widgets/notification.dart';
+import 'bloc/cu_post_bloc.dart';
 import 'widgets/tag_item.dart';
+
+const int _left = 3;
+const int _right = 1;
+const double contentHeight = 382 - bodyVerticalSpace;
 
 class CuPost extends StatefulWidget {
   final String? id;
@@ -31,162 +32,170 @@ class CuPost extends StatefulWidget {
 class _CuPostState extends State<CuPost> {
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
-  final tagRepository = TagRepository();
-  final postRepository = PostRepository();
   final _formKey = GlobalKey<FormState>();
-  late String headingP1;
-  late String headingP2;
-  Tag? selectedTag;
-  bool _isEditing = true;
-  final int _left = 3;
-  final int _right = 1;
-  List<Tag> selectedTags = [];
-  List<Tag> allTags = [];
-  bool isLoaded = false;
-  double contentHeight = 382 - bodyVerticalSpace;
+
+  String get headingP1 => widget.id == null ? 'Tạo' : 'Sửa';
+
+  bool get isCreateMode => widget.id == null;
+  final CuPostBloc _bloc = CuPostBloc(
+    postRepository: PostRepository(),
+    tagRepository: TagRepository(),
+  );
 
   @override
   void initState() {
     super.initState();
-    headingP1 = widget.id == null ? 'Tạo' : 'Sửa';
-    // TODO: implement futureBuilder
-    Future.wait([_loadTags(), _loadPost()]).then((value) {
-      headingP2 = widget.isQuestion ? 'câu hỏi' : 'bài viết';
-      isLoaded = true;
-    });
+
+    if (isCreateMode) {
+      _bloc.add(InitEmptyPostEvent(isQuestion: widget.isQuestion));
+    } else {
+      _bloc.add(LoadPostEvent(id: widget.id!, isQuestion: widget.isQuestion));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoaded) {
-      return _buildCuPost(context);
-    }
+    return BlocProvider(
+      create: (context) => _bloc,
+      child: BlocListener<CuPostBloc, CuPostState>(
+        listener: (context, state) {
+          if (state is CuPostOperationSuccessState) {
+            appRouter.go('/posts/${state.post.id}');
+          } else if (state is PostNotFoundState) {
+            showTopRightSnackBar(context, state.message, NotifyType.error);
+            appRouter.go('/not-found');
+          } else if (state is UnAuthorizedState) {
+            showTopRightSnackBar(context, state.message, NotifyType.warning);
+            appRouter.go('/forbidden');
+          } else if (state is CuPostLoadErrorState) {
+            showTopRightSnackBar(context, state.message, NotifyType.error);
+            appRouter.go('/');
+          } else if (state is CuOperationErrorState) {
+            showTopRightSnackBar(context, state.message, NotifyType.error);
+          }
+        },
+        child: Container(
+          color: Colors.grey.shade200,
+          alignment: Alignment.center,
+          constraints:
+              BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+          child: BlocBuilder<CuPostBloc, CuPostState>(
+            builder: (context, state) {
+              if (state is SwitchModeState) {
+                _titleController.text = state.post?.title ?? '';
+                _contentController.text = state.post?.content ?? '';
+                return buildBodyContainer(child: _buildCuPost(context, state));
+              }
+              if (state is CuPostSubState) {
+                _titleController.text = state.post?.title ?? '';
+                _contentController.text = state.post?.content ?? '';
+                return buildBodyContainer(child: _buildCuPost(context, state));
+              }
 
-    return const Center(child: CircularProgressIndicator());
-  }
-
-  Center _buildCuPost(BuildContext context) {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: maxContent),
-        margin: const EdgeInsets.symmetric(horizontal: horizontalSpace, vertical: bodyVerticalSpace),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    flex: _left,
-                    child: SizedBox(
-                      height: 40,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.only(
-                              left: 8,
-                              top: 8,
-                              bottom: 8,
-                            ),
-                            child: Text(
-                              '$headingP1 $headingP2',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isEditing = !_isEditing;
-                                  });
-                                },
-                                child: Text(
-                                  'Chỉnh sửa',
-                                  style: TextStyle(
-                                    color: (_isEditing)
-                                        ? Colors.black87
-                                        : Colors.grey.shade400,
-                                    fontSize: 16,
-                                    fontWeight: (_isEditing)
-                                        ? FontWeight.w500
-                                        : FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isEditing = !_isEditing;
-                                  });
-                                },
-                                child: Text(
-                                  'Xem trước',
-                                  style: TextStyle(
-                                    color: (!_isEditing)
-                                        ? Colors.black87
-                                        : Colors.grey.shade400,
-                                    fontSize: 16,
-                                    fontWeight: (!_isEditing)
-                                        ? FontWeight.w500
-                                        : FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: _right,
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 20),
-                      height: 40,
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          appRouter.pop();
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    flex: _left,
-                    child: (_isEditing)
-                        ? _buildPostEditingTab()
-                        : _buildPostPreviewTab(context),
-                  ),
-                  Expanded(
-                    flex: _right,
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 20),
-                      height: 40,
-                      alignment: Alignment.centerRight,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              return buildBodyContainer(
+                  child: const CircularProgressIndicator());
+            },
           ),
         ),
       ),
     );
   }
 
-  Column _buildPostPreviewTab(BuildContext context) {
-    var space = (selectedTags.length == 3 ? 8 : 0);
+  Container buildBodyContainer({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(
+          horizontal: horizontalSpace, vertical: bodyVerticalSpace),
+      constraints: const BoxConstraints(maxWidth: maxContent),
+      child: child,
+    );
+  }
+
+  Widget _buildCuPost(BuildContext context, CuPostSubState state) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          _buildTopBarRow(state),
+          Row(
+            children: [
+              Expanded(
+                flex: _left,
+                child: state.isEditMode
+                    ? _buildPostEditingTab(state)
+                    : _buildPostPreviewTab(context, state),
+              ),
+              Expanded(
+                flex: _right,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 20),
+                  height: 40,
+                  alignment: Alignment.centerRight,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Row _buildTopBarRow(CuPostSubState state) {
+    return Row(
+      children: [
+        Expanded(
+          flex: _left,
+          child: SizedBox(
+            height: 40,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(
+                    left: 8,
+                    top: 8,
+                    bottom: 8,
+                  ),
+                  child: Text(
+                    '$headingP1 ${getHeadingP2(state)}',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    buildSwitchModeButton(
+                        'Chỉnh sửa', true, state.isEditMode, state),
+                    buildSwitchModeButton(
+                        'Xem trước', false, state.isEditMode, state)
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: _right,
+          child: Container(
+            margin: const EdgeInsets.only(left: 20),
+            height: 40,
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                appRouter.go('/');
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Column _buildPostPreviewTab(BuildContext context, CuPostSubState state) {
+    var space = (state.selectedTags.length == 3 ? 8 : 0);
     return Column(
       children: [
         Container(
@@ -204,7 +213,7 @@ class _CuPostState extends State<CuPost> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: Markdown(
-            data: getMarkdown(),
+            data: getMarkdown(state),
             styleSheet:
                 MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
               textScaleFactor: 1.4,
@@ -230,20 +239,17 @@ class _CuPostState extends State<CuPost> {
                     fontStyle: FontStyle.italic,
                     color: Colors.grey.shade700,
                   ),
-              // Custom blockquote style
-              listBullet: const TextStyle(
-                  fontSize: 16), // Custom list item bullet style
+              listBullet: const TextStyle(fontSize: 16),
             ),
             softLineBreak: true,
           ),
         ),
-        _buildActionContainer()
+        _buildActionContainer(state)
       ],
     );
   }
 
-  Column _buildPostEditingTab() {
-
+  Column _buildPostEditingTab(CuPostSubState state) {
     return Column(
       children: [
         Container(
@@ -270,7 +276,6 @@ class _CuPostState extends State<CuPost> {
             },
             decoration: const InputDecoration(
               hintText: 'Viết tiêu đề ở đây...',
-
               hintStyle: TextStyle(
                 color: Colors.black,
                 fontSize: 36,
@@ -284,9 +289,6 @@ class _CuPostState extends State<CuPost> {
               fontWeight: FontWeight.w700,
             ),
             maxLines: 1,
-            onChanged: (value) {
-              setState(() {});
-            },
           ),
         ),
         Container(
@@ -308,32 +310,16 @@ class _CuPostState extends State<CuPost> {
           ),
           child: Row(
             children: [
-              for (var tag in selectedTags)
+              for (var tag in state.selectedTags)
                 CustomTagItem(
                   tagName: tag.name,
-                  onDelete: () {
-                    setState(() {
-                      if (tag.name == 'HoiDap') {
-                        headingP2 = 'bài viết';
-                      }
-                      selectedTags.remove(tag);
-                      allTags.add(tag);
-                    });
-                  },
+                  onDelete: () => removeSelectedTag(tag, state),
                 ),
-              if (selectedTags.length < 3)
+              if (state.selectedTags.length < 3)
                 TagDropdown(
-                    tags: allTags,
-                    onTagSelected: (tag) {
-                      setState(() {
-                        if (tag.name == 'HoiDap') {
-                          headingP2 = 'câu hỏi';
-                        }
-                        selectedTags.add(tag);
-                        allTags.remove(tag);
-                      });
-                    },
-                    label: selectedTags.isEmpty
+                    tags: state.tags,
+                    onTagSelected: (tag) => _selectTag(tag, state),
+                    label: state.selectedTags.isEmpty
                         ? 'Gắn một đến ba thẻ...'
                         : "Gắn thêm thẻ khác..."),
             ],
@@ -367,17 +353,63 @@ class _CuPostState extends State<CuPost> {
             decoration: const InputDecoration.collapsed(
               hintText: 'Viết nội dung ở đây...',
             ),
-            onChanged: (value) {
-              setState(() {});
-            },
           ),
         ),
-        _buildActionContainer()
+        _buildActionContainer(state)
       ],
     );
   }
 
-  Container _buildActionContainer() {
+  TextButton buildSwitchModeButton(
+      String text, bool origin, bool active, CuPostSubState state) {
+    return TextButton(
+      onPressed: () {
+        if (origin == active) {
+          return;
+        }
+
+        Post newPost;
+        var tags = state.selectedTags.map((tag) => tag.name).toList();
+        if (state.post == null) {
+          newPost = Post(
+              title: _titleController.text,
+              content: _contentController.text,
+              tags: tags,
+              isPrivate: false,
+              createdBy: '',
+              updatedAt: DateTime.now(),
+              score: 0,
+              commentCount: 0,
+              id: '');
+        } else {
+          newPost = state.post!.copyWith(
+              title: _titleController.text,
+              content: _contentController.text,
+              tags: tags);
+        }
+
+        _bloc.add(SwitchModeEvent(
+            isEditMode: origin,
+            post: newPost,
+            selectedTags: state.selectedTags,
+            tags: state.tags,
+            isQuestion: state.isQuestion));
+      },
+      child: Text(text, style: _getTextStyle(origin == active)),
+    );
+  }
+
+  TextStyle _getTextStyle(bool active) {
+    if (active) {
+      return const TextStyle(
+          color: Colors.black87, fontSize: 16, fontWeight: FontWeight.w500);
+    }
+
+    return const TextStyle(
+        color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400);
+  }
+
+  Container _buildActionContainer(CuPostSubState state) {
     return Container(
         margin: const EdgeInsets.only(top: 16),
         child: Row(
@@ -385,7 +417,7 @@ class _CuPostState extends State<CuPost> {
           children: [
             FilledButton(
               onPressed: () {
-                savePost(false);
+                savePost(false, state);
               },
               child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
             ),
@@ -394,7 +426,7 @@ class _CuPostState extends State<CuPost> {
               child: TextButton(
                 style: TextButton.styleFrom(),
                 onPressed: () {
-                  savePost(true);
+                  savePost(true, state);
                 },
                 child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
               ),
@@ -403,44 +435,89 @@ class _CuPostState extends State<CuPost> {
         ));
   }
 
-  getMarkdown() {
+  void removeSelectedTag(Tag tag, CuPostSubState state) {
+    Post post = getNewPost(state);
+
+    _bloc.add(RemoveTagEvent(
+        tag: tag,
+        isEditMode: state.isEditMode,
+        post: post,
+        selectedTags: state.selectedTags,
+        isQuestion: state.isQuestion,
+        tags: state.tags));
+  }
+
+  _selectTag(Tag tag, CuPostSubState state) {
+    Post post = getNewPost(state);
+
+    _bloc.add(AddTagEvent(
+        tag: tag,
+        isEditMode: state.isEditMode,
+        post: post,
+        selectedTags: state.selectedTags,
+        tags: state.tags,
+        isQuestion: state.isQuestion));
+  }
+
+  Post getNewPost(CuPostSubState state) {
+    Post post;
+    if (state.post == null) {
+      post = Post(
+          title: _titleController.text,
+          content: _contentController.text,
+          tags: [],
+          isPrivate: false,
+          createdBy: '',
+          updatedAt: DateTime.now(),
+          score: 0,
+          commentCount: 0,
+          id: '');
+    } else {
+      post = state.post!.copyWith(
+        title: _titleController.text,
+        content: _contentController.text,
+      );
+    }
+    return post;
+  }
+
+  getMarkdown(CuPostSubState state) {
     String titleRaw = _titleController.text;
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
-    String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
+    String tags = state.selectedTags.map((tag) => '#${tag.name}').join('\t');
     String content = _contentController.text;
     return '$title  \n###### $tags\n  # \n  $content';
   }
 
-  savePost(bool isPrivate) async {
-    if (!validateOnPressed()) {
+  savePost(bool isPrivate, CuPostSubState state) async {
+    if (!validateOnPressed(state)) {
       return;
     }
 
-    PostDTO postDTO = createDTO(isPrivate);
-
-    Future<Response<dynamic>> future;
-    if (widget.id == null) {
-      future = postRepository.add(postDTO);
+    if (isCreateMode) {
+      _bloc.add(CreatePostEvent(
+          postDTO: createDTO(isPrivate, state),
+          isEditMode: state.isEditMode,
+          post: state.post,
+          isQuestion: state.isQuestion,
+          selectedTags: state.selectedTags,
+          tags: state.tags));
     } else {
-      future = postRepository.update(widget.id!, postDTO);
+      _bloc.add(UpdatePostEvent(
+          postDTO: createDTO(isPrivate, state),
+          isEditMode: state.isEditMode,
+          post: state.post,
+          isQuestion: state.isQuestion,
+          selectedTags: state.selectedTags,
+          tags: state.tags));
     }
-
-    future.then((response) {
-      Post post = Post.fromJson(response.data);
-      showTopRightSnackBar(
-          context, '$headingP1 $headingP2 thành công!', NotifyType.success);
-      GoRouter.of(context).go('/posts/${post.id}');
-    }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
   }
 
-  PostDTO createDTO(bool isPrivate) {
+  PostDTO createDTO(bool isPrivate, CuPostSubState state) {
     return PostDTO(
       title: _titleController.text,
       content: _contentController.text,
-      tags: selectedTags.map((tag) => tag.name).toList(),
+      tags: state.selectedTags.map((tag) => tag.name).toList(),
       isPrivate: isPrivate,
     );
   }
@@ -455,9 +532,9 @@ class _CuPostState extends State<CuPost> {
     return null;
   }
 
-  bool validateOnPressed() {
+  bool validateOnPressed(CuPostSubState state) {
     if (_formKey.currentState!.validate()) {
-      String? tagValidation = validateSelectedTags(selectedTags);
+      String? tagValidation = validateSelectedTags(state.selectedTags);
 
       if (tagValidation != null) {
         showTopRightSnackBar(context, tagValidation, NotifyType.warning);
@@ -469,65 +546,10 @@ class _CuPostState extends State<CuPost> {
     return false;
   }
 
-  Future<void> _loadTags() async {
-    var future = tagRepository.get();
-
-    future.then((response) {
-      List<Tag> tags = response.data.map<Tag>((tag) {
-        return Tag.fromJson(tag);
-      }).toList();
-      setState(() {
-        allTags = tags;
-
-        if (widget.isQuestion) {
-          selectedTags.add(allTags.firstWhere((tag) => tag.name == 'HoiDap'));
-          allTags.removeWhere((tag) => tag.name == 'HoiDap');
-        }
-      });
-    }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
-  }
-
-  Future<void> _loadPost() async {
-    if (widget.id == null) {
-      return;
+  String getHeadingP2(CuPostSubState state) {
+    if (state.isQuestion) {
+      return 'câu hỏi';
     }
-
-    var future = postRepository.getOne(widget.id!);
-
-    future.then((response) {
-      Post post = Post.fromJson(response.data);
-      if (JwtPayload.sub != post.createdBy) {
-        Navigator.pop(context);
-        appRouter.go('/forbidden');
-        return;
-      }
-
-      setState(() {
-        _titleController.text = post.title;
-        _contentController.text = post.content;
-        selectedTags = post.tags.map((tagName) {
-          if (tagName == 'HoiDap') {
-            headingP2 = 'câu hỏi';
-          }
-          var tag = allTags.firstWhere((tag) => tag.name == tagName);
-          allTags.remove(tag);
-          return tag;
-        }).toList();
-      });
-    }).catchError((error) {
-      if (error is DioException) {
-        if (error.response?.statusCode == 404) {
-          appRouter.go('/not-found');
-        } else if (error.response?.statusCode == 403) {
-          appRouter.go('/forbidden');
-        } else {
-          String message = getMessageFromException(error);
-          showTopRightSnackBar(context, message, NotifyType.error);
-        }
-      }
-    });
+    return 'bài viết';
   }
 }
