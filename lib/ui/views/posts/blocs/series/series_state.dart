@@ -21,6 +21,15 @@ final class SeriesLoadedState extends SeriesState {
   List<Object?> get props => [seriesUser];
 }
 
+final class SeriesTabErrorState extends SeriesState {
+  final String message;
+
+  const SeriesTabErrorState({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
 final class SeriesLoadErrorState extends SeriesState {
   final String message;
 

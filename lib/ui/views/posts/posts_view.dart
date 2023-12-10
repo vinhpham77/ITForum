@@ -2,6 +2,7 @@ import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
 import 'package:cay_khe/ui/views/posts/widgets/post/posts_feed.dart';
 import 'package:cay_khe/ui/views/posts/widgets/post_follow/posts_feed_follow.dart';
 import 'package:cay_khe/ui/views/posts/widgets/right_page/right.dart';
+import 'package:cay_khe/ui/views/posts/widgets/series/series_feed.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/app_constants.dart';
@@ -39,7 +40,8 @@ class _PostsViewState extends State<PostsView> {
           widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
       NavigationPost(index: 1, text: "Đang theo dõi", path: "/viewpostsfollow/${converPageParams(widget.params)}",
           widget: PostsFeedFollow(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
-      NavigationPost(index: 2, text: "Series", widget: Container()),
+      NavigationPost(index: 2, text: "Series", path: "/viewseries/${converPageParams(widget.params)}",
+          widget: SeriesFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, params: widget.params,)),
       NavigationPost(index: 3, text: "Bookmark của tôi", widget: Container())
     ];
     listSelectBtn[widget.indexSelected].isSelected = true;

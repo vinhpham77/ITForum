@@ -11,10 +11,10 @@ import '../../../../../dtos/series_user.dart';
 part 'series_event.dart';
 part 'series_state.dart';
 
-class PostFollowBloc extends Bloc<SeriesEvent, SeriesState> {
+class SeriesBloc extends Bloc<SeriesEvent, SeriesState> {
   final SeriesRepository _seriesRepository = SeriesRepository();
 
-  PostFollowBloc() : super(SeriesInitialState()) {
+  SeriesBloc() : super(SeriesInitialState()) {
     on<LoadSeriesEvent>(_loadPosts);
   }
 

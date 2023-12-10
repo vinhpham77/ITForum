@@ -290,6 +290,30 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: "/viewseries",
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: ValueKey("viewseries"),
+            child: ScreenWithHeaderAndFooter(
+              body: PostsView(
+                indexSelected: 2,
+                params: convertQuery(query: "")),
+            ));
+      },
+    ),
+    GoRoute(
+      path: "/viewseries/:query",
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: ValueKey("viewseries"),
+            child: ScreenWithHeaderAndFooter(
+              body: PostsView(
+                indexSelected: 2,
+                params: convertQuery(query: state.pathParameters["query"] ?? "")),
+            ));
+      },
+    ),
+    GoRoute(
       path: '/profile/:username',
       redirect: (BuildContext context, GoRouterState state) async {
         return '/profile/${state.pathParameters['username']}/posts';
