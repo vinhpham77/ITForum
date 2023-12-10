@@ -14,14 +14,13 @@ class StickySidebar extends StatefulWidget {
   final String idPost;
   final User AuthorSeries;
   final User user;
-
-  //final bool isFollow;
+  final bool isFollow;
   final bool isBookmark;
 
-  // final Function() onFollowPressed;
+   final Function() onFollowPressed;
   final Function() onBookmarkPressed;
 
-  // final totalFollow;
+   final totalFollow;
   // final totalSeries;
 
   const StickySidebar({
@@ -29,11 +28,11 @@ class StickySidebar extends StatefulWidget {
     required this.idPost,
     required this.AuthorSeries,
     required this.user,
-    // required this.isFollow,
+     required this.isFollow,
     required this.isBookmark,
-    // required this.onFollowPressed,
+     required this.onFollowPressed,
     required this.onBookmarkPressed,
-    // required this.totalFollow,
+     required this.totalFollow,
     // required this.totalSeries
   });
 
@@ -73,10 +72,8 @@ class _StickySidebarState extends State<StickySidebar> {
   Future<void> _load() async {
     await _loadTotalFollower(widget.AuthorSeries.id);
     await _loadFollow(widget.user.username, widget.AuthorSeries.username);
- //   await _loadTotalSeries(widget.AuthorSeries.username);
-  setState(() {
+   // await _loadTotalSeries(widget.AuthorSeries.username);
 
-  });
   }
 
   @override
@@ -135,7 +132,7 @@ class _StickySidebarState extends State<StickySidebar> {
                     const SizedBox(height: 8),
                     if (widget.AuthorSeries.id != widget.user.id)
                       ElevatedButton(
-                        onPressed: () => _follow(),
+                        onPressed: () => widget.onFollowPressed,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -305,39 +302,39 @@ class _StickySidebarState extends State<StickySidebar> {
     }
 
   }
-
-  void _follow() async {
-    print("user follow: ${widget.user.username}");
-    if (JwtPayload.sub == null) {
-      appRouter.go("/login");
-    } else {
-      if (isFollow == true) {
-        var future = await followRepository.checkfollow(
-            widget.user.username, widget.AuthorSeries.username);
-        if (future.data != "Follow not found") {
-          Follow follow = Follow.fromJson(future.data);
-          await followRepository.delete(follow.id);
-          if (mounted) {
-            setState(() {
-              isFollow = false;
-            });
-          }
-        }
-      } else {
-        FollowDTO newFollow = FollowDTO(
-            follower: widget.user.username,
-            followed: widget.AuthorSeries.username,
-            createdAt: DateTime.now());
-        await followRepository.add(newFollow);
-        if (mounted) {
-          setState(() {
-            isFollow = true;
-          });
-        }
-      }
-      _loadTotalFollower(widget.AuthorSeries.id);
-    }
-  }
+  //
+  // void _follow() async {
+  //   print("user follow: ${widget.user.username}");
+  //   if (JwtPayload.sub == null) {
+  //     appRouter.go("/login");
+  //   } else {
+  //     if (isFollow == true) {
+  //       var future = await followRepository.checkfollow(
+  //           widget.user.username, widget.AuthorSeries.username);
+  //       if (future.data != "Follow not found") {
+  //         Follow follow = Follow.fromJson(future.data);
+  //         await followRepository.delete(follow.id);
+  //         if (mounted) {
+  //           setState(() {
+  //             isFollow = false;
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       FollowDTO newFollow = FollowDTO(
+  //           follower: widget.user.username,
+  //           followed: widget.AuthorSeries.username,
+  //           createdAt: DateTime.now());
+  //       await followRepository.add(newFollow);
+  //       if (mounted) {
+  //         setState(() {
+  //           isFollow = true;
+  //         });
+  //       }
+  //     }
+  //     _loadTotalFollower(widget.AuthorSeries.username);
+  //   }
+  // }
 
   Future<void> _loadFollow(String follower, String followed) async {
     print("s");

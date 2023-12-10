@@ -35,7 +35,7 @@ class Sp {
       postIds: List<String>.from(json['postIds'] ?? []),
       score: json['score'] is int ? json['score'] : 0,
       commentCount: json['commentCount'] ?? 0,
-      isPrivate: json['isPrivate'] ?? false,
+      isPrivate: json['private'] ?? false,
       createdBy: json['createdBy'] ?? '',
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
       posts: (json['posts'] != null && json['posts'] is List)

@@ -11,13 +11,12 @@ import 'package:cay_khe/repositories/follow_repository.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/repositories/user_repository.dart';
 import 'package:cay_khe/ui/views/details_page/menuAnchor.dart';
-import 'package:cay_khe/ui/views/posts/widgets/post/post_feed_item.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:cay_khe/ui/views/series_detail/seriesContent.dart';
-import 'package:cay_khe/ui/views/series_detail/skickeySidebar.dart';
 import 'package:cay_khe/ui/views/series_detail/votes_side.dart';
-import 'package:cay_khe/ui/widgets/post_feed_item.dart';
+import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../dtos/jwt_payload.dart';
@@ -63,12 +62,14 @@ class _SeriesDetailState extends State<SeriesDetail> {
   bool isBookmark = false;
   int score = 0;
   String idVote = '';
-  String type="series";
+  String type = "series";
   String username = JwtPayload.sub ?? '';
   User user = User.empty();
   User AuthorSeries = User.empty();
-  int totalSeries =0;
-int totalFollow=0;
+  int totalSeries = 0;
+  int totalFollow = 0;
+  bool isPrivate=true;
+
   @override
   void initState() {
     super.initState();
@@ -81,16 +82,16 @@ int totalFollow=0;
   }
 
   Future<void> _initState() async {
-    print(user.username);
     await _loadCheckVote(widget.id, JwtPayload.sub ?? '');
     await _loadScoreSeries(widget.id);
     await _loadListPost(widget.id);
     await _loadUser(username);
-//    await _loadFollow(user.id, AuthorSeries.id);
+    await _loadFollow(user.username, AuthorSeries.username);
     await _loadBookmark(widget.id, username);
- //   await _loadTotalSeries(AuthorSeries.username);
- //  await _loadTotalFollower(AuthorSeries.id);
+    await _loadTotalSeries(AuthorSeries.username);
+    await _loadTotalFollower(AuthorSeries.username);
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +101,8 @@ int totalFollow=0;
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       return Container(
         width: constraints.maxWidth,
-        child: Center(
+        child:checkPrivate(widget.id,username,AuthorSeries.username,isPrivate)?
+        Center(
           child: Container(
             width: 1200,
             child: Row(
@@ -122,7 +124,8 @@ int totalFollow=0;
                         stream: seriesDetailBloc.spStream,
                         builder: (BuildContext context, snapshot) {
                           if (snapshot.hasData) {
-                            return SeriesContentWidget(sp: snapshot.data!);
+
+                              return SeriesContentWidget(sp: snapshot.data!);
                           } else if (snapshot.hasError) {
                             return Text('Lỗi: ${snapshot.error}');
                           } else {
@@ -136,41 +139,24 @@ int totalFollow=0;
                           children: listPostDetail.map((e) {
                             return PostTabItem(postUser: e);
                           }).toList()),
-                     if(AuthorSeries.id==user.id) MoreHoriz(type:type,idContent:widget.id),
+                      if(AuthorSeries.id == user.id) MoreHoriz(
+                          type: type, idContent: widget.id),
                     ],
                   ),
 
                 ),
                 const SizedBox(width: 12),
-                StickySidebar(
-                  idPost: widget.id,
-                  AuthorSeries: AuthorSeries,
-                  user: user,
-                 // isFollow: isFollow,
-                  isBookmark: isBookmark,
-                 // totalFollow: totalFollow,
-                 // totalSeries: totalSeries,
-                  //onFollowPressed: () {
-                   // _follow();
-                    // Xử lý sự kiện khi nhấn vào nút theo dõi
-                  //},
-                  onBookmarkPressed: () {
-                    _toggleBookmark();
-                    // Xử lý sự kiện khi nhấn vào nút bookmark
-                  },
-
-                )
+                StickeySideBar(),
               ],
             ),
           ),
-        ),
+        ): const Center(child: Text("Bạn không có quyền xem bài viết này",style: TextStyle(fontSize: 28),))
       );
     });
   }
 
   Widget _sectionTitleLine() {
     return Row(
-      //crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         const Text(
           "Nội dung",
@@ -195,11 +181,20 @@ int totalFollow=0;
         Row(
           children: [
             IconButton(onPressed: () => {}, icon: const Icon(Icons.add)),
-            Text("Add my post to this series")
+            const Text("Add my post to this series")
           ],
         )
       ],
     );
+  }
+
+  bool checkPrivate(String postId, String userName, String authorName,
+      bool isPrivate) {
+    if (isPrivate && userName == authorName || !isPrivate) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Widget _buildLoadingIndicator() {
@@ -223,9 +218,6 @@ int totalFollow=0;
         return Future<bool>.value(true);
       }
     }).catchError((error) {
-      print('Không thấy vote');
-      // String message = getMessageFromException(error);
-      // showTopRightSnackBar(context, message, NotifyType.error);
       return Future<bool>.value(false);
     });
     return isFuture;
@@ -244,22 +236,25 @@ int totalFollow=0;
     }
   }
 
-  Future<void> _loadTotalSeries(String username)async {
-    var future= await seriesRepository.totalSeries(username);
-    if(future.data is int){
-      if(mounted){
+  Future<void> _loadTotalSeries(String username) async {
+    var future = await seriesRepository.totalSeries(username);
+    if (future.data is int) {
+      if (mounted) {
         setState(() {
-          totalSeries= future.data;
+          totalSeries = future.data;
         });
       }
     }
   }
-  Future<void> _loadTotalFollower(String followedId)async {
-    var future= await followRepository.totalFollower(followedId);
-    if(future.data is int){
-      setState(() {
-        totalFollow= future.data;
-      });
+
+  Future<void> _loadTotalFollower(String followed) async {
+    var future = await followRepository.totalFollower(followed);
+    if (future.data is int) {
+      if(mounted){
+        setState(() {
+          totalFollow = future.data;
+        });
+      }
 
     }
   }
@@ -270,7 +265,187 @@ int totalFollow=0;
     if (mounted) {
       setState(() {
         score = sp.score;
+        isPrivate=sp.isPrivate;
       });
+    }
+  }
+
+  Widget StickeySideBar() {
+    return Column(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () {},
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: UserAvatar(
+                        imageUrl: AuthorSeries.avatarUrl, size: 48),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      onEnter: (_) {
+                        setState(() {
+                          isHoveredUserLink = true;
+                        });
+                      },
+                      onExit: (_) {
+                        setState(() {
+                          isHoveredUserLink = false;
+                        });
+                      },
+                      child: GestureDetector(
+                        onTap: () {
+                          print('Navigate to: ');
+                        },
+                        child: Text(
+                          AuthorSeries.displayName,
+                          style: TextStyle(
+                            color: isHoveredUserLink
+                                ? Colors.lightBlueAccent
+                                : Colors.indigo,
+                            decoration: isHoveredUserLink
+                                ? TextDecoration.underline
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text("@${AuthorSeries.username}"),
+                    const SizedBox(height: 8),
+                    if (AuthorSeries.id != user.id)
+                      ElevatedButton(
+                        onPressed: () => _follow(),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            isFollow ? const Icon(Icons.check) : const Icon(
+                                Icons.add),
+                            isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            Row(
+              //mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildIconWithText(
+                    Icons.verified_user_sharp, totalFollow.toString()),
+                const SizedBox(width: 12),
+                _buildIconWithText(
+                    Icons.pending_actions, totalSeries.toString()),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Container(
+                child: ElevatedButton(
+                  onPressed: AuthorSeries.id != user.id
+                      ? () => _toggleBookmark()
+                      : null,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      isBookmark
+                          ? Icon(Icons.bookmark)
+                          : Icon(Icons.bookmark_add_outlined),
+                      isBookmark
+                          ? Text('HỦY BOOKMARK SERIES')
+                          : Text('BOOKMARK SERIES NÀY'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          height: 20,
+          width: 200,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey,
+                width: 1.0, // Độ dày của border
+              ),
+            ),
+          ),
+        ),
+        _buildSocialShareSection(widget.id)
+      ],
+    );
+  }
+
+  Widget _buildSocialShareSection(String idPost) {
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.facebook),
+            onPressed: () =>
+                _shareFacebook('http://localhost:8000/posts/${idPost}'),
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+            icon: const Icon(Icons.link),
+            onPressed: () =>
+                _sharePost('http://localhost:8000/posts/${idPost}'),
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () =>
+                  _shareTwitter(
+                      "http://localhost:8000/posts/${idPost}",
+                      "Đã share lên Twitter")),
+        ],
+      ),
+    );
+  }
+
+  void _shareFacebook(String url) async {
+    url =
+    'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
+    final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
+
+    if (await canLaunchUrlString(fbUrl)) {
+      await launchUrlString(fbUrl);
+    } else {
+      throw 'Could not launch $fbUrl';
+    }
+  }
+
+  void _sharePost(String url) {
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Link đã được sao chép')),
+    );
+  }
+
+  void _shareTwitter(String url, String text) async {
+    final twitterUrl = 'https://twitter.com/intent/tweet?text=$text&url=$url';
+    if (await canLaunchUrlString(twitterUrl)) {
+      await launchUrlString(twitterUrl);
+    } else {
+      throw 'Could not launch $twitterUrl';
     }
   }
 
@@ -296,6 +471,34 @@ int totalFollow=0;
     }
   }
 
+  Widget _buildIconWithText(IconData icon, String text) {
+    String messageValue = "";
+    switch (icon) {
+      case Icons.verified_user_sharp:
+        messageValue = 'Người theo dõi';
+        break;
+      case Icons.pending_actions:
+        messageValue = 'Bài viết';
+        break;
+      default:
+        messageValue = 'Default Message';
+    }
+    return Tooltip(
+      message: messageValue,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 26,
+            height: 26,
+            child: Center(child: Icon(icon)),
+          ),
+          const SizedBox(width: 2),
+          Center(child: Text(text)),
+        ],
+      ),
+    );
+  }
+
   Future<void> _loadUser(String username) async {
     var futureUser = await userRepository.getUser(username);
     user = User.fromJson(futureUser.data);
@@ -318,17 +521,16 @@ int totalFollow=0;
     }
   }
 
-  Future<void> _loadFollow(String followerId, String followedId) async {
-    if (JwtPayload.sub == null) {
+  Future<void> _loadFollow(String follower, String followed) async {
+    if (user.username == '') {
       return;
     }
-    var future = await followRepository.checkfollow(followerId, followedId);
-
-    if (future.data != "Follow not found") {
+    var future = await followRepository.checkfollow(follower, followed);
+    if (future.data is Map<String, dynamic>) {
       if (mounted) {
         setState(() {
-          isFollow = true;
           follow = Follow.fromJson(future.data);
+          isFollow = true;
         });
       }
     } else {
@@ -340,36 +542,37 @@ int totalFollow=0;
     }
   }
 
-  // void _follow() async {
-  //   if (JwtPayload.sub == null) {
-  //     appRouter.go("/login");
-  //   } else {
-  //     if (isFollow == true) {
-  //       var future = await followRepository.checkfollow(user.id, AuthorSeries.id);
-  //       if (future.data != "Follow not found") {
-  //         Follow follow = Follow.fromJson(future.data);
-  //         await followRepository.delete(follow.id);
-  //         if (mounted) {
-  //           setState(() {
-  //             isFollow = false;
-  //           });
-  //         }
-  //       }
-  //     } else {
-  //       FollowDTO newFollow = FollowDTO(
-  //           followerId: user.id,
-  //           followedId: AuthorSeries.id,
-  //           createdAt: DateTime.now());
-  //       await followRepository.add(newFollow);
-  //       if (mounted) {
-  //         setState(() {
-  //           isFollow = true;
-  //         });
-  //       }
-  //     }
-  //     _loadTotalFollower(AuthorSeries.id);
-  //   }
-  // }
+  void _follow() async {
+    if (JwtPayload.sub == null) {
+      appRouter.go("/login");
+    } else {
+      if (isFollow == true) {
+        var future = await followRepository.checkfollow(
+            user.username, AuthorSeries.username);
+        if (future.data != "Follow not found") {
+          Follow follow = Follow.fromJson(future.data);
+          await followRepository.delete(follow.id);
+          if (mounted) {
+            setState(() {
+              isFollow = false;
+            });
+          }
+        }
+      } else {
+        FollowDTO newFollow = FollowDTO(
+            follower: user.username,
+            followed: AuthorSeries.username,
+            createdAt: DateTime.now());
+        await followRepository.add(newFollow);
+        if (mounted) {
+          setState(() {
+            isFollow = true;
+          });
+        }
+      }
+      _loadTotalFollower(AuthorSeries.username);
+    }
+  }
 
   Future<void> _toggleBookmark() async {
     if (JwtPayload.sub != null) {
@@ -381,7 +584,7 @@ int totalFollow=0;
       } else {
         if (isBookmark == false) {
           BookmarkInfo bookmarkInfo =
-              BookmarkInfo(itemId: widget.id, type: "series");
+          BookmarkInfo(itemId: widget.id, type: "series");
           await bookmarkRepository.addBookmark(bookmarkInfo, JwtPayload.sub!);
           setState(() {
             isBookmark = !isBookmark;
@@ -389,7 +592,6 @@ int totalFollow=0;
         }
       }
     } else {
-      ////
       appRouter.go('/login');
       // String message = "Bạn chưa đăng nhập";
       //  showTopRightSnackBar(context, message, NotifyType.error);
@@ -416,7 +618,7 @@ int totalFollow=0;
           updatedAt: DateTime.now());
       await voteRepository.createVote(voteDTO);
       var seriesScore =
-          await seriesRepository.updateScore(widget.id, score + 1);
+      await seriesRepository.updateScore(widget.id, score + 1);
       Series series = Series.fromJson(seriesScore.data);
       setState(() {
         score = series.score;
@@ -426,7 +628,7 @@ int totalFollow=0;
     } else {
       if (hasVoted == true && typeVote == true) {
         var seriesScore =
-            await seriesRepository.updateScore(widget.id, score - 1);
+        await seriesRepository.updateScore(widget.id, score - 1);
         Series series = Series.fromJson(seriesScore.data);
         setState(() {
           score = series.score;
@@ -437,7 +639,7 @@ int totalFollow=0;
       } else {
         if (hasVoted == true && typeVote == false) {
           var seriesScore =
-              await seriesRepository.updateScore(widget.id, score + 1);
+          await seriesRepository.updateScore(widget.id, score + 1);
           Series series = Series.fromJson(seriesScore.data);
           setState(() {
             score = series.score;
@@ -473,7 +675,7 @@ int totalFollow=0;
               updatedAt: DateTime.now());
           await voteRepository.createVote(voteDTO);
           var seriesScore =
-              await seriesRepository.updateScore(widget.id, score - 1);
+          await seriesRepository.updateScore(widget.id, score - 1);
 
           Series series = Series.fromJson(seriesScore.data);
           setState(() {
@@ -484,7 +686,7 @@ int totalFollow=0;
         } else {
           if (hasVoted == true && typeVote == false) {
             var seriesScore =
-                await seriesRepository.updateScore(widget.id, score + 1);
+            await seriesRepository.updateScore(widget.id, score + 1);
             Series series = Series.fromJson(seriesScore.data);
             setState(() {
               score = series.score;
@@ -495,7 +697,7 @@ int totalFollow=0;
           } else {
             if (hasVoted == true && typeVote == true) {
               var seriesScore =
-                  await seriesRepository.updateScore(widget.id, score - 1);
+              await seriesRepository.updateScore(widget.id, score - 1);
               Series series = Series.fromJson(seriesScore.data);
               setState(() {
                 score = series.score;

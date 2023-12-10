@@ -121,7 +121,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
-        return Container(
+        return  checkPrivate(widget.id,username,authorPost.username,postDetailDTO.private)?
+        Container(
           width: constraints.maxWidth,
           // color: Colors.white,
           child: Center(
@@ -143,7 +144,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               ),
             ),
           ),
-        );
+        ): Center(child: const Text("Bạn không có quyền xem bài viết này",style: TextStyle(fontSize: 28),));
       },
     );
   }
@@ -235,7 +236,14 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ),
     );
   }
-
+  bool checkPrivate(String postId, String userName, String authorName,
+      bool isPrivate) {
+    if (isPrivate && userName == authorName || !isPrivate) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   Widget _postBody() {
     // _builderTitlePostContent();
     var postPreview = Column(
