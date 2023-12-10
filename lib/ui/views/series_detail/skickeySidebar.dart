@@ -56,7 +56,10 @@ class _StickySidebarState extends State<StickySidebar> {
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) async{
-     await _load();
+      if (widget.user != null) {
+        print("username: ${widget.user.username}");
+        await _load();
+      }
     });
 
 
@@ -69,9 +72,8 @@ class _StickySidebarState extends State<StickySidebar> {
 
   Future<void> _load() async {
     await _loadTotalFollower(widget.AuthorSeries.id);
-    await _loadFollow(widget.user.id, widget.AuthorSeries.id);
-    print("a: ${widget.AuthorSeries.username}");
-    await _loadTotalSeries(widget.AuthorSeries.username);
+    await _loadFollow(widget.user.username, widget.AuthorSeries.username);
+ //   await _loadTotalSeries(widget.AuthorSeries.username);
   setState(() {
 
   });
@@ -79,8 +81,6 @@ class _StickySidebarState extends State<StickySidebar> {
 
   @override
   Widget build(BuildContext context) {
-    print("chay2");
-    print(widget.AuthorSeries.displayName);
     return Column(
       children: [
         Column(
@@ -307,13 +307,13 @@ class _StickySidebarState extends State<StickySidebar> {
   }
 
   void _follow() async {
-    if (widget.user.username == '') {
+    print("user follow: ${widget.user.username}");
+    if (JwtPayload.sub == null) {
       appRouter.go("/login");
     } else {
-      print(widget.user.username);
       if (isFollow == true) {
         var future = await followRepository.checkfollow(
-            widget.user.id, widget.AuthorSeries.id);
+            widget.user.username, widget.AuthorSeries.username);
         if (future.data != "Follow not found") {
           Follow follow = Follow.fromJson(future.data);
           await followRepository.delete(follow.id);
@@ -325,8 +325,8 @@ class _StickySidebarState extends State<StickySidebar> {
         }
       } else {
         FollowDTO newFollow = FollowDTO(
-            followerId: widget.user.id,
-            followedId: widget.AuthorSeries.id,
+            follower: widget.user.username,
+            followed: widget.AuthorSeries.username,
             createdAt: DateTime.now());
         await followRepository.add(newFollow);
         if (mounted) {
@@ -339,21 +339,25 @@ class _StickySidebarState extends State<StickySidebar> {
     }
   }
 
-  Future<void> _loadFollow(String followerId, String followedId) async {
-    if (widget.user.username == '') {
-      return;
-    }
-    var future = await followRepository.checkfollow(followerId, followedId);
-
-    if (future.data != "Follow not found") {
+  Future<void> _loadFollow(String follower, String followed) async {
+    print("s");
+    // if (widget.user.username == '') {
+    // }
+    print("load follow");
+    var future = await followRepository.checkfollow(follower, followed);
+    print("data:");
+    print(future.data);
+    if (future.data is Map<String, dynamic>) {
+      print("co du lieu");
       if (mounted) {
         setState(() {
-          isFollow = true;
           follow = Follow.fromJson(future.data);
+          isFollow = true;
         });
       }
     } else {
       if (mounted) {
+        print("khong co du lieu");
         setState(() {
           isFollow = false;
         });
