@@ -1,3 +1,4 @@
+import 'package:cay_khe/ui/router.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +31,7 @@ class LeftMenu extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(listSelectBtn[index].text, style: TextStyle(color: Colors.black),),
         ),
-        onPressed: () {},
+        onPressed: () => appRouter.go(listSelectBtn[index].path, extra: {}),
         onHover: (value) {listSelectBtn[index].isSelected = value;},
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all(listSelectBtn[index].isSelected ? Color.fromRGBO(242, 242, 242, 1) : Color.fromRGBO(242, 238, 242, 1)),
@@ -47,7 +48,7 @@ class LeftMenu extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(listSelectBtn[index].text, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         ),
-        onPressed: () {},
+        onPressed: () => appRouter.go(listSelectBtn[index].path, extra: {}),
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all(Colors.white),
         ),

@@ -1,15 +1,11 @@
 import 'package:cay_khe/blocs/post_bloc.dart';
-import 'package:cay_khe/dtos/limit_page.dart';
-import 'package:cay_khe/models/result_count.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
-import 'package:cay_khe/ui/views/posts/widgets/right_item.dart';
-import 'package:cay_khe/ui/widgets/pagination.dart';
-import 'package:cay_khe/ui/widgets/post_feed_item.dart';
+import 'package:cay_khe/ui/views/posts/widgets/post/posts_feed.dart';
+import 'package:cay_khe/ui/views/posts/widgets/post_follow/posts_feed_follow.dart';
+import 'package:cay_khe/ui/views/posts/widgets/right_page/right.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'package:cay_khe/models/post_aggregation.dart';
 
 class QuestionView extends StatefulWidget {
   const QuestionView({super.key, this.indexSelected = 0, required this.params});
@@ -21,11 +17,7 @@ class QuestionView extends StatefulWidget {
 
 class _QuestionViewState extends State<QuestionView> {
   late PostBloc postBloc;
-  List<NavigationPost> listSelectBtn = [
-    NavigationPost(index: 0, text: "Mới nhất"),
-    NavigationPost(index: 1, text: "Đang theo dõi"),
-    NavigationPost(index: 2, text: "Đã Bookmark")
-  ];
+  late List<NavigationPost> listSelectBtn;
   @override
   void initState() {
     // TODO: implement initState
@@ -39,13 +31,14 @@ class _QuestionViewState extends State<QuestionView> {
   }
   @override
   Widget build(BuildContext context) {
-    int page = int.parse(widget.params['page'] ?? "1");
-    widget.params['searchField'] = "tags";
-    widget.params['searchContent'] = "HoiDap";
+    listSelectBtn = [
+      NavigationPost(index: 0, text: "Mới nhất", path: "/viewquestion/${converPageParams(widget.params)}",
+          widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
+      NavigationPost(index: 1, text: "Đang theo dõi", path: "/viewquestionfollow/${converPageParams(widget.params)}",
+          widget: PostsFeedFollow(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
+      NavigationPost(index: 2, text: "Đã Bookmark", widget: Container())
+    ];
     listSelectBtn[widget.indexSelected].isSelected = true;
-    postBloc = PostBloc(context: context);
-    postBloc.loadPost(params: widget.params);
-    postBloc.loadRightPost(fieldSearch: '', searchContent: '');
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Padding(
@@ -65,73 +58,12 @@ class _QuestionViewState extends State<QuestionView> {
                     Expanded(
                       child: Padding(
                           padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                          child: page < 1 ? Center(
-                              child: Text(
-                                "Lỗi! Page không thể nhỏ hơn 1",
-                                style: TextStyle(color: Colors.red),)) :
-                          StreamBuilder(
-                              stream: postBloc.postStream,
-                              builder: (context, snapshot) {
-                                if(snapshot.hasData) {
-                                  ResultCount<PostAggregation> resultCount = snapshot.data;
-                                  if(!resultCount.resultList.isEmpty)
-                                    return Column(
-                                      children: [
-                                        Column(
-                                          children: resultCount.resultList.map((e) {
-                                            return PostFeedItem(postAggregation: e);
-                                          }).toList()
-                                        ),
-                                        Pagination(path: "/viewposts", totalItem: resultCount.count, params: widget.params, selectedPage: page,)
-                                      ],
-                                    );
-                                  else {
-                                    int totalPasge = (resultCount.count/limitPage).ceil();
-
-                                    if(page > totalPasge)
-                                      return Center(child: Text("Lỗi! Tổng số trang là $totalPasge, không thể truy cập trang $page", style: TextStyle(color: Colors.red),));
-                                    return Center(child: Text("Không có bài viết nào"));
-                                  }
-                                }
-                                if(snapshot.hasError) {
-                                  return Center(child: Text("Lỗi! Không thể load được vui lòng thử lại sau", style: TextStyle(color: Colors.red),));
-                                }
-                                return Center(child:CircularProgressIndicator());
-                              }
-                          )
+                          child: listSelectBtn[widget.indexSelected].widget,
                       ),
                     ),
                     Container(
                       width: 280,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("BÀI VIẾT MỚI NHẤT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                          StreamBuilder(
-                              stream: postBloc.postRightStream,
-                              builder: (context, snapshot) {
-                                if(snapshot.hasData) {
-                                  ResultCount<PostAggregation> resultRightCount = snapshot.data;
-                                  if(!resultRightCount.resultList.isEmpty)
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: resultRightCount.resultList.map((e) {
-                                        return RightItem(postAggregation: e);
-                                      }).toList()
-                                    );
-                                  else {
-                                    return Center(child: Text("Không có bài viết nào"));
-                                  }
-                                }
-                                if(snapshot.hasError) {
-                                  return Center(child: Text("Lỗi! Không thể load được vui lòng thử lại sau", style: TextStyle(color: Colors.red),));
-                                }
-                                return Center(child:CircularProgressIndicator());
-                              }
-                          )
-                        ],
-                      ),
+                      child: Right(page: 1, limit: 5, isQuestion: false,),
                     )
                   ],
                 ),

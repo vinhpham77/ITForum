@@ -24,6 +24,13 @@ class SeriesRepository {
     return dio.get('');
   }
 
+  Future<Response<dynamic>> getSeriesUser({int? page, int? limit}) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    var optionalParams = page == null ? '' : '&page=$page';
+    optionalParams += limit == null ? '' : '&limit=$limit';
+    return dio.get('/get$optionalParams');
+  }
+
   Future<Response<dynamic>> getByUser(String username,
       {int? page, int? limit}) async {
     dio = JwtInterceptor().addInterceptors(dio);

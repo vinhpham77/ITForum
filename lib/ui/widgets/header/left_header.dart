@@ -64,7 +64,7 @@ class _LeftHeaderState extends State<LeftHeader> {
               });
             },
             onTap: () {
-              go.GoRouter.of(context).go("/question");
+              go.GoRouter.of(context).go("/viewquestion");
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,
