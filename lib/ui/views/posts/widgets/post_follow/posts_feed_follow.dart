@@ -1,4 +1,3 @@
-import 'package:cay_khe/ui/views/posts/widgets/post/post_feed_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
+import '../../../profile/widgets/posts_tab/post_tab_item.dart';
 import '../../blocs/post_follow/post_follow_bloc.dart';
 
 
@@ -88,8 +88,8 @@ class _PostsFeedFollowState extends State<PostsFeedFollow> {
                   Column(
                       children: state.postUsers.resultList
                           .map((e) {
-                        return PostFeedItem(
-                            postAggregation: e);
+                        return PostTabItem(
+                            postUser: e);
                       }).toList()),
                   Pagination(
                     path: indexing['path'] ?? '',

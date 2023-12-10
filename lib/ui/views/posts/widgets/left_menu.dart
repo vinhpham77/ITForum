@@ -34,7 +34,7 @@ class LeftMenu extends StatelessWidget {
         onPressed: () => appRouter.go(listSelectBtn[index].path, extra: {}),
         onHover: (value) {listSelectBtn[index].isSelected = value;},
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(listSelectBtn[index].isSelected ? Color.fromRGBO(242, 242, 242, 1) : Color.fromRGBO(242, 238, 242, 1)),
+          backgroundColor: MaterialStateProperty.all(listSelectBtn[index].isSelected ? Color.fromRGBO(242, 238, 242, 1) : Colors.white),
         ),
       ),
     );
@@ -50,7 +50,7 @@ class LeftMenu extends StatelessWidget {
         ),
         onPressed: () => appRouter.go(listSelectBtn[index].path, extra: {}),
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(Colors.white),
+          backgroundColor: MaterialStateProperty.all(Color.fromRGBO(242, 242, 242, 1)),
         ),
       ),
     );

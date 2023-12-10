@@ -34,12 +34,8 @@ class SeriesBloc extends Bloc<SeriesEvent, SeriesState> {
         emit(SeriesLoadedState(seriesUser: seriesUser));
       }
     } catch (error) {
-      if(JwtPayload.sub == null)
-        emit(const SeriesLoadErrorState(
-            message: "Vui long đăng nhập để xem!"));
-      else
-        emit(const SeriesLoadErrorState(
-            message: "Có lỗi xảy ra. Vui lòng thử lại sau!"));
+      emit(const SeriesLoadErrorState(
+          message: "Có lỗi xảy ra. Vui lòng thử lại sau!"));
     }
   }
 }
