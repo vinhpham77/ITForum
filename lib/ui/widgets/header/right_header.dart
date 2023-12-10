@@ -1,5 +1,6 @@
 import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/ui/router.dart';
+import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,6 +20,8 @@ class RightHeader extends StatefulWidget {
 }
 
 class _RightHeaderState extends State<RightHeader> {
+  bool _isSigned = false;
+
   List<ItemMenu> createMenu = [
     ItemMenu(name: "Bài viết", icon: Icons.create, route: "/publish/post"),
     ItemMenu(name: "Series", icon: Icons.list, route: "/publish/series"),
@@ -37,6 +40,28 @@ class _RightHeaderState extends State<RightHeader> {
   ];
 
   final searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      _updateSignedStatus();
+    });
+  }
+
+  void _updateSignedStatus() {
+    // print("chay");
+    print(JwtPayload.sub);
+    if (!_isSigned && JwtPayload.sub != null) {
+      setState(() {
+        _isSigned = true;
+      });
+    } else {
+      setState(() {
+        _isSigned = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -92,7 +117,7 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ),
         const SizedBox(width: 10),
-        (JwtPayload.displayName == null)
+        (!_isSigned)
             ? Container(
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -164,7 +189,10 @@ class _RightHeaderState extends State<RightHeader> {
                     controller.open();
                   }
                 },
-                icon: const Icon(Icons.account_circle),
+                icon: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: UserAvatar(imageUrl: JwtPayload.avatarUrl ?? '', size: 32)
+                ),
                 iconSize: 32,
                 splashRadius: 16,
                 tooltip: 'Profiler',
