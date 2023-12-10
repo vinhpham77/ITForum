@@ -2,28 +2,28 @@ import 'package:flutter/foundation.dart';
 
 class Follow {
   String id;
-  String followerId;
-  String followedId;
+  String follower;
+  String followed;
   DateTime createdAt;
 
   Follow({
     required this.id,
-    required this.followerId,
-    required this.followedId,
+    required this.follower,
+    required this.followed,
     required this.createdAt,
   });
 
   Follow.empty()
       : id = '',
-        followedId = '',
-        followerId = '',
+        followed = '',
+        follower = '',
         createdAt = DateTime.now();
 
   factory Follow.fromJson(Map<String, dynamic> json) {
     return Follow(
         id: json['id'] ?? '',
-        followerId: json['followerId'] ?? '',
-        followedId: json['followedId'] ?? '',
+        follower: json['follower'] ?? '',
+        followed: json['followed'] ?? '',
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'])
             : DateTime.now());

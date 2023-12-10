@@ -1,20 +1,20 @@
 import 'package:flutter/foundation.dart';
 
 class FollowDTO {
-  final String followerId;
-  final String followedId;
+  final String follower;
+  final String followed;
   final DateTime createdAt;
 
   FollowDTO({
 
-    required this.followerId,
-    required this.followedId,
+    required this.follower,
+    required this.followed,
     required this.createdAt,
   });
   Map<String, dynamic> toJson() {
     return {
-      'followerId': followerId,
-      'followedId': followedId,
+      'follower': follower,
+      'followed': followed,
       'createdAt': createdAt.toIso8601String(),
     };
   }

@@ -81,6 +81,7 @@ int totalFollow=0;
   }
 
   Future<void> _initState() async {
+    print(user.username);
     await _loadCheckVote(widget.id, JwtPayload.sub ?? '');
     await _loadScoreSeries(widget.id);
     await _loadListPost(widget.id);

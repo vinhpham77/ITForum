@@ -351,12 +351,11 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Future<void> _loadCheckVote(String postId, String username) async {
-    print("postId: $postId -- username: $username");
     var futureVote = await voteRepository.checkVote(postId, username);
-    print("du lieu: ${futureVote.data}");
     if (futureVote.data is Map<String, dynamic>) {
       Vote vote = Vote.fromJson(futureVote.data);
-      print("type: ${vote.type}");
+
+
       if (mounted) {
         setState(() {
           upVote = vote.type;
@@ -364,7 +363,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         });
       }
     } else {
-      print("lỗi ${futureVote.data}");
+      if (mounted) {
+        setState(() {
+          upVote = false;
+          downVote = false;
+        });
+      }
     }
   }
 
@@ -408,8 +412,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         }
       } else {
         FollowDTO newFollow = FollowDTO(
-            followerId: user.id,
-            followedId: authorPost.id,
+            follower: user.username,
+            followed: authorPost.username,
             createdAt: DateTime.now());
         await followRepository.add(newFollow);
         if (mounted) {
@@ -608,7 +612,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         return Future<bool>.value(true);
       }
     }).catchError((error) {
-      print('checkvoteloi');
       // String message = getMessageFromException(error);
       // showTopRightSnackBar(context, message, NotifyType.error);
       return Future<bool>.value(false);
