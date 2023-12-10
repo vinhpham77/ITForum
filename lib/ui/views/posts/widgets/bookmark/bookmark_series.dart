@@ -6,42 +6,45 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
-import '../../blocs/series/series_bloc.dart';
+import '../../blocs/bookmark/bookmark_bloc.dart';
 
-
-class SeriesFeed extends StatefulWidget {
+class BookmarkSeries extends StatefulWidget {
+  final String username;
   final int page;
   final int limit;
   final Map<String, String> params;
 
-  const SeriesFeed(
+  const BookmarkSeries(
       {super.key,
+        required this.username,
         required this.page,
         required this.limit,
         required this.params
       });
 
   @override
-  State<SeriesFeed> createState() => _SeriesFeedState();
+  State<BookmarkSeries> createState() => _BookmarkSeriesState();
 }
 
-class _SeriesFeedState extends State<SeriesFeed> {
-  late SeriesBloc _bloc;
+class _BookmarkSeriesState extends State<BookmarkSeries> {
+  late BookmarkBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    _bloc = SeriesBloc()
-      ..add(LoadSeriesEvent(
+    _bloc = BookmarkBloc()
+      ..add(LoadBookmarkSeriesEvent(
+          username: widget.username,
           limit: widget.limit,
           page: widget.page,
       ));
   }
 
   @override
-  void didUpdateWidget(SeriesFeed oldWidget) {
+  void didUpdateWidget(BookmarkSeries oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _bloc..add(LoadSeriesEvent(
+    _bloc..add(LoadBookmarkSeriesEvent(
+      username: widget.username,
       limit: widget.limit,
       page: widget.page,
     ));
@@ -58,15 +61,15 @@ class _SeriesFeedState extends State<SeriesFeed> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => _bloc,
-      child: BlocListener<SeriesBloc, SeriesState>(
+      child: BlocListener<BookmarkBloc, BookmarkState>(
         listener: (context, state) {
-          if (state is SeriesTabErrorState) {
+          if (state is BookmarkTabErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
           }
         },
-        child: BlocBuilder<SeriesBloc, SeriesState>(
+        child: BlocBuilder<BookmarkBloc, BookmarkState>(
           builder: (context, state) {
-            if (state is SeriesEmptyState) {
+            if (state is BookmarkEmptyState) {
               return Container(
                 alignment: Alignment.center,
                 child: Text(
@@ -74,7 +77,7 @@ class _SeriesFeedState extends State<SeriesFeed> {
                   style: const TextStyle(fontSize: 16),
                 ),
               );
-            } else if (state is SeriesLoadedState) {
+            } else if (state is BookmarkSeriesLoadedState) {
               return Column(
                 children: [
                   Column(
@@ -91,7 +94,7 @@ class _SeriesFeedState extends State<SeriesFeed> {
                   )
                 ],
               );
-            } else if (state is SeriesLoadErrorState) {
+            } else if (state is BookmarkLoadErrorState) {
               return Container(
                 alignment: Alignment.center,
                 child:

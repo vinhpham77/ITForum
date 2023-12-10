@@ -20,8 +20,6 @@ class RightHeader extends StatefulWidget {
 }
 
 class _RightHeaderState extends State<RightHeader> {
-  bool _isSigned = false;
-
   List<ItemMenu> createMenu = [
     ItemMenu(name: "Bài viết", icon: Icons.create, route: "/publish/post"),
     ItemMenu(name: "Series", icon: Icons.list, route: "/publish/series"),
@@ -44,23 +42,6 @@ class _RightHeaderState extends State<RightHeader> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      _updateSignedStatus();
-    });
-  }
-
-  void _updateSignedStatus() {
-    // print("chay");
-    print(JwtPayload.sub);
-    if (!_isSigned && JwtPayload.sub != null) {
-      setState(() {
-        _isSigned = true;
-      });
-    } else {
-      setState(() {
-        _isSigned = false;
-      });
-    }
   }
 
   @override
@@ -117,7 +98,7 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ),
         const SizedBox(width: 10),
-        (!_isSigned)
+        (JwtPayload.sub == null)
             ? Container(
                 height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 10),

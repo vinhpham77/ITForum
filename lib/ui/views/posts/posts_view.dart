@@ -1,3 +1,6 @@
+import 'package:cay_khe/ui/views/posts/posts_view.dart';
+import 'package:cay_khe/ui/views/posts/posts_view.dart';
+import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_feed.dart';
 import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
 import 'package:cay_khe/ui/views/posts/widgets/post/posts_feed.dart';
 import 'package:cay_khe/ui/views/posts/widgets/post_follow/posts_feed_follow.dart';
@@ -5,6 +8,7 @@ import 'package:cay_khe/ui/views/posts/widgets/right_page/right.dart';
 import 'package:cay_khe/ui/views/posts/widgets/series/series_feed.dart';
 import 'package:flutter/material.dart';
 
+import '../../../dtos/jwt_payload.dart';
 import '../../common/app_constants.dart';
 import '../../widgets/pagination.dart';
 
@@ -35,15 +39,10 @@ class _PostsViewState extends State<PostsView> {
 
   @override
   Widget build(BuildContext context) {
-    listSelectBtn = [
-      NavigationPost(index: 0, text: "Mới nhất", path: "/viewposts/${converPageParams(widget.params)}",
-          widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
-      NavigationPost(index: 1, text: "Đang theo dõi", path: "/viewpostsfollow/${converPageParams(widget.params)}",
-          widget: PostsFeedFollow(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
-      NavigationPost(index: 2, text: "Series", path: "/viewseries/${converPageParams(widget.params)}",
-          widget: SeriesFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, params: widget.params,)),
-      NavigationPost(index: 3, text: "Bookmark của tôi", widget: Container())
-    ];
+    if(JwtPayload.sub == null)
+      listSelectBtn = navi;
+    else
+      listSelectBtn = naviSignin;
     listSelectBtn[widget.indexSelected].isSelected = true;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -78,6 +77,23 @@ class _PostsViewState extends State<PostsView> {
     );
   }
 
+  List<NavigationPost> get naviSignin => [
+    NavigationPost(index: 0, text: "Mới nhất", path: "/viewposts/${converPageParams(widget.params)}",
+        widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
+    NavigationPost(index: 1, text: "Series", path: "/viewseries/${converPageParams(widget.params)}",
+        widget: SeriesFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, params: widget.params,)),
+    NavigationPost(index: 2, text: "Đang theo dõi", path: "/viewpostsfollow/${converPageParams(widget.params)}",
+        widget: PostsFeedFollow(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
+    NavigationPost(index: 3, text: "Bookmark của tôi", path: "/viewbookmark/${converPageParams(widget.params)}",
+        widget: BookmarkFeed(username: JwtPayload.sub, page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
+  ];
+
+  List<NavigationPost> get navi => [
+    NavigationPost(index: 0, text: "Mới nhất", path: "/viewposts/${converPageParams(widget.params)}",
+        widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: false, params: widget.params,)),
+    NavigationPost(index: 1, text: "Series", path: "/viewseries/${converPageParams(widget.params)}",
+        widget: SeriesFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, params: widget.params,)),
+  ];
 }
 String converPageParams(Map<String, String> params) {
   return params.entries.map((e) => '${e.key}=${e.value}').join('&');

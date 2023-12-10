@@ -36,12 +36,8 @@ class PostFollowBloc extends Bloc<PostFollowEvent, PostFollowState> {
         emit(PostFollowLoadedState(postUsers: postUsers));
       }
     } catch (error) {
-      if(JwtPayload.sub == null)
-        emit(const PostFollowLoadErrorState(
-            message: "Vui long đăng nhập để xem!"));
-      else
-        emit(const PostFollowLoadErrorState(
-          message: "Có lỗi xảy ra. Vui lòng thử lại sau!"));
+      emit(const PostFollowLoadErrorState(
+        message: "Có lỗi xảy ra. Vui lòng thử lại sau!"));
     }
   }
 }

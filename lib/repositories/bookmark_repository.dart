@@ -41,5 +41,19 @@ class BookmarkRepository {
     return dio.get('/byUsername',queryParameters: { 'username': username});
   }
 
+  Future<Response<dynamic>> getPostByUserName({required String username,
+    int? page, int? limit, bool isQuestion = false}) async {
+    var optionalParams = page == null ? '' : 'page=$page';
+    optionalParams += limit == null ? '' : '&limit=$limit';
+    optionalParams += '&isQuestion=$isQuestion';
+    return dio.get('/getPost?username=$username&$optionalParams');
+  }
+
+  Future<Response<dynamic>> getSeriesByUserName({required String username,
+    int? page, int? limit}) async {
+    var optionalParams = page == null ? '' : 'page=$page';
+    optionalParams += limit == null ? '' : '&limit=$limit';
+    return dio.get('/getSeries?username=$username&$optionalParams');
+  }
 
 }

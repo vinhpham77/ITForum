@@ -1,4 +1,4 @@
-import 'package:cay_khe/ui/views/profile/widgets/series_tab/series_tab_item.dart';
+import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,44 +6,54 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
-import '../../blocs/series/series_bloc.dart';
+import '../../blocs/bookmark/bookmark_bloc.dart';
 
 
-class SeriesFeed extends StatefulWidget {
+class BookmarkPost extends StatefulWidget {
+  final username;
   final int page;
   final int limit;
+  final bool isQuestion;
   final Map<String, String> params;
 
-  const SeriesFeed(
+  const BookmarkPost(
       {super.key,
+        required this.username,
         required this.page,
         required this.limit,
+        required this.isQuestion,
         required this.params
       });
 
   @override
-  State<SeriesFeed> createState() => _SeriesFeedState();
+  State<BookmarkPost> createState() => _BookmarkPostState();
 }
 
-class _SeriesFeedState extends State<SeriesFeed> {
-  late SeriesBloc _bloc;
+class _BookmarkPostState extends State<BookmarkPost> {
+  late BookmarkBloc _bloc;
+  late Map<String, String> indexing = widget.isQuestion ? {'name' : 'hỏi đáp', 'path': '/viewquestionbookmark'} :
+  {'name' : 'bài viết', 'path': '/viewbookmark'};
 
   @override
   void initState() {
     super.initState();
-    _bloc = SeriesBloc()
-      ..add(LoadSeriesEvent(
-          limit: widget.limit,
-          page: widget.page,
+    _bloc = BookmarkBloc()
+      ..add(LoadBookmarkPostEvent(
+        username: widget.username,
+        limit: widget.limit,
+        page: widget.page,
+        isQuestion: widget.isQuestion
       ));
   }
 
   @override
-  void didUpdateWidget(SeriesFeed oldWidget) {
+  void didUpdateWidget(BookmarkPost oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _bloc..add(LoadSeriesEvent(
-      limit: widget.limit,
-      page: widget.page,
+    _bloc..add(LoadBookmarkPostEvent(
+        username: widget.username,
+        limit: widget.limit,
+        page: widget.page,
+        isQuestion: widget.isQuestion
     ));
   }
 
@@ -58,40 +68,40 @@ class _SeriesFeedState extends State<SeriesFeed> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => _bloc,
-      child: BlocListener<SeriesBloc, SeriesState>(
+      child: BlocListener<BookmarkBloc, BookmarkState>(
         listener: (context, state) {
-          if (state is SeriesTabErrorState) {
+          if (state is BookmarkTabErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
           }
         },
-        child: BlocBuilder<SeriesBloc, SeriesState>(
+        child: BlocBuilder<BookmarkBloc, BookmarkState>(
           builder: (context, state) {
-            if (state is SeriesEmptyState) {
+            if (state is BookmarkEmptyState) {
               return Container(
                 alignment: Alignment.center,
                 child: Text(
-                  "Không có series nào!",
+                  "Không có ${indexing['name']} nào!",
                   style: const TextStyle(fontSize: 16),
                 ),
               );
-            } else if (state is SeriesLoadedState) {
+            } else if (state is BookmarkPostLoadedState) {
               return Column(
                 children: [
                   Column(
-                      children: state.seriesUser.resultList
+                      children: state.postUsers.resultList
                           .map((e) {
-                        return SeriesTabItem(
-                            seriesUser: e);
+                        return PostTabItem(
+                            postUser: e);
                       }).toList()),
                   Pagination(
-                    path: "viewseries",
-                    totalItem: state.seriesUser.count,
+                    path: indexing['path'] ?? '',
+                    totalItem: state.postUsers.count,
                     params: widget.params,
                     selectedPage: widget.page,
                   )
                 ],
               );
-            } else if (state is SeriesLoadErrorState) {
+            } else if (state is BookmarkLoadErrorState) {
               return Container(
                 alignment: Alignment.center,
                 child:
