@@ -54,9 +54,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   PostDetailDTO postDetailDTO = PostDetailDTO.empty();
   String type = "bài viết";
   bool isLoadingFollow = false;
-  bool postsSameAuthorIsNull=false;
-  int totalPost =0;
-  int totalFollow=0;
+  bool postsSameAuthorIsNull = false;
+  int totalPost = 0;
+  int totalFollow = 0;
 
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
@@ -108,8 +108,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     await _loadBookmark(id, username);
     await _loadPostsByTheSameAuthor(authorPost.username, widget.id);
     await _loadTotalPost(authorPost.username);
-    await _loadFollow(user.id, postDetailDTO.user.id);
-    print("id: ${user.id}");
+    await _loadFollow(username, postDetailDTO.user.username);
     await _loadTotalFollower(authorPost.id);
     if (mounted) {
       setState(() {
@@ -207,7 +206,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ),
     );
   }
-
 
   void _shareTwitter(String url, String text) async {
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$text&url=$url';
@@ -353,45 +351,52 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Future<void> _loadCheckVote(String postId, String username) async {
+    print("postId: $postId -- username: $username");
     var futureVote = await voteRepository.checkVote(postId, username);
+    print("du lieu: ${futureVote.data}");
     if (futureVote.data is Map<String, dynamic>) {
       Vote vote = Vote.fromJson(futureVote.data);
+      print("type: ${vote.type}");
       if (mounted) {
         setState(() {
           upVote = vote.type;
           downVote = !vote.type;
         });
+      }
+    } else {
+      print("lỗi ${futureVote.data}");
+    }
+  }
 
+  Future<void> _loadTotalPost(String username) async {
+    var future = await postRepository.totalPost(username);
+    if (future.data is int) {
+      if (mounted) {
+        setState(() {
+          totalPost = future.data;
+        });
       }
     }
   }
-  Future<void> _loadTotalPost(String username)async {
-     var future= await postRepository.totalPost(username);
-     if(future.data is int){
-       if(mounted){
-         setState(() {
-           totalPost= future.data;
-         });
-       }
 
-
-     }
-  }
-  Future<void> _loadTotalFollower(String followedId)async {
-    var future= await followRepository.totalFollower(followedId);
-    if(future.data is int){
-      setState(() {
-        totalFollow= future.data;
-      });
-
+  Future<void> _loadTotalFollower(String followedId) async {
+    var future = await followRepository.totalFollower(followedId);
+    if (future.data is int) {
+      if (mounted) {
+        setState(() {
+          totalFollow = future.data;
+        });
+      }
     }
   }
+
   void _follow() async {
     if (JwtPayload.sub == null) {
       appRouter.go("/login");
     } else {
       if (isFollow == true) {
-        var future = await followRepository.checkfollow(user.id, authorPost.id);
+        var future = await followRepository.checkfollow(
+            user.username, authorPost.username);
         if (future.data != "Follow not found") {
           Follow follow = Follow.fromJson(future.data);
           await followRepository.delete(follow.id);
@@ -417,26 +422,26 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     }
   }
 
-  Future<void> _loadFollow(String followerId, String followedId) async {
+  Future<void> _loadFollow(String follower, String followed) async {
     if (JwtPayload.sub == null) {
       return;
     }
-    var future = await followRepository.checkfollow(followerId, followedId);
-    print("noi dung: ${future.data}");
-    if (future.data != "Follow not found") {
-      if (mounted) {
-        setState(() {
-          follow = Follow.fromJson(future.data);
-          isFollow = true;
-        });
 
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          isFollow = false;
-        });
-      }
+    var future = await followRepository.checkfollow(follower, followed);
+
+      if (future.data is Map<String, dynamic>) {
+        if (mounted) {
+          setState(() {
+            follow = Follow.fromJson(future.data);
+            isFollow = true;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            isFollow = false;
+          });
+        }
     }
   }
 
@@ -463,8 +468,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         List<Map<String, dynamic>> jsonDataList =
             List<Map<String, dynamic>>.from(response.data);
         posts = jsonDataList.map((json) => Post.fromJson(json)).toList();
-        if(posts.isEmpty) {
-          postsSameAuthorIsNull=true;
+        if (posts.isEmpty) {
+          postsSameAuthorIsNull = true;
         }
         posts = posts.length > 5 ? posts.take(5).toList() : List.from(posts);
         listTitlePost = posts.map((post) => post.title).toList();
@@ -537,7 +542,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildIconWithText(Icons.verified_user_sharp, totalFollow.toString()),
+              _buildIconWithText(
+                  Icons.verified_user_sharp, totalFollow.toString()),
               const SizedBox(width: 12),
               _buildIconWithText(Icons.pending_actions, totalPost.toString()),
             ],
@@ -836,11 +842,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           _titleRelatedArticles(),
-          postsSameAuthorIsNull? const Padding(
-            padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-            child: Text("Không còn bài viết nào",style: TextStyle(fontSize: 16),),
-          ):
-          _bodyRelatedArticles(),
+          postsSameAuthorIsNull
+              ? const Padding(
+                  padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text(
+                    "Không còn bài viết nào",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                )
+              : _bodyRelatedArticles(),
         ]);
   }
 

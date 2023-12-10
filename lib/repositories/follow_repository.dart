@@ -41,11 +41,11 @@ class FollowRepository {
 
 
   Future<Response<dynamic>> checkfollow(
-      String followerId, String followedId) async {
+      String follower, String followed) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/check', queryParameters: {
-      'followerId': followerId,
-      'followedId': followedId,
+      'follower': follower,
+      'followed': followed,
     });
   }
 
