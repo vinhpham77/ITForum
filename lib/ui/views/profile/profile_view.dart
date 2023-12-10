@@ -1,5 +1,5 @@
+import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/limit_page.dart';
-import 'package:cay_khe/models/user.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/views/profile/blocs/profile/profile_bloc.dart';
 import 'package:cay_khe/ui/views/profile/widgets/custom_tab.dart';
@@ -9,10 +9,14 @@ import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../dtos/jwt_payload.dart';
 import '../../../dtos/notify_type.dart';
+import '../../../repositories/follow_repository.dart';
+import '../../../repositories/user_repository.dart';
 import '../../router.dart';
 import '../../widgets/notification.dart';
+
+const int _left = 4;
+const int _right = 1;
 
 class Profile extends StatefulWidget {
   final String username;
@@ -30,20 +34,20 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final int _left = 4;
-  final int _right = 1;
+  late List<Map<String, dynamic>> tabs;
+  late ProfileBloc _bloc;
 
   int get page => widget.params['page'] != null ? widget.params['page']! : 1;
 
-  int get limit =>
-      widget.params['limit'] != null ? widget.params['limit']! : limitPage;
-  late List<Map<String, dynamic>> tabs;
-  late ProfileBloc _bloc;
+  int get limit => widget.params['limit'] ?? limitPage;
 
   @override
   void initState() {
     super.initState();
-    _bloc = ProfileBloc()..add(LoadProfileEvent(username: widget.username));
+    _bloc = ProfileBloc(
+      followRepository: FollowRepository(),
+      userRepository: UserRepository(),
+    )..add(LoadProfileEvent(username: widget.username));
   }
 
   @override
@@ -61,7 +65,7 @@ class _ProfileState extends State<Profile> {
               state.message,
               NotifyType.error,
             );
-          } else if (state is ProfileErrorState) {
+          } else if (state is ProfileCommonErrorState) {
             showTopRightSnackBar(
               context,
               state.message,
@@ -71,14 +75,14 @@ class _ProfileState extends State<Profile> {
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
-            if (state is ProfileLoadedState) {
+            if (state is ProfileSubState) {
               return Container(
                 color: Colors.white.withOpacity(0.5),
                 padding:
                     const EdgeInsets.symmetric(vertical: bodyVerticalSpace),
                 child: Column(
                   children: [
-                    buildUserContainer(context, state.user),
+                    _buildUserContainer(context, state),
                     buildTabBar(),
                     Container(
                       constraints: const BoxConstraints(maxWidth: maxContent),
@@ -91,6 +95,10 @@ class _ProfileState extends State<Profile> {
                   ],
                 ),
               );
+            } else if (state is ProfileLoadErrorState) {
+              return const Center(
+                  child: Text('Có lỗi xảy ra. Vui lòng thử lại sau!',
+                      style: TextStyle(color: Colors.red, fontSize: 20)));
             }
 
             return const Center(child: CircularProgressIndicator());
@@ -162,7 +170,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Container buildUserContainer(BuildContext context, User user) {
+  Container _buildUserContainer(BuildContext context, ProfileSubState state) {
     return Container(
       constraints: const BoxConstraints(maxWidth: maxContent),
       margin: const EdgeInsets.symmetric(horizontal: horizontalSpace),
@@ -173,7 +181,7 @@ class _ProfileState extends State<Profile> {
               ClipRRect(
                   borderRadius: BorderRadius.circular(50),
                   child: UserAvatar(
-                    imageUrl: user.avatarUrl,
+                    imageUrl: state.user.avatarUrl,
                     size: 68,
                   )),
               Padding(
@@ -182,7 +190,7 @@ class _ProfileState extends State<Profile> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.displayName,
+                      state.user.displayName,
                       style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
@@ -190,7 +198,7 @@ class _ProfileState extends State<Profile> {
                     ),
                     const SizedBox(width: 20),
                     Text(
-                      '@${user.username}',
+                      '@${state.user.username}',
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black54,
@@ -201,26 +209,46 @@ class _ProfileState extends State<Profile> {
               )
             ],
           ),
-          if (user.username == JwtPayload.sub)
+          if (state.user.username != JwtPayload.sub)
             Padding(
-              padding: const EdgeInsets.only(left: 80, right: 40),
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                      color: Theme.of(context).primaryColor, width: 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                ),
-                child: const Text(
-                  'Theo dõi',
-                ),
-              ),
+              padding: const EdgeInsets.only(left: 60, right: 40),
+              child: _buildFollowButton(context, state),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFollowButton(BuildContext context, ProfileSubState state) {
+    if (state.isFollowing) {
+      return FilledButton(
+        onPressed: () => _bloc.add(
+            UnfollowEvent(user: state.user, isFollowing: state.isFollowing)),
+        style: FilledButton.styleFrom(
+          backgroundColor: Colors.indigo[400],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0)
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        ),
+        child: const Text(
+          'Đang theo dõi',
+        ),
+      );
+    }
+
+    return OutlinedButton(
+      onPressed: () => _bloc
+          .add(FollowEvent(user: state.user, isFollowing: state.isFollowing)),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      ),
+      child: const Text(
+        'Theo dõi',
       ),
     );
   }

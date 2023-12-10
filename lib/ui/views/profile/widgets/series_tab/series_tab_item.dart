@@ -1,4 +1,3 @@
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/dtos/series_user.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +30,7 @@ class SeriesTabItem extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    JwtPayload.displayName!,
+                    seriesUser.user.displayName,
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -52,7 +51,7 @@ class SeriesTabItem extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: InkWell(
                   onTap: () =>
-                      appRouter.push('/series/${seriesUser.id}', extra: {}),
+                      appRouter.go('/series/${seriesUser.id}', extra: {}),
                   hoverColor: Colors.black12,
                   child: Text(
                     seriesUser.title,

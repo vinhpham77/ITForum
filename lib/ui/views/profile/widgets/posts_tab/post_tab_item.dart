@@ -1,4 +1,3 @@
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +34,7 @@ class PostTabItem extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    JwtPayload.displayName!,
+                    postUser.user.displayName,
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -55,8 +54,9 @@ class PostTabItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: InkWell(
-                  onTap: () =>
-                      appRouter.push('/posts/${postUser.id}', extra: {}),
+                  onTap: () => {
+                    appRouter.go('/posts/${postUser.id}', extra: {})
+                  },
                   hoverColor: Colors.black12,
                   child: Text(
                     postUser.title,
