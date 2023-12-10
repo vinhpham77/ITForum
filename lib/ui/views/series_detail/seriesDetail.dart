@@ -12,6 +12,7 @@ import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/repositories/user_repository.dart';
 import 'package:cay_khe/ui/views/details_page/menuAnchor.dart';
 import 'package:cay_khe/ui/views/posts/widgets/post/post_feed_item.dart';
+import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:cay_khe/ui/views/series_detail/seriesContent.dart';
 import 'package:cay_khe/ui/views/series_detail/skickeySidebar.dart';
 import 'package:cay_khe/ui/views/series_detail/votes_side.dart';
@@ -132,7 +133,7 @@ int totalFollow=0;
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: listPostDetail.map((e) {
-                            return PostFeedItem(postAggregation: e);
+                            return PostTabItem(postUser: e);
                           }).toList()),
                      if(AuthorSeries.id==user.id) MoreHoriz(type:type,idContent:widget.id),
                     ],
