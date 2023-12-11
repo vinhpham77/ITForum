@@ -1,4 +1,5 @@
 import 'package:cay_khe/dtos/series_user.dart';
+import 'package:cay_khe/ui/views/profile/blocs/series_tab/series_tab_provider.dart';
 import 'package:cay_khe/ui/views/profile/widgets/series_tab/series_tab_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,13 +7,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../dtos/jwt_payload.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../../dtos/pagination_states.dart';
-import '../../../../../models/result_count.dart';
-import '../../../../router.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination2.dart';
 import '../../blocs/series_tab/series_tab_bloc.dart';
 
-class SeriesTab extends StatefulWidget {
+class SeriesTab extends StatelessWidget {
   final String username;
   final int page;
   final int limit;
@@ -24,46 +23,33 @@ class SeriesTab extends StatefulWidget {
       required this.limit});
 
   @override
-  State<SeriesTab> createState() => _TabPageState();
-}
-
-class _TabPageState extends State<SeriesTab> {
-  late SeriesTabBloc _bloc;
-
-  @override
-  void initState() {
-    super.initState();
-    _bloc = SeriesTabBloc()
-      ..add(LoadSeriesEvent(
-          username: widget.username, page: widget.page, limit: widget.limit));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => _bloc,
+    return SeriesTabBlocProvider(
+      username: username,
+      page: page,
+      limit: limit,
       child: BlocListener<SeriesTabBloc, SeriesTabState>(
         listener: (context, state) {
           if (state is SeriesDeleteSuccessState) {
-            appRouter.pop();
             showTopRightSnackBar(
               context,
               "Xoá series ${state.seriesUser.title} thành công!",
               NotifyType.success,
             );
-            _bloc.add(LoadSeriesEvent(
-              username: widget.username,
-              page: widget.page,
-              limit: widget.limit,
-            ));
+            context.read<SeriesTabBloc>().add(
+                LoadSeriesEvent(username: username, page: page, limit: limit));
+          } else if (state is SeriesDeleteErrorState) {
+            showTopRightSnackBar(
+              context,
+              state.message,
+              NotifyType.error,
+            );
           } else if (state is SeriesTabErrorState) {
             showTopRightSnackBar(
               context,
               state.message,
               NotifyType.error,
             );
-          } else if (state is SeriesDialogCanceledState) {
-            appRouter.pop();
           }
         },
         child: BlocBuilder<SeriesTabBloc, SeriesTabState>(
@@ -75,11 +61,11 @@ class _TabPageState extends State<SeriesTab> {
                 style: TextStyle(fontSize: 16),
               ),
             );
-          } else if (state is SeriesLoadedState) {
+          } else if (state is SeriesSubState) {
             return Column(
               children: [
-                buildSeriesList(state.seriesUsers),
-                buildPagination(state.seriesUsers),
+                buildSeriesList(context, state),
+                buildPagination(state),
               ],
             );
           } else if (state is SeriesLoadErrorState) {
@@ -99,18 +85,20 @@ class _TabPageState extends State<SeriesTab> {
       alignment: Alignment.center,
       child: child);
 
-  Padding buildSeriesList(ResultCount<SeriesUser> seriesUsers) {
+  Padding buildSeriesList(BuildContext context, SeriesSubState state) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
       child: Column(
         children: [
-          for (var postUser in seriesUsers.resultList) buildOneRow(postUser),
+          for (var postUser in state.seriesUsers.resultList)
+            buildOneRow(context, postUser, state),
         ],
       ),
     );
   }
 
-  Row buildOneRow(SeriesUser seriesUser) {
+  Row buildOneRow(
+      BuildContext context, SeriesUser seriesUser, SeriesSubState state) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -120,7 +108,7 @@ class _TabPageState extends State<SeriesTab> {
             child: SeriesTabItem(seriesUser: seriesUser),
           ),
         ),
-        if (widget.username == JwtPayload.sub)
+        if (username == JwtPayload.sub)
           OutlinedButton(
             style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.redAccent[400],
@@ -132,7 +120,8 @@ class _TabPageState extends State<SeriesTab> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                 textStyle: const TextStyle(fontSize: 13)),
-            onPressed: () => showDeleteConfirmationDialog(context, seriesUser),
+            onPressed: () =>
+                showDeleteConfirmationDialog(context, seriesUser, state),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -147,10 +136,10 @@ class _TabPageState extends State<SeriesTab> {
   }
 
   Future<void> showDeleteConfirmationDialog(
-      BuildContext context, SeriesUser seriesUser) async {
-    return showDialog<void>(
+      BuildContext context, SeriesUser seriesUser, SeriesSubState state) async {
+    return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Xác nhận'),
         content: SingleChildScrollView(
           child: ListBody(
@@ -164,13 +153,17 @@ class _TabPageState extends State<SeriesTab> {
           TextButton(
             child: const Text('Hủy'),
             onPressed: () {
-              _bloc.add(CancelDeleteEvent());
+              Navigator.of(dialogContext).pop();
             },
           ),
           TextButton(
             child: const Text('Xác nhận'),
             onPressed: () {
-              _bloc.add(ConfirmDeleteEvent(seriesUser: seriesUser));
+              context.read<SeriesTabBloc>().add(ConfirmDeleteEvent(
+                    seriesUser: seriesUser,
+                    seriesUsers: state.seriesUsers,
+                  ));
+              Navigator.of(dialogContext).pop();
             },
           ),
         ],
@@ -178,14 +171,14 @@ class _TabPageState extends State<SeriesTab> {
     );
   }
 
-  Pagination2 buildPagination(ResultCount<SeriesUser> seriesUser) {
+  Pagination2 buildPagination(SeriesSubState state) {
     return Pagination2(
         pagingStates: PaginationStates(
-            count: seriesUser.count,
-            limit: widget.limit,
-            currentPage: widget.page,
+            count: state.seriesUsers.count,
+            limit: limit,
+            currentPage: page,
             range: 2,
-            path: "/profile/${widget.username}/series",
+            path: "/profile/$username/series",
             params: {}));
   }
 }

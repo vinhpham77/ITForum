@@ -11,12 +11,12 @@ class SeriesRepository {
   }
 
   Future<Response<dynamic>> add(SeriesDTO seriesDTO) async {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.post('/create', data: seriesDTO.toJson());
   }
 
   Future<Response<dynamic>> delete(String id) {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.delete('/$id/delete');
   }
 
@@ -39,10 +39,11 @@ class SeriesRepository {
   }
 
   Future<Response<dynamic>> getOne(String id) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/$id');
   }
   Future<Response<dynamic>> update(String id, SeriesDTO seriesDTO) async {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.put('/$id/update', data: seriesDTO.toJson());
   }
   Future<Response<dynamic>> updateScore(String idPost, int  score) async {

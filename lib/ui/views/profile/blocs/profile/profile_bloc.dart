@@ -36,7 +36,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       User user = User.fromJson(response.data);
 
       bool isFollowing = false;
-      if (JwtPayload.sub != user.username) {
+      if (JwtPayload.sub != null && JwtPayload.sub != user.username) {
         Response<dynamic> isFollowingResponse =
             await _followRepository.isFollowing(user.username);
         isFollowing = isFollowingResponse.data;

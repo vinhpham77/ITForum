@@ -221,11 +221,11 @@ class _ProfileState extends State<Profile> {
 
   Widget _buildFollowButton(BuildContext context, ProfileSubState state) {
     if (state.isFollowing) {
-      return FilledButton(
+      return TextButton(
         onPressed: () => _bloc.add(
             UnfollowEvent(user: state.user, isFollowing: state.isFollowing)),
-        style: FilledButton.styleFrom(
-          backgroundColor: Colors.indigo[400],
+        style: TextButton.styleFrom(
+          backgroundColor: Colors.indigoAccent.withOpacity(0.05),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0)
           ),
@@ -281,7 +281,7 @@ class _ProfileState extends State<Profile> {
       },
       {
         'title': 'Đang theo dõi',
-        'path': '/profile/${widget.username}/following',
+        'path': '/profile/${widget.username}/followings',
         'widget': Text('Đang theo dõi'),
       },
       {

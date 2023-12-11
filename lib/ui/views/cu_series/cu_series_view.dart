@@ -535,8 +535,8 @@ class _CuSeriesState extends State<CuSeries> {
 
   SeriesDTO createDTO(bool isPrivate, CuSeriesSubState state) {
     return SeriesDTO(
-        title: state.series?.title ?? '',
-        content: state.series?.content ?? '',
+        title: _titleController.text,
+        content: _titleController.text,
         isPrivate: isPrivate,
         postIds: state.selectedPostUsers.map((e) => e.id!).toList());
   }

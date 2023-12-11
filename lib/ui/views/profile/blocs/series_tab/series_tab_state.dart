@@ -8,18 +8,26 @@ sealed class SeriesTabState extends Equatable {
   List<Object?> get props => [];
 }
 
-
 final class SeriesInitialState extends SeriesTabState {}
 
 final class SeriesEmptyState extends SeriesTabState {}
 
-final class SeriesLoadedState extends SeriesTabState {
+@immutable
+final class SeriesSubState extends SeriesTabState {
   final ResultCount<SeriesUser> seriesUsers;
 
-  const SeriesLoadedState({required this.seriesUsers});
+  const SeriesSubState({
+    required this.seriesUsers,
+  });
 
   @override
   List<Object?> get props => [seriesUsers];
+}
+
+final class SeriesLoadedState extends SeriesSubState {
+  const SeriesLoadedState({
+    required super.seriesUsers,
+  });
 }
 
 final class SeriesDeleteSuccessState extends SeriesTabState {
@@ -31,7 +39,8 @@ final class SeriesDeleteSuccessState extends SeriesTabState {
   List<Object?> get props => [seriesUser];
 }
 
-final class SeriesTabErrorState extends SeriesTabState {
+@immutable
+sealed class SeriesTabErrorState extends SeriesTabState {
   final String message;
 
   const SeriesTabErrorState({required this.message});
@@ -40,13 +49,18 @@ final class SeriesTabErrorState extends SeriesTabState {
   List<Object?> get props => [message];
 }
 
-final class SeriesLoadErrorState extends SeriesTabState {
+final class SeriesDeleteErrorState extends SeriesSubState {
   final String message;
 
-  const SeriesLoadErrorState({required this.message});
+  const SeriesDeleteErrorState({
+    required this.message,
+    required super.seriesUsers,
+  });
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, super.seriesUsers];
 }
 
-class SeriesDialogCanceledState extends SeriesTabState {}
+final class SeriesLoadErrorState extends SeriesTabErrorState {
+  const SeriesLoadErrorState({required super.message});
+}

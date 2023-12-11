@@ -47,5 +47,3 @@ final class PostsLoadErrorState extends PostsTabState {
   @override
   List<Object?> get props => [message];
 }
-
-class PostsDialogCanceledState extends PostsTabState {}

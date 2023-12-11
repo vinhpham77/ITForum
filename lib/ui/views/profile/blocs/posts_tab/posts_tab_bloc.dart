@@ -9,18 +9,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../common/utils/message_from_exception.dart';
 
 part 'posts_tab_event.dart';
+
 part 'posts_tab_state.dart';
 
 class PostsTabBloc extends Bloc<PostsTabEvent, PostsTabState> {
-  final PostRepository _postRepository = PostRepository();
+  final PostRepository _postRepository;
 
-  PostsTabBloc() : super(PostsInitialState()) {
+  PostsTabBloc({
+    required PostRepository postRepository,
+  })  : _postRepository = postRepository,
+        super(PostsInitialState()) {
     on<LoadPostsEvent>(_loadPosts);
     on<ConfirmDeleteEvent>(_confirmDelete);
-    on<CancelDeleteEvent>(_cancelDelete);
   }
 
-  Future<void> _loadPosts(LoadPostsEvent event, Emitter<PostsTabState> emit) async {
+  Future<void> _loadPosts(
+      LoadPostsEvent event, Emitter<PostsTabState> emit) async {
     try {
       Response<dynamic> response = await _postRepository.getByUser(
         event.username,
@@ -52,9 +56,5 @@ class PostsTabBloc extends Bloc<PostsTabEvent, PostsTabState> {
       String message = getMessageFromException(error);
       emit(PostsTabErrorState(message: message));
     }
-  }
-
-  void _cancelDelete(CancelDeleteEvent event, Emitter<PostsTabState> emit) {
-    emit(PostsDialogCanceledState());
   }
 }

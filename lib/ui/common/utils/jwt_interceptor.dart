@@ -9,14 +9,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../dtos/jwt_payload.dart';
 
 class JwtInterceptor extends Interceptor {
+  final bool needToLogin;
+
+  JwtInterceptor({this.needToLogin = false});
+
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     var prefs = await SharedPreferences.getInstance();
-    String? accessToken =
-        prefs.getString('accessToken') ?? await refreshAccessToken(prefs, true);
+    String? accessToken = prefs.getString('accessToken') ??
+        await refreshAccessToken(prefs, needToLogin);
 
-    options.headers['Authorization'] = 'Bearer $accessToken';
+    if (accessToken != null) {
+      options.headers['Authorization'] = 'Bearer $accessToken';
+    }
     super.onRequest(options, handler);
   }
 
@@ -59,7 +65,7 @@ class JwtInterceptor extends Interceptor {
   }
 
   Future<void> navigateToLogin() async {
-    appRouter.push('/login');
+    appRouter.go('/login');
   }
 
   Future<dynamic> refreshAccessToken(

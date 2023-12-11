@@ -2,6 +2,7 @@ import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/models/result_count.dart';
 import 'package:cay_khe/ui/router.dart';
+import 'package:cay_khe/ui/views/profile/blocs/posts_tab/posts_tab_provider.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ import '../../../../../dtos/pagination_states.dart';
 import '../../../../widgets/pagination2.dart';
 import '../../blocs/posts_tab/posts_tab_bloc.dart';
 
-class PostsTab extends StatefulWidget {
+class PostsTab extends StatelessWidget {
   final String username;
   final int page;
   final int limit;
@@ -25,32 +26,17 @@ class PostsTab extends StatefulWidget {
       required this.limit,
       required this.isQuestion});
 
-  @override
-  State<PostsTab> createState() => _TabPageState();
-}
-
-class _TabPageState extends State<PostsTab> {
-  late PostsTabBloc _bloc;
-
-  Map<String, String> get target => widget.isQuestion
+  Map<String, String> get target => isQuestion
       ? {"name": 'câu hỏi', "object": "questions"}
       : {"name": 'bài viết', "object": "posts"};
 
   @override
-  void initState() {
-    super.initState();
-    _bloc = PostsTabBloc()
-      ..add(LoadPostsEvent(
-          username: widget.username,
-          page: widget.page,
-          limit: widget.limit,
-          isQuestion: widget.isQuestion));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => _bloc,
+    return PostsTabBlocProvider(
+      username: username,
+      page: page,
+      limit: limit,
+      isQuestion: isQuestion,
       child: BlocListener<PostsTabBloc, PostsTabState>(
         listener: (context, state) {
           if (state is PostsDeleteSuccessState) {
@@ -60,16 +46,14 @@ class _TabPageState extends State<PostsTab> {
               "Xoá ${target['name']} ${state.postUser.title} thành công!",
               NotifyType.success,
             );
-            _bloc.add(LoadPostsEvent(
-              username: widget.username,
-              page: widget.page,
-              limit: widget.limit,
-              isQuestion: widget.isQuestion,
-            ));
+            context.read<PostsTabBloc>().add(LoadPostsEvent(
+                  username: username,
+                  page: page,
+                  limit: limit,
+                  isQuestion: isQuestion,
+                ));
           } else if (state is PostsTabErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
-          } else if (state is PostsDialogCanceledState) {
-            appRouter.pop();
           }
         },
         child: BlocBuilder<PostsTabBloc, PostsTabState>(
@@ -84,7 +68,7 @@ class _TabPageState extends State<PostsTab> {
             } else if (state is PostsLoadedState) {
               return Column(
                 children: [
-                  buildPostList(state.postUsers),
+                  buildPostList(context, state.postUsers),
                   buildPagination(state.postUsers),
                 ],
               );
@@ -112,25 +96,25 @@ class _TabPageState extends State<PostsTab> {
     return Pagination2(
         pagingStates: PaginationStates(
             count: postUsers.count,
-            limit: widget.limit,
-            currentPage: widget.page,
+            limit: limit,
+            currentPage: page,
             range: 2,
-            path: "/profile/${widget.username}/${target['object']}",
+            path: "/profile/$username/${target['object']}",
             params: {}));
   }
 
-  Padding buildPostList(ResultCount<PostAggregation> postUsers) {
+  Padding buildPostList(BuildContext context, ResultCount<PostAggregation> postUsers) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
       child: Column(
         children: [
-          for (var postUser in postUsers.resultList) buildOneRow(postUser),
+          for (var postUser in postUsers.resultList) buildOneRow(context, postUser),
         ],
       ),
     );
   }
 
-  Row buildOneRow(PostAggregation postUser) {
+  Row buildOneRow(BuildContext context, PostAggregation postUser) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -140,7 +124,7 @@ class _TabPageState extends State<PostsTab> {
             child: PostTabItem(postUser: postUser),
           ),
         ),
-        if (widget.username == JwtPayload.sub)
+        if (username == JwtPayload.sub)
           OutlinedButton(
             style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.redAccent[400],
@@ -170,7 +154,7 @@ class _TabPageState extends State<PostsTab> {
       BuildContext context, PostAggregation postUser) async {
     return showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Xác nhận'),
         content: SingleChildScrollView(
           child: ListBody(
@@ -184,23 +168,19 @@ class _TabPageState extends State<PostsTab> {
           TextButton(
             child: const Text('Hủy'),
             onPressed: () {
-              _bloc.add(CancelDeleteEvent());
+              Navigator.of(dialogContext).pop();
             },
           ),
           TextButton(
             child: const Text('Xác nhận'),
             onPressed: () {
-              _bloc.add(ConfirmDeleteEvent(postUser: postUser));
+              context
+                  .read<PostsTabBloc>()
+                  .add(ConfirmDeleteEvent(postUser: postUser));
             },
           ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _bloc.close();
-    super.dispose();
   }
 }

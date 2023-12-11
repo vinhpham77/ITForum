@@ -62,67 +62,69 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-      path: '/viewquestion',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewquestion"),
-            child: ScreenWithHeaderAndFooter(
-              body: QuestionView(params: convertQuery(query: "")),
-            ));
-      }),
+        path: '/viewquestion',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey("viewquestion"),
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(params: convertQuery(query: "")),
+              ));
+        }),
     GoRoute(
-      path: '/viewquestion/:query',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewquestion"),
-            child: ScreenWithHeaderAndFooter(
-              body: QuestionView(
-                  params: convertQuery(
-                      query: state.pathParameters["query"] ?? "")),
-            ));
-      }),
+        path: '/viewquestion/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey("viewquestion"),
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(
+                    params: convertQuery(
+                        query: state.pathParameters["query"] ?? "")),
+              ));
+        }),
     GoRoute(
-      path: '/viewquestionfollow',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewquestionfollow"),
-            child: ScreenWithHeaderAndFooter(
-              body: QuestionView(
-                  indexSelected: 1, params: convertQuery(query: "")),
-            ));
-      }),
+        path: '/viewquestionfollow',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey("viewquestionfollow"),
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(
+                    indexSelected: 1, params: convertQuery(query: "")),
+              ));
+        }),
     GoRoute(
-      path: '/viewquestionfollow/:query',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewquestionfollow"),
-            child: ScreenWithHeaderAndFooter(
-              body: QuestionView(
-                indexSelected: 1,
-                params: convertQuery(query: state.pathParameters["query"] ?? "")),
-            ));
-      }),
+        path: '/viewquestionfollow/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey("viewquestionfollow"),
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(
+                    indexSelected: 1,
+                    params: convertQuery(
+                        query: state.pathParameters["query"] ?? "")),
+              ));
+        }),
     GoRoute(
-      path: '/viewquestionbookmark',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewquestionbookmark"),
-            child: ScreenWithHeaderAndFooter(
-              body: QuestionView(
-                  indexSelected: 2, params: convertQuery(query: "")),
-            ));
-      }),
+        path: '/viewquestionbookmark',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey("viewquestionbookmark"),
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(
+                    indexSelected: 2, params: convertQuery(query: "")),
+              ));
+        }),
     GoRoute(
-      path: '/viewquestionbookmark/:query',
-      pageBuilder: (context, state) {
-        return MaterialPage<void>(
-            key: ValueKey("viewquestionbookmark"),
-            child: ScreenWithHeaderAndFooter(
-              body: QuestionView(
-                  indexSelected: 2,
-                  params: convertQuery(query: state.pathParameters["query"] ?? "")),
-            ));
-      }),
+        path: '/viewquestionbookmark/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey("viewquestionbookmark"),
+              child: ScreenWithHeaderAndFooter(
+                body: QuestionView(
+                    indexSelected: 2,
+                    params: convertQuery(
+                        query: state.pathParameters["query"] ?? "")),
+              ));
+        }),
     GoRoute(
       path: '/search',
       pageBuilder: (context, state) => const MaterialPage<void>(
@@ -180,7 +182,6 @@ final appRouter = GoRouter(
           GoRoute(
               path: ':pid',
               pageBuilder: (context, state) {
-
                 return MaterialPage<void>(
                     key: state.pageKey,
                     child: ScreenWithHeaderAndFooter(
@@ -191,9 +192,10 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'edit',
                   pageBuilder: (context, state) => MaterialPage<void>(
+                    key: state.pageKey,
                       child: ScreenWithHeaderAndFooter(
-                        body: CuPost(id: state.pathParameters['pid']!),
-                      )),
+                    body: CuPost(id: state.pathParameters['pid']!),
+                  )),
                 ),
               ]),
         ]),
@@ -238,7 +240,7 @@ final appRouter = GoRouter(
       name: 'onepost',
       path: '/onepost',
       pageBuilder: (context, state) =>
-          MaterialPage<void>(key: ValueKey('onepost'), child: Text("test")),
+          const MaterialPage<void>(key: ValueKey('onepost'), child: Text("test")),
     ),
     GoRoute(
       path: '/register',
@@ -264,11 +266,9 @@ final appRouter = GoRouter(
       path: "/viewposts",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewposts"),
+            key: const ValueKey("viewposts"),
             child: ScreenWithHeaderAndFooter(
-              body: PostsView(
-                  params:
-                  convertQuery(query: "")),
+              body: PostsView(params: convertQuery(query: "")),
             ));
       },
     ),
@@ -276,7 +276,7 @@ final appRouter = GoRouter(
       path: "/viewposts/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewposts"),
+            key: UniqueKey(),
             child: ScreenWithHeaderAndFooter(
               body: PostsView(
                   params:
@@ -288,11 +288,10 @@ final appRouter = GoRouter(
       path: "/viewseries",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewseries"),
+            key: const ValueKey("viewseries"),
             child: ScreenWithHeaderAndFooter(
-              body: PostsView(
-                  indexSelected: 1,
-                  params: convertQuery(query: "")),
+              body:
+                  PostsView(indexSelected: 1, params: convertQuery(query: "")),
             ));
       },
     ),
@@ -300,11 +299,12 @@ final appRouter = GoRouter(
       path: "/viewseries/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewseries"),
+            key: const ValueKey("viewseries"),
             child: ScreenWithHeaderAndFooter(
               body: PostsView(
                   indexSelected: 1,
-                  params: convertQuery(query: state.pathParameters["query"] ?? "")),
+                  params:
+                      convertQuery(query: state.pathParameters["query"] ?? "")),
             ));
       },
     ),
@@ -312,12 +312,10 @@ final appRouter = GoRouter(
       path: "/viewpostsfollow",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewpostsfollow"),
+            key: const ValueKey("viewpostsfollow"),
             child: ScreenWithHeaderAndFooter(
-              body: PostsView(
-                  indexSelected: 2,
-                  params:
-                  convertQuery(query: "")),
+              body:
+                  PostsView(indexSelected: 2, params: convertQuery(query: "")),
             ));
       },
     ),
@@ -325,12 +323,12 @@ final appRouter = GoRouter(
       path: "/viewpostsfollow/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewpostsfollow"),
+            key: const ValueKey("viewpostsfollow"),
             child: ScreenWithHeaderAndFooter(
               body: PostsView(
-                indexSelected: 2,
-                params:
-                  convertQuery(query: state.pathParameters["query"] ?? "")),
+                  indexSelected: 2,
+                  params:
+                      convertQuery(query: state.pathParameters["query"] ?? "")),
             ));
       },
     ),
@@ -338,11 +336,10 @@ final appRouter = GoRouter(
       path: "/viewbookmark",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewbookmark"),
+            key: const ValueKey("viewbookmark"),
             child: ScreenWithHeaderAndFooter(
-              body: PostsView(
-                indexSelected: 3,
-                params: convertQuery(query: "")),
+              body:
+                  PostsView(indexSelected: 3, params: convertQuery(query: "")),
             ));
       },
     ),
@@ -350,10 +347,12 @@ final appRouter = GoRouter(
       path: "/viewbookmark/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: ValueKey("viewbookmark"),
+            key: const ValueKey("viewbookmark"),
             child: ScreenWithHeaderAndFooter(
               body: PostsView(
-                indexSelected: 3, params: convertQuery(query: state.pathParameters["query"] ?? "")),
+                  indexSelected: 3,
+                  params:
+                      convertQuery(query: state.pathParameters["query"] ?? "")),
             ));
       },
     ),
@@ -408,6 +407,36 @@ final appRouter = GoRouter(
               body: Profile(
                   username: state.pathParameters['username']!,
                   selectedIndex: 3,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
+    GoRoute(
+        path: '/profile/:username/followings',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 4,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
+    GoRoute(
+        path: '/profile/:username/followers',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 5,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
+    GoRoute(
+        path: '/profile/:username/personal',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 6,
                   params: state.extra as Map<String, dynamic>? ?? {}),
             ))),
     GoRoute(

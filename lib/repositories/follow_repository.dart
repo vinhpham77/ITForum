@@ -13,12 +13,12 @@ class FollowRepository {
   }
 
   Future<Response<dynamic>> add(FollowDTO followDTO) async {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.post('/create', data: followDTO.toJson());
   }
 
   Future<Response<dynamic>> delete(String id) {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.delete(
       "/delete/$id",
     );
@@ -30,15 +30,14 @@ class FollowRepository {
   }
 
   Future<Response<dynamic>> follow(String followed) async {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.post('/follow', data: followed);
   }
 
   Future<Response<dynamic>> unfollow(String followed) async {
-    dio = JwtInterceptor().addInterceptors(dio);
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.post('/unfollow', data: followed);
   }
-
 
   Future<Response<dynamic>> checkfollow(
       String follower, String followed) async {
