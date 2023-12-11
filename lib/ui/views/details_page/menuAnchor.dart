@@ -6,15 +6,10 @@ import 'package:dio/src/response.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class item {
-  item({required this.name, required this.icon});
-
-  final String name;
-  final IconData icon;
-}
-
 class MoreHoriz extends StatefulWidget {
-  const MoreHoriz({super.key, required this.type, required this.idContent});
+  final String username;
+  final String authorname;
+  const MoreHoriz({super.key, required this.type, required this.idContent, required this.username, required this.authorname});
   final String type;
   final String idContent;
   @override
@@ -47,55 +42,93 @@ class _MoreHorizState extends State<MoreHoriz> {
   Widget widgetMoreHoriz() =>
       Row(
         children: [
-          MenuAnchor(
-            builder: (BuildContext context, MenuController controller,
-                Widget? child) {
-              return IconButton(
-                onPressed: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
-                icon: const Icon(Icons.more_horiz),
-                iconSize: 24,
-                splashRadius: 16,
-                tooltip: 'Thêm hành động',
-              );
-            },
-            menuChildren: [
-              MenuItemButton(
-                onPressed: () {
-                  // Action for "Sửa" item
-                },
-                child: const Row(
-                  children: [
-                    Icon(Icons.edit),
-                    SizedBox(width: 20),
-                    Text("Sửa"),
-                  ],
-                ),
-              ),
-              MenuItemButton(
-                onPressed: () {
-                  showDeleteConfirmationDialog(context);
-                  // Action for "Xóa bài viết" item
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.delete),
-                    const SizedBox(width: 20),
-                    Text("Xóa ${widget.type}"),
-                  ],
-                ),
-              ),
-              // Add more MenuItemButton widgets as needed
-            ],
-          ),
+          widget.username==widget.authorname?
+          _myMenuAnchor(): _menuAnchor()
         ],
       );
 
+  Widget _myMenuAnchor(){
+    return MenuAnchor(
+      builder: (BuildContext context, MenuController controller,
+          Widget? child) {
+        return IconButton(
+          onPressed: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          icon: const Icon(Icons.more_horiz),
+          iconSize: 24,
+          splashRadius: 16,
+          tooltip: 'Thêm hành động',
+        );
+      },
+      menuChildren: [
+        MenuItemButton(
+          onPressed: () {
+            // Action for "Sửa" item
+          },
+          child: const Row(
+            children: [
+              Icon(Icons.edit),
+              SizedBox(width: 20),
+              Text("Sửa"),
+            ],
+          ),
+        ),
+        MenuItemButton(
+          onPressed: () {
+            showDeleteConfirmationDialog(context);
+            // Action for "Xóa bài viết" item
+          },
+          child: Row(
+            children: [
+              const Icon(Icons.delete),
+              const SizedBox(width: 20),
+              Text("Xóa ${widget.type}"),
+            ],
+          ),
+        ),
+        // Add more MenuItemButton widgets as needed
+      ],
+    );
+  }
+  Widget _menuAnchor(){
+    return MenuAnchor(
+      builder: (BuildContext context, MenuController controller,
+          Widget? child) {
+        return IconButton(
+          onPressed: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          icon: const Icon(Icons.more_horiz),
+          iconSize: 24,
+          splashRadius: 16,
+          tooltip: 'Thêm hành động',
+        );
+      },
+      menuChildren: [
+        MenuItemButton(
+          onPressed: () {
+            // Action for "Sửa" item
+          },
+          child: const Row(
+            children: [
+              Icon(Icons.flag),
+              SizedBox(width: 20),
+              Text("Báo cáo"),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
   Future<void> showDeleteConfirmationDialog(BuildContext context) async {
     return showDialog(
       context: context,
@@ -121,7 +154,30 @@ class _MoreHorizState extends State<MoreHoriz> {
       },
     );
   }
-
+  Future<void> showAddPostConfirmationDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: const Text("Bạn muốn thêm bài viết này vào series nào"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Hủy"),
+            ),
+            TextButton(
+              onPressed: () {
+                deleteSeries(widget.idContent, widget.type);
+              },
+              child: Text("Thêm"),
+            ),
+          ],
+        );
+      },
+    );
+  }
   Future<void> deleteSeries(String id, String type) async {
     Response future;
     if (type == 'bài viết') {

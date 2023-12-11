@@ -37,53 +37,43 @@ class PostDetailsPage extends StatefulWidget {
 }
 
 class _PostDetailsPage extends State<PostDetailsPage> {
-  bool enableButton = true;
   bool stateVote = false;
   bool upVote = false;
   bool downVote = false;
-  String username = JwtPayload.sub ?? '';
-  String idVote = '';
   bool typeVote = false;
   bool isCheckBookmark = false;
-  int score = 0;
   bool isBookmark = false;
   bool isHovered = false;
   bool isLoading = true;
-  String usernamePost = '';
-  List<String> ListTag = [];
   bool isFollow = false;
-  PostDetailDTO postDetailDTO = PostDetailDTO.empty();
-  String type = "bài viết";
   bool isLoadingFollow = false;
   bool postsSameAuthorIsNull = false;
+  PostDetailDTO postDetailDTO = PostDetailDTO.empty();
+  String type = "bài viết";
+  String username = JwtPayload.sub ?? '';
+  String idVote = '';
+  String updatedAt ='';
+  String _currentId = "";
   int totalPost = 0;
   int totalFollow = 0;
+  int score = 0;
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
+  List<String> listTag = [];
+  List<DateTime> listDateTime = [];
+  List<Post> posts = [];
+  List<Tag> selectedTags = [];
+  late List<String> listTitlePost;
+  User user = User.empty();
+  User authorPost = User.empty();
+  Follow follow = Follow.empty();
+  Tag? selectedTag;
   final postRepository = PostRepository();
-  final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _titleController = TextEditingController();
   final tagRepository = TagRepository();
   final voteRepository = VoteRepository();
   final bookmarkRepository = BookmarkRepository();
   final userRepository = UserRepository();
   final followRepository = FollowRepository();
-  final TextEditingController _nameController = TextEditingController();
-
-  final TextEditingController _updateAtController = TextEditingController();
-  String _currentId = "";
-
-  DateTime upDateAt = DateTime.now();
-  List<DateTime> listDateTime = [];
-  List<Post> posts = [];
-  Tag? selectedTag;
-  List<Tag> selectedTags = [];
-  List<Tag> allTags = [];
-  late List<String> listTitlePost;
-  User user = User.empty();
-  User authorPost = User.empty();
-  Follow follow = Follow.empty();
-
   @override
   void initState() {
     super.initState();
@@ -111,23 +101,23 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     await _loadTotalPost(authorPost.username);
     await _loadFollow(username, postDetailDTO.user.username);
     await _loadTotalFollower(authorPost.username);
-    if (mounted) {
+
       setState(() {
         isLoading = false;
       });
-    }
+
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
-        return checkPrivate(
+        return   checkPrivate(
                 widget.id, username, authorPost.username, postDetailDTO.private)
             ? Container(
                 width: constraints.maxWidth,
                 // color: Colors.white,
-                child: Center(
+                child:  Center(
                   child: SizedBox(
                     width: 1200,
                     child: Padding(
@@ -154,8 +144,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                   ),
                 ),
               )
-            : Center(
-                child: const Text(
+            : const Center(
+                child: Text(
                 "Bạn không có quyền xem bài viết này",
                 style: TextStyle(fontSize: 28),
               ));
@@ -232,6 +222,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     }
   }
 
+  Widget _buildLoadingIndicator() {
+    return Container(
+      height: 600,
+      alignment: Alignment.center,
+      child: const CircularProgressIndicator(),
+    );
+  }
   Widget buildTagButton(String tag) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -269,7 +266,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           padding: const EdgeInsets.all(20),
           child: Wrap(
             spacing: 8.0,
-            children: ListTag.map((tag) => buildTagButton(tag)).toList(),
+            children: listTag.map((tag) => buildTagButton(tag)).toList(),
           ),
         ),
         Container(
@@ -326,8 +323,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 children: [
                   _builderAuthorPostContent(),
                   postPreview,
-                  if (authorPost.id == user.id)
-                    MoreHoriz(idContent: widget.id, type: type),
+                    MoreHoriz(idContent: widget.id, type: type,authorname: authorPost.username,username: username),
                 ],
               ),
             ),
@@ -335,12 +331,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   getMarkdown() {
-    String titleRaw = _titleController.text;
+    String titleRaw = postDetailDTO.title;
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
     // String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
-    String content = _contentController.text;
+    String content = postDetailDTO.content;
     String tags = "#";
-    tags = tags + ListTag.join('\t#');
+    tags = tags + listTag.join('\t#');
     return '$title \n $content';
   }
 
@@ -348,17 +344,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     var future = postRepository.getOneDetails(id);
     future.then((response) {
       postDetailDTO = PostDetailDTO.fromJson(response.data);
-      _contentController.text = postDetailDTO.content;
       authorPost = postDetailDTO.user;
-      _titleController.text = postDetailDTO.title;
-      ListTag = postDetailDTO.tags;
-      _nameController.text = postDetailDTO.user.displayName;
-      usernamePost = postDetailDTO.user.username;
-      upDateAt = postDetailDTO.updatedAt;
-      _updateAtController.text = "Đã đăng vào ${getTimeAgo(upDateAt)}";
+      listTag = postDetailDTO.tags;
+      updatedAt = "Đã đăng vào ${getTimeAgo(postDetailDTO.updatedAt)}";
       score = postDetailDTO.score;
     }).catchError((error) {
-      print("lỗi");
+      appRouter.go("/not-found");
       // String message = getMessageFromException(error);
       // showTopRightSnackBar(context, message, NotifyType.error);
     });
@@ -516,7 +507,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_buildUserDetails(), Text(_updateAtController.text)],
+      children: [_buildUserDetails(), Text(updatedAt)],
     );
   }
 
@@ -527,7 +518,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         //  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           InkWell(
-            onTap: () {},
+            onTap: () {appRouter.go("/profile/${postDetailDTO.user.username}/posts");},
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: _buildPostImage(authorPost.avatarUrl ?? ""),
@@ -553,9 +544,11 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    appRouter.go("/profile/${postDetailDTO.user.username}/posts");
+                  },
                   child: Text(
-                    _nameController.text,
+                    authorPost.displayName,
                     style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
@@ -855,7 +848,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   Widget? _tableOfContents() {
     List<String> headings =
-        extractHeadingsFromMarkdown(_contentController.text);
+        extractHeadingsFromMarkdown(postDetailDTO.content);
     if (headings.isEmpty) {
       return null;
     }
@@ -1079,27 +1072,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     }
   }
 
-  Widget _ownArticles(String text) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) {
-        setState(() {
-          textColor = Colors.black;
-        });
-      },
-      onExit: (_) {
-        setState(() {
-          textColor = Colors.grey;
-        });
-      },
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor,
-        ),
-      ),
-    );
-  }
 }
 
 ///// close cac bai viet lien quan

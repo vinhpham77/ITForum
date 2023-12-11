@@ -146,7 +146,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
                             stream: seriesDetailBloc.spStream,
                             builder: (BuildContext context, snapshot) {
                               if (snapshot.hasData) {
-
                                 return SeriesContentWidget(sp: snapshot.data!);
                               } else if (snapshot.hasError) {
                                 return Text('Lỗi: ${snapshot.error}');
@@ -161,8 +160,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
                               children: listPostDetail.map((e) {
                                 return PostTabItem(postUser: e);
                               }).toList()),
-                          if(AuthorSeries.id == user.id) MoreHoriz(
-                              type: type, idContent: widget.id),
+                          MoreHoriz(
+                              type: type, idContent: widget.id,authorname: AuthorSeries.username,username: username),
                         ],
                       ),
                     ),
@@ -202,12 +201,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
             ),
           ),
         ),
-        Row(
-          children: [
-            IconButton(onPressed: () => {}, icon: const Icon(Icons.add)),
-            const Text("Add my post to this series")
-          ],
-        )
+        // Row(
+        //   children: [
+        //     IconButton(onPressed: () => {}, icon: const Icon(Icons.add)),
+        //     const Text("Add my post to this series")
+        //   ],
+        // )
       ],
     );
   }
@@ -304,7 +303,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: () {appRouter.go("/profile/${AuthorSeries.username}/posts");},
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: UserAvatar(
@@ -329,7 +328,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                       },
                       child: GestureDetector(
                         onTap: () {
-                          print('Navigate to: ');
+                         appRouter.go("/profile/${AuthorSeries.username}/posts");
                         },
                         child: Text(
                           AuthorSeries.displayName,
@@ -347,9 +346,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     const SizedBox(height: 8),
                     Text("@${AuthorSeries.username}"),
                     const SizedBox(height: 8),
-                    if (AuthorSeries.id != user.id)
+
                       ElevatedButton(
-                        onPressed: () => _follow(),
+                        onPressed:  AuthorSeries.id != user.id?()=> _follow():null,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -365,8 +364,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
               ],
             ),
             Row(
-              //mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
+
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _buildIconWithText(
@@ -487,10 +487,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
       p.updatedAt = e.updatedAt;
       p.tags = e.tags;
       p.private = e.isPrivate;
-
         setState(() {
-          listPostDetail.add(p);
-
+          if(listPostDetail.length<sp.posts.length) {
+            listPostDetail.add(p);
+          }
         });
 
     }
