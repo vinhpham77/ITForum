@@ -12,6 +12,7 @@ import 'package:cay_khe/repositories/vote_repository.dart';
 import 'package:cay_khe/ui/common/utils/date_time.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/series_detail/votes_side.dart';
+import 'package:cay_khe/ui/widgets/comment/comment_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -132,17 +133,24 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                     width: 1200,
                     child: Padding(
                       padding: const EdgeInsets.all(50.0),
-                      child: Row(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          _postActions(),
-                          const SizedBox(width: 20),
-                          _postBody(),
-                          const SizedBox(width: 20),
-                          _sidebar(),
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              _postActions(),
+                              const SizedBox(width: 20),
+                              _postBody(),
+                              const SizedBox(width: 20),
+                              _sidebar(),
+                            ],
+                          ),
+                          CommentView(postId: widget.id)
                         ],
-                      ),
+                      )
                     ),
                   ),
                 ),
