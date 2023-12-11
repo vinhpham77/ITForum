@@ -1,7 +1,6 @@
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/models/result_count.dart';
-import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/profile/blocs/posts_tab/posts_tab_provider.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';

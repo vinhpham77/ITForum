@@ -14,4 +14,20 @@ class UserRepository {
   Future<Response<dynamic>> getUser(String username) async {
     return dio.get("/$username");
   }
+
+  Future<Response<dynamic>> getFollows({
+    required String username,
+    required int page,
+    required int limit,
+    required bool isFollowed,
+  }) async {
+    String object = isFollowed ? "followers" : "followings";
+    return dio.get(
+      "/$username/$object",
+      queryParameters: {
+        "page": page,
+        "limit": limit,
+      },
+    );
+  }
 }

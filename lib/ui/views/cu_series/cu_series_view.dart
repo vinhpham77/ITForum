@@ -1,6 +1,5 @@
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/series_dto.dart';
-import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/cu_series/bloc/cu_series_bloc.dart';

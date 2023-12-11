@@ -3,6 +3,7 @@ import 'package:cay_khe/dtos/limit_page.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/views/profile/blocs/profile/profile_bloc.dart';
 import 'package:cay_khe/ui/views/profile/widgets/custom_tab.dart';
+import 'package:cay_khe/ui/views/profile/widgets/follows_tab/follows_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/posts_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/series_tab/series_tab.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
@@ -244,17 +245,17 @@ class Profile extends StatelessWidget {
       {
         'title': 'Bài viết',
         'path': '/profile/$username/posts',
-        'widget': buildPostTab(),
+        'widget': _buildPostTab(),
       },
       {
         'title': 'Câu hỏi',
         'path': '/profile/$username/questions',
-        'widget': buildPostTab(isQuestion: true),
+        'widget': _buildPostTab(isQuestion: true),
       },
       {
         'title': 'Series',
         'path': '/profile/$username/series',
-        'widget': buildSeriesTab(),
+        'widget': _buildSeriesTab(),
       },
       {
         'title': 'Bookmark',
@@ -264,12 +265,12 @@ class Profile extends StatelessWidget {
       {
         'title': 'Đang theo dõi',
         'path': '/profile/$username/followings',
-        'widget': Text('Đang theo dõi'),
+        'widget': _buildFollowsTab(),
       },
       {
         'title': 'Người theo dõi',
         'path': '/profile/$username/followers',
-        'widget': Text('Người theo dõi'),
+        'widget': _buildFollowsTab(isFollowers: true),
       },
       {
         'title': 'Cá nhân',
@@ -279,12 +280,17 @@ class Profile extends StatelessWidget {
     ];
   }
 
-  Widget buildPostTab({bool isQuestion = false}) {
+  Widget _buildPostTab({bool isQuestion = false}) {
     return PostsTab(
         isQuestion: isQuestion, username: username, page: page, limit: limit);
   }
 
-  Widget buildSeriesTab() {
+  Widget _buildSeriesTab() {
     return SeriesTab(username: username, page: page, limit: limit);
+  }
+
+  Widget _buildFollowsTab({bool isFollowers = false}) {
+    return FollowsTab(
+        isFollowers: isFollowers, username: username, page: page, limit: limit);
   }
 }
