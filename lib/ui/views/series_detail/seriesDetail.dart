@@ -61,17 +61,18 @@ class _SeriesDetailState extends State<SeriesDetail> {
   bool isHoveredUserLink = false;
   bool isFollow = false;
   bool isBookmark = false;
-  int score = 0;
+  bool isLoading = true;
+  bool isPrivate = true;
   String idVote = '';
   String type = "series";
   String username = JwtPayload.sub ?? '';
-  User user = User.empty();
-  User AuthorSeries = User.empty();
+  String _currentId = '';
   int totalSeries = 0;
   int totalFollow = 0;
-  bool isPrivate=true;
- String _currentId='';
-  bool isLoading =true;
+  int score = 0;
+  User user = User.empty();
+  User AuthorSeries = User.empty();
+  List<String> listTag = [];
 
   @override
   void initState() {
@@ -87,10 +88,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
       _initSeries(_currentId);
     }
   }
+
   @override
   void dispose() {
     super.dispose();
   }
+
   Future<void> _initSeries(String id) async {
     setState(() {
       isLoading = true;
@@ -110,7 +113,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     seriesDetailBloc = SeriesDetailBloc(context: context);
@@ -118,63 +120,73 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       return Container(
-        width: constraints.maxWidth,
-        child:checkPrivate(widget.id,username,AuthorSeries.username,isPrivate)?
-        Center(
-          child: Container(
-            width: 1200,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          width: constraints.maxWidth,
+          child: checkPrivate(
+              widget.id, username, AuthorSeries.username, isPrivate)
+              ? Center(
+            child: Container(
+                width: 1200,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    VoteSection(
-                        stateVote: stateVote,
-                        upVote: upVote,
-                        downVote: downVote,
-                        score: score,
-                        onUpVote: _upVote,
-                        onDownVote: _downVote),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          StreamBuilder<Sp>(
-                            stream: seriesDetailBloc.spStream,
-                            builder: (BuildContext context, snapshot) {
-                              if (snapshot.hasData) {
-                                return SeriesContentWidget(sp: snapshot.data!);
-                              } else if (snapshot.hasError) {
-                                return Text('Lỗi: ${snapshot.error}');
-                              } else {
-                                return _buildLoadingIndicator();
-                              }
-                            },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        VoteSection(
+                            stateVote: stateVote,
+                            upVote: upVote,
+                            downVote: downVote,
+                            score: score,
+                            onUpVote: _upVote,
+                            onDownVote: _downVote),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              MoreHoriz(
+                                  type: type,
+                                  idContent: widget.id,
+                                  authorname: AuthorSeries.username,
+                                  username: username),
+                              StreamBuilder<Sp>(
+                                stream: seriesDetailBloc.spStream,
+                                builder:
+                                    (BuildContext context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return SeriesContentWidget(
+                                        sp: snapshot.data!);
+                                  } else if (snapshot.hasError) {
+                                    return Text('Lỗi: ${snapshot.error}');
+                                  } else {
+                                    return _buildLoadingIndicator();
+                                  }
+                                },
+                              ),
+                              _sectionTitleLine(),
+                              Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: listPostDetail.map((e) {
+                                    return PostTabItem(postUser: e);
+                                  }).toList()),
+                            ],
                           ),
-                          _sectionTitleLine(),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: listPostDetail.map((e) {
-                                return PostTabItem(postUser: e);
-                              }).toList()),
-                          MoreHoriz(
-                              type: type, idContent: widget.id,authorname: AuthorSeries.username,username: username),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 12),
+                        StickeySideBar(),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    StickeySideBar(),
+                    CommentView(postId: widget.id)
                   ],
-                ),
-                CommentView(postId: widget.id)
-              ],
-            )
-          ),
-        ): const Center(child: Text("Bạn không có quyền xem bài viết này",style: TextStyle(fontSize: 28),))
-      );
+                )),
+          )
+              : const Center(
+              child: Text(
+                "Bạn không có quyền xem bài viết này",
+                style: TextStyle(fontSize: 28),
+              )));
     });
   }
 
@@ -273,12 +285,11 @@ class _SeriesDetailState extends State<SeriesDetail> {
   Future<void> _loadTotalFollower(String followed) async {
     var future = await followRepository.totalFollower(followed);
     if (future.data is int) {
-      if(mounted){
+      if (mounted) {
         setState(() {
           totalFollow = future.data;
         });
       }
-
     }
   }
 
@@ -288,7 +299,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     if (mounted) {
       setState(() {
         score = sp.score;
-        isPrivate=sp.isPrivate;
+        isPrivate = sp.isPrivate;
       });
     }
   }
@@ -303,11 +314,13 @@ class _SeriesDetailState extends State<SeriesDetail> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 InkWell(
-                  onTap: () {appRouter.go("/profile/${AuthorSeries.username}/posts");},
+                  onTap: () {
+                    appRouter.go("/profile/${AuthorSeries.username}/posts");
+                  },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
-                    child: UserAvatar(
-                        imageUrl: AuthorSeries.avatarUrl, size: 48),
+                    child:
+                    UserAvatar(imageUrl: AuthorSeries.avatarUrl, size: 48),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -328,7 +341,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
                       },
                       child: GestureDetector(
                         onTap: () {
-                         appRouter.go("/profile/${AuthorSeries.username}/posts");
+                          appRouter
+                              .go("/profile/${AuthorSeries.username}/posts");
                         },
                         child: Text(
                           AuthorSeries.displayName,
@@ -346,25 +360,25 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     const SizedBox(height: 8),
                     Text("@${AuthorSeries.username}"),
                     const SizedBox(height: 8),
-
-                      ElevatedButton(
-                        onPressed:  AuthorSeries.id != user.id?()=> _follow():null,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            isFollow ? const Icon(Icons.check) : const Icon(
-                                Icons.add),
-                            isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
-                          ],
-                        ),
+                    if(AuthorSeries.id != user.id )
+                    ElevatedButton(
+                      onPressed: () => _follow(),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          isFollow
+                              ? const Icon(Icons.check)
+                              : const Icon(Icons.add),
+                          isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ],
             ),
             Row(
-
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -430,8 +444,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
           const SizedBox(width: 16),
           IconButton(
             icon: const Icon(Icons.link),
-            onPressed: () =>
-                _sharePost('http://localhost:8000/posts/$idPost'),
+            onPressed: () => _sharePost('http://localhost:8000/posts/$idPost'),
           ),
           const SizedBox(width: 16),
           IconButton(
@@ -463,6 +476,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       const SnackBar(content: Text('Link đã được sao chép')),
     );
   }
+
   void _shareTwitter(String url, String text) async {
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$text&url=$url';
     if (await canLaunchUrlString(twitterUrl)) {
@@ -473,9 +487,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadListPost(String seriesId) async {
-
     var futureSeries = await spRepository.getOne(seriesId);
     Sp sp = Sp.fromJson(futureSeries.data);
+    int count = 1;
     AuthorSeries = sp.user;
     for (var e in sp.posts) {
       PostAggregation p = PostAggregation.empty();
@@ -486,15 +500,44 @@ class _SeriesDetailState extends State<SeriesDetail> {
       p.content = e.content;
       p.updatedAt = e.updatedAt;
       p.tags = e.tags;
+      // if (count <= sp.posts.length) {
+      //   listTag.addAll(e.tags);
+      //   count++;
+      // }
       p.private = e.isPrivate;
-        setState(() {
-          if(listPostDetail.length<sp.posts.length) {
-            listPostDetail.add(p);
-          }
-        });
+      setState(() {
+        if (listPostDetail.length < sp.posts.length) {
+          listPostDetail.add(p);
+        }
+      });
+    }
+    // Map<String, int> uniqueTagCount = countUniqueTags(listTag);
+    // List<String> getTop5Tags = this.getTop5Tags(uniqueTagCount);
+    // listTag = getTop5Tags;
+  }
 
+  List<String> getTop5Tags(Map<String, int> tagCount) {
+    var sortedEntries = tagCount.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    var top5Entries = sortedEntries.take(5);
+    List<String> top5Tags = top5Entries.map((entry) => entry.key).toList();
+
+    return top5Tags;
+  }
+
+  Map<String, int> countUniqueTags(List<String> tags) {
+    Map<String, int> tagCount = {};
+
+    for (String tag in tags) {
+      if (tagCount.containsKey(tag)) {
+        tagCount[tag] = (tagCount[tag]! + 1)!;
+      } else {
+        tagCount[tag] = 1;
+      }
     }
 
+    return tagCount;
   }
 
   Widget _buildIconWithText(IconData icon, String text) {
@@ -526,11 +569,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadUser(String username) async {
-    if(JwtPayload.sub!=null){
+    if (JwtPayload.sub != null) {
       var futureUser = await userRepository.getUser(username);
       user = User.fromJson(futureUser.data);
     }
-
   }
 
   Future<void> _loadBookmark(String itemId, String username) async {
@@ -601,6 +643,25 @@ class _SeriesDetailState extends State<SeriesDetail> {
       }
       _loadTotalFollower(AuthorSeries.username);
     }
+  }
+
+  Widget buildTagButton(String tag) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        tag,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Colors.black54,
+        ),
+      ),
+    );
   }
 
   Future<void> _toggleBookmark() async {
@@ -744,5 +805,4 @@ class _SeriesDetailState extends State<SeriesDetail> {
       }
     }
   }
-
 }

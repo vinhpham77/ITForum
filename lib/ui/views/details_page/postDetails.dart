@@ -131,7 +131,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               _postActions(),
-                              const SizedBox(width: 20),
+                              const SizedBox(width: 10),
                               _postBody(),
                               const SizedBox(width: 20),
                               _sidebar(),
@@ -194,13 +194,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           IconButton(
             icon: const Icon(Icons.facebook),
             onPressed: () =>
-                _shareFacebook('http://localhost:8000/posts/${idPost}'),
+                _shareFacebook('http://localhost:8000/posts/$idPost'),
           ),
           const SizedBox(width: 16),
           IconButton(
             icon: const Icon(Icons.link),
             onPressed: () =>
-                _sharePost('http://localhost:8000/posts/${idPost}'),
+                _sharePost('http://localhost:8000/posts/$idPost'),
           ),
           IconButton(
               icon: const Icon(Icons.share),
@@ -262,13 +262,20 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     var postPreview = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Wrap(
-            spacing: 8.0,
-            children: listTag.map((tag) => buildTagButton(tag)).toList(),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                spacing: 8.0,
+                children: listTag.map((tag) => buildTagButton(tag)).toList(),
+              ),
+            ),
+            MoreHoriz(idContent: widget.id, type: type,authorname: authorPost.username,username: username),
+          ],
         ),
+
         Container(
           decoration: const BoxDecoration(
               //   color: Colors.white,
@@ -323,7 +330,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 children: [
                   _builderAuthorPostContent(),
                   postPreview,
-                    MoreHoriz(idContent: widget.id, type: type,authorname: authorPost.username,username: username),
+
                 ],
               ),
             ),
@@ -790,7 +797,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _shareFacebook(String url) async {
-    url =
+     url =
         'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
     final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
     if (await canLaunchUrlString(fbUrl)) {
