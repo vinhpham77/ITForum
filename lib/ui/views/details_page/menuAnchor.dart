@@ -2,6 +2,7 @@ import 'dart:html';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/ui/router.dart';
+import 'package:dio/src/response.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,8 +22,8 @@ class MoreHoriz extends StatefulWidget {
 }
 
 class _MoreHorizState extends State<MoreHoriz> {
-  SeriesRepository seriesRepository=SeriesRepository();
-  PostRepository postRepository=PostRepository();
+  SeriesRepository seriesRepository = SeriesRepository();
+  PostRepository postRepository = PostRepository();
 
   @override
   void dispose() {
@@ -32,7 +33,9 @@ class _MoreHorizState extends State<MoreHoriz> {
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
+    var screenSize = MediaQuery
+        .of(context)
+        .size;
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -40,7 +43,9 @@ class _MoreHorizState extends State<MoreHoriz> {
       ],
     );
   }
-  Widget widgetMoreHoriz() => Row(
+
+  Widget widgetMoreHoriz() =>
+      Row(
         children: [
           MenuAnchor(
             builder: (BuildContext context, MenuController controller,
@@ -77,7 +82,7 @@ class _MoreHorizState extends State<MoreHoriz> {
                   showDeleteConfirmationDialog(context);
                   // Action for "Xóa bài viết" item
                 },
-                child:  Row(
+                child: Row(
                   children: [
                     const Icon(Icons.delete),
                     const SizedBox(width: 20),
@@ -90,13 +95,14 @@ class _MoreHorizState extends State<MoreHoriz> {
           ),
         ],
       );
+
   Future<void> showDeleteConfirmationDialog(BuildContext context) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title:  Text("Xác nhận xóa ${widget.type}"),
-          content:  Text("Bạn có chắc chắn muốn xóa ${widget.type} không?"),
+          title: Text("Xác nhận xóa ${widget.type}"),
+          content: Text("Bạn có chắc chắn muốn xóa ${widget.type} không?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -106,8 +112,7 @@ class _MoreHorizState extends State<MoreHoriz> {
             ),
             TextButton(
               onPressed: () {
-                deleteSeries(widget.idContent,widget.type);
-                print("Xóa xong");
+                deleteSeries(widget.idContent, widget.type);
               },
               child: Text("Xóa"),
             ),
@@ -116,23 +121,25 @@ class _MoreHorizState extends State<MoreHoriz> {
       },
     );
   }
+
   Future<void> deleteSeries(String id, String type) async {
-    var future;
+    Response future;
     if (type == 'bài viết') {
-      // Gọi hàm xóa từ postRepository và chờ kết quả
       future = await postRepository.delete(id);
-      appRouter.go("/");
-      // Kiểm tra HttpStatus
       if (future.statusCode == HttpStatus.ok) {
-        print('Xóa thành công!');
+        appRouter.go("/");
       } else {
         print('Lỗi khi xóa: ${future.statusCode}');
-        // Xử lý lỗi khác nếu cần
       }
     } else {
-      print('Loại không được hỗ trợ.');
-      // Xử lý khi loại không được hỗ trợ nếu cần
+      if (type == 'series') {
+        future = await seriesRepository.delete(id);
+        if (future.statusCode == HttpStatus.ok) {
+          appRouter.go("/");
+        } else {
+          print('Lỗi khi xóa: ${future.statusCode}');
+        }
+      }
     }
   }
-
 }

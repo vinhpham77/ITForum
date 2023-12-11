@@ -57,7 +57,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   bool postsSameAuthorIsNull = false;
   int totalPost = 0;
   int totalFollow = 0;
-
   IconData? get icon => Icons.add;
   Color textColor = Colors.grey;
   final postRepository = PostRepository();
@@ -69,7 +68,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final userRepository = UserRepository();
   final followRepository = FollowRepository();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _nickNameController = TextEditingController();
+
   final TextEditingController _updateAtController = TextEditingController();
   String _currentId = "";
 
@@ -110,7 +109,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     await _loadPostsByTheSameAuthor(authorPost.username, widget.id);
     await _loadTotalPost(authorPost.username);
     await _loadFollow(username, postDetailDTO.user.username);
-    await _loadTotalFollower(authorPost.id);
+    await _loadTotalFollower(authorPost.username);
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -346,7 +345,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       _titleController.text = postDetailDTO.title;
       ListTag = postDetailDTO.tags;
       _nameController.text = postDetailDTO.user.displayName;
-      _nickNameController.text = '@${postDetailDTO.user.username}';
       usernamePost = postDetailDTO.user.username;
       upDateAt = postDetailDTO.updatedAt;
       _updateAtController.text = "Đã đăng vào ${getTimeAgo(upDateAt)}";
@@ -402,13 +400,18 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Future<void> _loadTotalFollower(String followedId) async {
+    print("chay total follower");
     var future = await followRepository.totalFollower(followedId);
     if (future.data is int) {
+      print(future.data);
       if (mounted) {
         setState(() {
           totalFollow = future.data;
         });
       }
+    }
+    else{
+      print("không có dữ liệu");
     }
   }
 
@@ -440,7 +443,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           });
         }
       }
-      _loadTotalFollower(authorPost.id);
+      _loadTotalFollower(authorPost.username);
     }
   }
 
@@ -554,7 +557,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Text(_nickNameController.text),
+                Text("@${postDetailDTO.user.username}"),
               ]),
         ),
         SizedBox(
@@ -766,7 +769,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       } else {
         if (isBookmark == false) {
           BookmarkInfo bookmarkInfo =
-              BookmarkInfo(itemId: widget.id, type: "posts");
+              BookmarkInfo(itemId: widget.id, type: "post");
           await bookmarkRepository.addBookmark(bookmarkInfo, JwtPayload.sub!);
           setState(() {
             isBookmark = !isBookmark;

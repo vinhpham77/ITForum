@@ -69,19 +69,31 @@ class _SeriesDetailState extends State<SeriesDetail> {
   int totalSeries = 0;
   int totalFollow = 0;
   bool isPrivate=true;
+ String _currentId='';
+  bool isLoading =true;
 
   @override
   void initState() {
     super.initState();
-    _initState();
+    _initSeries(widget.id);
   }
 
+  @override
+  void didUpdateWidget(SeriesDetail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.id != _currentId) {
+      _currentId = widget.id;
+      _initSeries(_currentId);
+    }
+  }
   @override
   void dispose() {
     super.dispose();
   }
-
-  Future<void> _initState() async {
+  Future<void> _initSeries(String id) async {
+    setState(() {
+      isLoading = true;
+    });
     await _loadCheckVote(widget.id, JwtPayload.sub ?? '');
     await _loadScoreSeries(widget.id);
     await _loadListPost(widget.id);
@@ -90,6 +102,11 @@ class _SeriesDetailState extends State<SeriesDetail> {
     await _loadBookmark(widget.id, username);
     await _loadTotalSeries(AuthorSeries.username);
     await _loadTotalFollower(AuthorSeries.username);
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
 
@@ -401,20 +418,20 @@ class _SeriesDetailState extends State<SeriesDetail> {
           IconButton(
             icon: const Icon(Icons.facebook),
             onPressed: () =>
-                _shareFacebook('http://localhost:8000/posts/${idPost}'),
+                _shareFacebook('http://localhost:8000/posts/$idPost'),
           ),
           const SizedBox(width: 16),
           IconButton(
             icon: const Icon(Icons.link),
             onPressed: () =>
-                _sharePost('http://localhost:8000/posts/${idPost}'),
+                _sharePost('http://localhost:8000/posts/$idPost'),
           ),
           const SizedBox(width: 16),
           IconButton(
               icon: const Icon(Icons.share),
               onPressed: () =>
                   _shareTwitter(
-                      "http://localhost:8000/posts/${idPost}",
+                      "http://localhost:8000/posts/$idPost",
                       "Đã share lên Twitter")),
         ],
       ),
@@ -439,7 +456,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
       const SnackBar(content: Text('Link đã được sao chép')),
     );
   }
-
   void _shareTwitter(String url, String text) async {
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$text&url=$url';
     if (await canLaunchUrlString(twitterUrl)) {
@@ -450,6 +466,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadListPost(String seriesId) async {
+
     var futureSeries = await spRepository.getOne(seriesId);
     Sp sp = Sp.fromJson(futureSeries.data);
     AuthorSeries = sp.user;
@@ -463,12 +480,14 @@ class _SeriesDetailState extends State<SeriesDetail> {
       p.updatedAt = e.updatedAt;
       p.tags = e.tags;
       p.private = e.isPrivate;
-      if (mounted) {
+
         setState(() {
           listPostDetail.add(p);
+
         });
-      }
+
     }
+    print(listPostDetail);
   }
 
   Widget _buildIconWithText(IconData icon, String text) {
