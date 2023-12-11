@@ -25,13 +25,23 @@ final class LoadPostsEvent extends PostsTabEvent {
   List<Object?> get props => [username, page, limit, isQuestion];
 }
 
-final class ConfirmDeleteEvent extends PostsTabEvent {
-  final PostAggregation postUser;
+final class PostsTabSubEvent extends PostsTabEvent {
+  final ResultCount<PostAggregation> postUsers;
 
-  const ConfirmDeleteEvent({required this.postUser});
+  const PostsTabSubEvent({required this.postUsers});
 
   @override
-  List<Object?> get props => [postUser];
+  List<Object?> get props => [postUsers];
 }
 
-final class CancelDeleteEvent extends PostsTabEvent {}
+final class ConfirmDeleteEvent extends PostsTabSubEvent {
+  final PostAggregation postUser;
+
+  const ConfirmDeleteEvent({
+    required this.postUser,
+    required super.postUsers,
+  });
+
+  @override
+  List<Object?> get props => [postUser, postUsers];
+}

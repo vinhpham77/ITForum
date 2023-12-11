@@ -13,14 +13,19 @@ import '../../../../repositories/post_repository.dart';
 import '../../../common/utils/message_from_exception.dart';
 
 part 'cu_series_event.dart';
+
 part 'cu_series_state.dart';
 
 class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
-  final SeriesRepository seriesRepository;
-  final PostRepository postRepository;
+  final SeriesRepository _seriesRepository;
+  final PostRepository _postRepository;
 
-  CuSeriesBloc({required this.postRepository, required this.seriesRepository})
-      : super(CuSeriesInitState()) {
+  CuSeriesBloc(
+      {required PostRepository postRepository,
+      required SeriesRepository seriesRepository})
+      : _postRepository = postRepository,
+        _seriesRepository = seriesRepository,
+        super(CuSeriesInitState()) {
     on<InitEmptySeriesEvent>(_initEmptySeries);
     on<LoadSeriesEvent>(_loadSeries);
     on<CreateSeriesEvent>(_createSeries);
@@ -49,10 +54,10 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
         return;
       }
 
-      var response = await seriesRepository.getOne(event.id);
+      var response = await _seriesRepository.getOne(event.id);
       Series series = Series.fromJson(response.data);
 
-      var resultCountJson = await postRepository.getByUser(JwtPayload.sub!);
+      var resultCountJson = await _postRepository.getByUser(JwtPayload.sub!);
       ResultCount<PostAggregation> resultCount =
           ResultCount.fromJson(resultCountJson.data, PostAggregation.fromJson);
       List<PostAggregation> postUsers =
@@ -80,11 +85,11 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
           emit(const UnAuthorizedState(
               message:
                   "Bạn không có quyền để thực hiện chức năng trên series này"));
-        } else {
-          String message = getMessageFromException(error);
-          emit(CuSeriesLoadErrorState(message: message));
         }
       }
+
+      String message = getMessageFromException(error);
+      emit(CuSeriesLoadErrorState(message: message));
     }
   }
 
@@ -93,7 +98,7 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
     try {
       SeriesDTO seriesDTO = event.seriesDTO;
 
-      var response = await seriesRepository.add(seriesDTO);
+      var response = await _seriesRepository.add(seriesDTO);
       Series series = Series.fromJson(response.data);
 
       emit(SeriesCreatedState(series: series));
@@ -104,16 +109,16 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
         } else if (error.response?.statusCode == 403) {
           emit(const UnAuthorizedState(
               message:
-              "Bạn không có quyền để thực hiện chức năng trên series này"));
-        } else {
-          String message = getMessageFromException(error);
-          emit(CuOperationErrorState(
-              message: message,
-              series: event.series,
-              isEditMode: event.isEditMode,
-              postUsers: event.postUsers,
-              selectedPostUsers: event.selectedPostUsers));
+                  "Bạn không có quyền để thực hiện chức năng trên series này"));
         }
+
+        String message = getMessageFromException(error);
+        emit(CuOperationErrorState(
+            message: message,
+            series: event.series,
+            isEditMode: event.isEditMode,
+            postUsers: event.postUsers,
+            selectedPostUsers: event.selectedPostUsers));
       }
     }
   }
@@ -124,7 +129,7 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
       SeriesDTO seriesDTO = event.seriesDTO;
 
       var response =
-          await seriesRepository.update(event.series!.id!, seriesDTO);
+          await _seriesRepository.update(event.series!.id!, seriesDTO);
       Series series = Series.fromJson(response.data);
 
       emit(SeriesUpdatedState(series: series));
@@ -136,16 +141,15 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
           emit(const UnAuthorizedState(
               message:
                   "Bạn không có quyền để thực hiện chức năng trên series này"));
-        } else {
-          String message = getMessageFromException(error);
-          emit(CuOperationErrorState(
-              message: message,
-              series: event.series,
-              isEditMode: event.isEditMode,
-              postUsers: event.postUsers,
-              selectedPostUsers: event.selectedPostUsers));
         }
       }
+      String message = getMessageFromException(error);
+      emit(CuOperationErrorState(
+          message: message,
+          series: event.series,
+          isEditMode: event.isEditMode,
+          postUsers: event.postUsers,
+          selectedPostUsers: event.selectedPostUsers));
     }
   }
 

@@ -22,8 +22,8 @@ class PostItem extends StatelessWidget {
     }
   }
 
-  Container _buildContainer() {
-    return Container(
+  Widget _buildContainer() {
+    return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -40,7 +40,6 @@ class PostsTab extends StatelessWidget {
       child: BlocListener<PostsTabBloc, PostsTabState>(
         listener: (context, state) {
           if (state is PostsDeleteSuccessState) {
-            appRouter.pop();
             showTopRightSnackBar(
               context,
               "Xoá ${target['name']} ${state.postUser.title} thành công!",
@@ -77,6 +76,13 @@ class PostsTab extends StatelessWidget {
                 child:
                     Text(state.message, style: const TextStyle(fontSize: 16)),
               );
+            } else if (state is PostsTabErrorState) {
+              return Column(
+                children: [
+                  buildPostList(context, state.postUsers),
+                  buildPagination(state.postUsers),
+                ],
+              );
             }
 
             return buildSimpleContainer(
@@ -103,18 +109,21 @@ class PostsTab extends StatelessWidget {
             params: {}));
   }
 
-  Padding buildPostList(BuildContext context, ResultCount<PostAggregation> postUsers) {
+  Padding buildPostList(
+      BuildContext context, ResultCount<PostAggregation> postUsers) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
       child: Column(
         children: [
-          for (var postUser in postUsers.resultList) buildOneRow(context, postUser),
+          for (var postUser in postUsers.resultList)
+            buildOneRow(context, postUser, postUsers),
         ],
       ),
     );
   }
 
-  Row buildOneRow(BuildContext context, PostAggregation postUser) {
+  Row buildOneRow(BuildContext context, PostAggregation postUser,
+      ResultCount<PostAggregation> postUsers) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -136,7 +145,8 @@ class PostsTab extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                 textStyle: const TextStyle(fontSize: 13)),
-            onPressed: () => showDeleteConfirmationDialog(context, postUser),
+            onPressed: () =>
+                showDeleteConfirmationDialog(context, postUser, postUsers),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -150,8 +160,8 @@ class PostsTab extends StatelessWidget {
     );
   }
 
-  Future<void> showDeleteConfirmationDialog(
-      BuildContext context, PostAggregation postUser) async {
+  Future<void> showDeleteConfirmationDialog(BuildContext context,
+      PostAggregation postUser, ResultCount<PostAggregation> postUsers) async {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -174,9 +184,9 @@ class PostsTab extends StatelessWidget {
           TextButton(
             child: const Text('Xác nhận'),
             onPressed: () {
-              context
-                  .read<PostsTabBloc>()
-                  .add(ConfirmDeleteEvent(postUser: postUser));
+              context.read<PostsTabBloc>().add(
+                  ConfirmDeleteEvent(postUser: postUser, postUsers: postUsers));
+              Navigator.of(dialogContext).pop();
             },
           ),
         ],

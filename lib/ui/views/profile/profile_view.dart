@@ -10,15 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../dtos/notify_type.dart';
-import '../../../repositories/follow_repository.dart';
-import '../../../repositories/user_repository.dart';
 import '../../router.dart';
 import '../../widgets/notification.dart';
+import 'blocs/profile/profile_provider.dart';
 
 const int _left = 4;
 const int _right = 1;
 
-class Profile extends StatefulWidget {
+class Profile extends StatelessWidget {
   final String username;
   final int selectedIndex;
   final Map<String, dynamic> params;
@@ -29,36 +28,17 @@ class Profile extends StatefulWidget {
       required this.selectedIndex,
       required this.params});
 
-  @override
-  State<Profile> createState() => _ProfileState();
-}
+  int get page => params['page'] != null ? params['page']! : 1;
 
-class _ProfileState extends State<Profile> {
-  late List<Map<String, dynamic>> tabs;
-  late ProfileBloc _bloc;
-
-  int get page => widget.params['page'] != null ? widget.params['page']! : 1;
-
-  int get limit => widget.params['limit'] ?? limitPage;
-
-  @override
-  void initState() {
-    super.initState();
-    _bloc = ProfileBloc(
-      followRepository: FollowRepository(),
-      userRepository: UserRepository(),
-    )..add(LoadProfileEvent(username: widget.username));
-  }
+  int get limit => params['limit'] ?? limitPage;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ProfileBloc>(
-      create: (context) => _bloc,
+    return ProfileBlocProvider(
+      username: username,
       child: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
-          if (state is ProfileLoadedState) {
-            tabs = getTabStates();
-          } else if (state is ProfileNotFoundState) {
+          if (state is ProfileNotFoundState) {
             appRouter.go('not-found');
             showTopRightSnackBar(
               context,
@@ -76,6 +56,7 @@ class _ProfileState extends State<Profile> {
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             if (state is ProfileSubState) {
+              final tabs = getTabStates();
               return Container(
                 color: Colors.white.withOpacity(0.5),
                 padding:
@@ -83,13 +64,13 @@ class _ProfileState extends State<Profile> {
                 child: Column(
                   children: [
                     _buildUserContainer(context, state),
-                    buildTabBar(),
+                    buildTabBar(tabs),
                     Container(
                       constraints: const BoxConstraints(maxWidth: maxContent),
                       margin: const EdgeInsets.symmetric(
                           horizontal: horizontalSpace),
                       child: Row(
-                        children: [buildTabView(), buildAnalysisView()],
+                        children: [buildTabView(tabs), buildAnalysisView()],
                       ),
                     ),
                   ],
@@ -112,17 +93,17 @@ class _ProfileState extends State<Profile> {
     return Expanded(flex: _right, child: Container(child: Text('ok')));
   }
 
-  Expanded buildTabView() {
+  Expanded buildTabView(List<Map<String, dynamic>> tabs) {
     return Expanded(
       flex: _left,
       child: Container(
         transform: Matrix4.translationValues(-8.0, 0, 0),
-        child: tabs[widget.selectedIndex]['widget']!,
+        child: tabs[selectedIndex]['widget']!,
       ),
     );
   }
 
-  Container buildTabBar() {
+  Container buildTabBar(List<Map<String, dynamic>> tabs) {
     return Container(
       margin: const EdgeInsets.only(top: 16.0),
       padding: const EdgeInsets.symmetric(horizontal: horizontalSpace),
@@ -147,12 +128,13 @@ class _ProfileState extends State<Profile> {
                   transform: Matrix4.translationValues(-20.0, 0, 0),
                   child: Row(
                     children: [
-                      for (var tab in tabs)
+                      for (int index = 0; index < tabs.length; index++)
                         CustomTab(
-                            isActive: tab == tabs[widget.selectedIndex],
-                            onTap: () => handleTabChange(tabs.indexOf(tab)),
+                            isActive: index == selectedIndex,
+                            onTap: () => appRouter.go(tabs[index]['path']!,
+                                extra: {'page': 1, 'limit': limit}),
                             child: Text(
-                              '${tab['title']}',
+                              '${tabs[index]['title']}',
                               style: const TextStyle(fontSize: 14),
                             )),
                     ],
@@ -222,13 +204,12 @@ class _ProfileState extends State<Profile> {
   Widget _buildFollowButton(BuildContext context, ProfileSubState state) {
     if (state.isFollowing) {
       return TextButton(
-        onPressed: () => _bloc.add(
+        onPressed: () => context.read<ProfileBloc>().add(
             UnfollowEvent(user: state.user, isFollowing: state.isFollowing)),
         style: TextButton.styleFrom(
           backgroundColor: Colors.indigoAccent.withOpacity(0.05),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0)
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         ),
         child: const Text(
@@ -238,7 +219,8 @@ class _ProfileState extends State<Profile> {
     }
 
     return OutlinedButton(
-      onPressed: () => _bloc
+      onPressed: () => context
+          .read<ProfileBloc>()
           .add(FollowEvent(user: state.user, isFollowing: state.isFollowing)),
       style: OutlinedButton.styleFrom(
         side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
@@ -253,7 +235,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  handleTabChange(int index) {
+  handleTabChange(int index, List<Map<String, dynamic>> tabs) {
     appRouter.go(tabs[index]['path']!, extra: {'page': 1, 'limit': limit});
   }
 
@@ -261,37 +243,37 @@ class _ProfileState extends State<Profile> {
     return [
       {
         'title': 'Bài viết',
-        'path': '/profile/${widget.username}/posts',
+        'path': '/profile/$username/posts',
         'widget': buildPostTab(),
       },
       {
         'title': 'Câu hỏi',
-        'path': '/profile/${widget.username}/questions',
+        'path': '/profile/$username/questions',
         'widget': buildPostTab(isQuestion: true),
       },
       {
         'title': 'Series',
-        'path': '/profile/${widget.username}/series',
+        'path': '/profile/$username/series',
         'widget': buildSeriesTab(),
       },
       {
         'title': 'Bookmark',
-        'path': '/profile/${widget.username}/bookmarks',
+        'path': '/profile/$username/bookmarks',
         'widget': Text('Bookmark'),
       },
       {
         'title': 'Đang theo dõi',
-        'path': '/profile/${widget.username}/followings',
+        'path': '/profile/$username/followings',
         'widget': Text('Đang theo dõi'),
       },
       {
         'title': 'Người theo dõi',
-        'path': '/profile/${widget.username}/followers',
+        'path': '/profile/$username/followers',
         'widget': Text('Người theo dõi'),
       },
       {
         'title': 'Cá nhân',
-        'path': '/profile/${widget.username}/personal',
+        'path': '/profile/$username/personal',
         'widget': Text('Cá nhân'),
       }
     ];
@@ -299,18 +281,10 @@ class _ProfileState extends State<Profile> {
 
   Widget buildPostTab({bool isQuestion = false}) {
     return PostsTab(
-        isQuestion: isQuestion,
-        username: widget.username,
-        page: page,
-        limit: limit);
+        isQuestion: isQuestion, username: username, page: page, limit: limit);
   }
 
   Widget buildSeriesTab() {
-    return SeriesTab(username: widget.username, page: page, limit: limit);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    return SeriesTab(username: username, page: page, limit: limit);
   }
 }
