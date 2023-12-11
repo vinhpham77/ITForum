@@ -500,8 +500,11 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadUser(String username) async {
-    var futureUser = await userRepository.getUser(username);
-    user = User.fromJson(futureUser.data);
+    if(JwtPayload.sub!=null){
+      var futureUser = await userRepository.getUser(username);
+      user = User.fromJson(futureUser.data);
+    }
+
   }
 
   Future<void> _loadBookmark(String itemId, String username) async {

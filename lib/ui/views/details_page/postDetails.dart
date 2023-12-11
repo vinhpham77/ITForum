@@ -87,6 +87,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   @override
   void initState() {
     super.initState();
+    initPost(widget.id);
   }
 
   @override
@@ -121,30 +122,36 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
-        return  checkPrivate(widget.id,username,authorPost.username,postDetailDTO.private)?
-        Container(
-          width: constraints.maxWidth,
-          // color: Colors.white,
-          child: Center(
-            child: SizedBox(
-              width: 1200,
-              child: Padding(
-                padding: const EdgeInsets.all(50.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    _postActions(),
-                    const SizedBox(width: 20),
-                    _postBody(),
-                    const SizedBox(width: 20),
-                    _sidebar(),
-                  ],
+        return checkPrivate(
+                widget.id, username, authorPost.username, postDetailDTO.private)
+            ? Container(
+                width: constraints.maxWidth,
+                // color: Colors.white,
+                child: Center(
+                  child: SizedBox(
+                    width: 1200,
+                    child: Padding(
+                      padding: const EdgeInsets.all(50.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          _postActions(),
+                          const SizedBox(width: 20),
+                          _postBody(),
+                          const SizedBox(width: 20),
+                          _sidebar(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ): Center(child: const Text("Bạn không có quyền xem bài viết này",style: TextStyle(fontSize: 28),));
+              )
+            : Center(
+                child: const Text(
+                "Bạn không có quyền xem bài viết này",
+                style: TextStyle(fontSize: 28),
+              ));
       },
     );
   }
@@ -236,14 +243,16 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ),
     );
   }
-  bool checkPrivate(String postId, String userName, String authorName,
-      bool isPrivate) {
+
+  bool checkPrivate(
+      String postId, String userName, String authorName, bool isPrivate) {
     if (isPrivate && userName == authorName || !isPrivate) {
       return true;
     } else {
       return false;
     }
   }
+
   Widget _postBody() {
     // _builderTitlePostContent();
     var postPreview = Column(
@@ -287,7 +296,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                     fontStyle: FontStyle.italic,
                     color: Colors.grey.shade700,
                   ),
-              // Custom blockquote style
               listBullet: const TextStyle(
                   fontSize: 16), // Custom list item bullet style
             ),
@@ -352,9 +360,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Future<void> _loadUser(String username) async {
-    var futureUser = await userRepository.getUser(username);
-    if (mounted) {
-      user = User.fromJson(futureUser.data);
+    print(JwtPayload.sub);
+    if (JwtPayload.sub != null) {
+      var futureUser = await userRepository.getUser(username);
+      if (mounted) {
+        user = User.fromJson(futureUser.data);
+      }
     }
   }
 
@@ -362,7 +373,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     var futureVote = await voteRepository.checkVote(postId, username);
     if (futureVote.data is Map<String, dynamic>) {
       Vote vote = Vote.fromJson(futureVote.data);
-
 
       if (mounted) {
         setState(() {
@@ -441,19 +451,19 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
     var future = await followRepository.checkfollow(follower, followed);
 
-      if (future.data is Map<String, dynamic>) {
-        if (mounted) {
-          setState(() {
-            follow = Follow.fromJson(future.data);
-            isFollow = true;
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            isFollow = false;
-          });
-        }
+    if (future.data is Map<String, dynamic>) {
+      if (mounted) {
+        setState(() {
+          follow = Follow.fromJson(future.data);
+          isFollow = true;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          isFollow = false;
+        });
+      }
     }
   }
 
@@ -511,7 +521,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             onTap: () {},
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
-              child: _buildPostImage(user.avatarUrl ?? ""),
+              child: _buildPostImage(authorPost.avatarUrl ?? ""),
             ),
           ),
           const SizedBox(width: 16),
