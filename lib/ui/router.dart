@@ -433,15 +433,6 @@ final appRouter = GoRouter(
                   selectedIndex: 6,
                   params: state.extra as Map<String, dynamic>? ?? {}),
             ))),
-    GoRoute(
-      path: '/comment',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-        key: ValueKey('comment'),
-        child: ScreenWithHeaderAndFooter(
-          body: CommentView(postId: "654d3e139d8e142b7fadc7ca"),
-        ),
-      ),
-    )
   ],
   errorPageBuilder: (context, state) => const MaterialPage<void>(
       key: ValueKey('not-found'),
