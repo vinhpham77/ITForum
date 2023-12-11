@@ -54,7 +54,7 @@ class PostsTabBloc extends Bloc<PostsTabEvent, PostsTabState> {
       emit(PostsDeleteSuccessState(postUser: event.postUser));
     } catch (error) {
       String message = getMessageFromException(error);
-      emit(PostsTabErrorState(message: message));
+      emit(PostsTabErrorState(message: message, postUsers: event.postUsers));
     }
   }
 }

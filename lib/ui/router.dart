@@ -171,34 +171,32 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-        path: '/posts',
-        pageBuilder: (context, state) => const MaterialPage<void>(
-              key: ValueKey('posts'),
-              child: ScreenWithHeaderAndFooter(
-                body: PostsView(params: {}),
-              ),
-            ),
-        routes: [
-          GoRoute(
-              path: ':pid',
-              pageBuilder: (context, state) {
-                return MaterialPage<void>(
-                    key: state.pageKey,
-                    child: ScreenWithHeaderAndFooter(
-                      body: PostDetailsPage(id: state.pathParameters['pid']!),
-                    ));
-              },
-              routes: [
-                GoRoute(
-                  path: 'edit',
-                  pageBuilder: (context, state) => MaterialPage<void>(
-                    key: state.pageKey,
-                      child: ScreenWithHeaderAndFooter(
-                    body: CuPost(id: state.pathParameters['pid']!),
-                  )),
-                ),
-              ]),
-        ]),
+      path: '/posts',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('posts'),
+        child: ScreenWithHeaderAndFooter(
+          body: PostsView(params: {}),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/posts/:pid',
+      pageBuilder: (context, state) {
+        return MaterialPage<void>(
+            key: state.pageKey,
+            child: ScreenWithHeaderAndFooter(
+              body: PostDetailsPage(id: state.pathParameters['pid']!),
+            ));
+      },
+    ),
+    GoRoute(
+      path: '/posts/:pid/edit',
+      pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: ScreenWithHeaderAndFooter(
+            body: CuPost(id: state.pathParameters['pid']!),
+          )),
+    ),
     GoRoute(
       path: '/series',
       pageBuilder: (context, state) => const MaterialPage<void>(
@@ -207,26 +205,22 @@ final appRouter = GoRouter(
           body: Text("series"),
         ),
       ),
-      routes: [
-        GoRoute(
-          path: ':pid',
-          pageBuilder: (context, state) => MaterialPage<void>(
-              key: state.pageKey,
-              child: ScreenWithHeaderAndFooter(
-                body: SeriesDetail(id: state.pathParameters['pid']!),
-              )),
-          routes: [
-            GoRoute(
-              path: 'edit',
-              pageBuilder: (context, state) => MaterialPage<void>(
-                  key: state.pageKey,
-                  child: ScreenWithHeaderAndFooter(
-                    body: CuSeries(id: state.pathParameters['pid']!),
-                  )),
-            ),
-          ],
-        ),
-      ],
+    ),
+    GoRoute(
+      path: '/series/:pid',
+      pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: ScreenWithHeaderAndFooter(
+            body: SeriesDetail(id: state.pathParameters['pid']!),
+          )),
+    ),
+    GoRoute(
+      path: '/series/:pid/edit',
+      pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: ScreenWithHeaderAndFooter(
+            body: CuSeries(id: state.pathParameters['pid']!),
+          )),
     ),
     GoRoute(
       name: 'login',
@@ -239,8 +233,8 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'onepost',
       path: '/onepost',
-      pageBuilder: (context, state) =>
-          const MaterialPage<void>(key: ValueKey('onepost'), child: Text("test")),
+      pageBuilder: (context, state) => const MaterialPage<void>(
+          key: ValueKey('onepost'), child: Text("test")),
     ),
     GoRoute(
       path: '/register',

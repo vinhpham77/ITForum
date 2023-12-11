@@ -44,7 +44,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       emit(ProfileLoadedState(user: user, isFollowing: isFollowing));
     } catch (error) {
-      if (error is DioException && error.response!.statusCode == 404) {
+      if (error is DioException && error.response != null && error.response!.statusCode == 404) {
         emit(ProfileNotFoundState(
             message: 'Không tìm thấy người dùng @${event.username}!'));
         return;
