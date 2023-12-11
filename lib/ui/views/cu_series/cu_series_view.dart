@@ -1,6 +1,6 @@
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/dtos/series_dto.dart';
-import 'package:cay_khe/repositories/series_repository.dart';
+import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/cu_series/bloc/cu_series_bloc.dart';
@@ -10,57 +10,35 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../../../models/series.dart';
-import '../../../repositories/post_repository.dart';
 import '/ui/widgets/notification.dart';
+import 'bloc/cu_series_provider.dart';
 
 const double contentHeight = 448 - bodyVerticalSpace;
-const int _left = 4;
+const int _left = 3;
 const int _right = 1;
+final TextEditingController _titleController = TextEditingController();
+final TextEditingController _contentController = TextEditingController();
+final _formKey = GlobalKey<FormState>();
 
-class CuSeries extends StatefulWidget {
+class CuSeries extends StatelessWidget {
   final String? id;
 
   const CuSeries({super.key, this.id});
 
-  @override
-  State<CuSeries> createState() => _CuSeriesState();
-}
-
-class _CuSeriesState extends State<CuSeries> {
-  final CuSeriesBloc _bloc = CuSeriesBloc(
-      postRepository: PostRepository(), seriesRepository: SeriesRepository());
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  bool get isCreateMode => widget.id == null;
+  bool get isCreateMode => id == null;
 
   String get operation => isCreateMode ? 'Tạo' : 'Sửa';
 
   @override
-  void initState() {
-    super.initState();
-
-    if (isCreateMode) {
-      _bloc.add(InitEmptySeriesEvent());
-    } else {
-      _bloc.add(LoadSeriesEvent(id: widget.id!));
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => _bloc,
+    return CuSeriesBlocProvider(
+        id: id,
         child: BlocListener<CuSeriesBloc, CuSeriesState>(
           listener: (context, state) {
             if (state is SeriesCreatedState) {
               appRouter.go('/series/${state.series.id}/edit');
             } else if (state is SeriesUpdatedState) {
               appRouter.go('/series/${state.series.id}');
-            } else if (state is AddedPostState) {
-              appRouter.pop();
-            } else if (state is RemovedPostState) {
             } else if (state is SeriesNotFoundState) {
               showTopRightSnackBar(context, state.message, NotifyType.error);
               appRouter.go('/not-found');
@@ -69,7 +47,6 @@ class _CuSeriesState extends State<CuSeries> {
               appRouter.go('/forbidden');
             } else if (state is CuSeriesLoadErrorState) {
               showTopRightSnackBar(context, state.message, NotifyType.error);
-              appRouter.go('/');
             } else if (state is CuOperationErrorState) {
               showTopRightSnackBar(context, state.message, NotifyType.error);
             }
@@ -84,10 +61,14 @@ class _CuSeriesState extends State<CuSeries> {
                 if (state is CuSeriesSubState) {
                   _titleController.text = state.series?.title ?? '';
                   _contentController.text = state.series?.content ?? '';
-                  return buildBodyContainer(child: buildForm(context, state));
+                  return _buildBodyContainer(child: _buildForm(context, state));
+                } else if (state is CuSeriesLoadErrorState) {
+                  return _buildBodyContainer(
+                    child: Text(state.message),
+                  );
                 }
 
-                return buildBodyContainer(
+                return _buildBodyContainer(
                   child: const CircularProgressIndicator(),
                 );
               },
@@ -96,7 +77,7 @@ class _CuSeriesState extends State<CuSeries> {
         ));
   }
 
-  Container buildBodyContainer({required Widget child}) {
+  Container _buildBodyContainer({required Widget child}) {
     return Container(
       margin: const EdgeInsets.symmetric(
           horizontal: horizontalSpace, vertical: bodyVerticalSpace),
@@ -105,12 +86,12 @@ class _CuSeriesState extends State<CuSeries> {
     );
   }
 
-  Form buildForm(BuildContext context, CuSeriesSubState state) {
+  Form _buildForm(BuildContext context, CuSeriesSubState state) {
     return Form(
       key: _formKey,
       child: Column(
         children: [
-          buildTopBarRow(state),
+          _buildTopBarRow(context, state),
           Row(
             children: [
               Expanded(
@@ -133,7 +114,7 @@ class _CuSeriesState extends State<CuSeries> {
     );
   }
 
-  Row buildTopBarRow(CuSeriesSubState state) {
+  Row _buildTopBarRow(BuildContext context, CuSeriesSubState state) {
     return Row(
       children: [
         Expanded(
@@ -161,9 +142,9 @@ class _CuSeriesState extends State<CuSeries> {
                 Row(
                   children: [
                     buildSwitchModeButton(
-                        'Chỉnh sửa', true, state.isEditMode, state),
+                        context, 'Chỉnh sửa', true, state.isEditMode, state),
                     buildSwitchModeButton(
-                        'Xem trước', false, state.isEditMode, state)
+                        context, 'Xem trước', false, state.isEditMode, state)
                   ],
                 ),
               ],
@@ -188,8 +169,8 @@ class _CuSeriesState extends State<CuSeries> {
     );
   }
 
-  TextButton buildSwitchModeButton(
-      String text, bool origin, bool active, CuSeriesSubState state) {
+  TextButton buildSwitchModeButton(BuildContext context, String text,
+      bool origin, bool active, CuSeriesSubState state) {
     return TextButton(
       onPressed: () {
         if (origin == active) {
@@ -213,7 +194,7 @@ class _CuSeriesState extends State<CuSeries> {
               title: _titleController.text, content: _contentController.text);
         }
 
-        _bloc.add(SwitchModeEvent(
+        context.read<CuSeriesBloc>().add(SwitchModeEvent(
             isEditMode: origin,
             series: newSeries,
             selectedPostUsers: state.selectedPostUsers,
@@ -272,7 +253,7 @@ class _CuSeriesState extends State<CuSeries> {
             softLineBreak: true,
           ),
         ),
-        _buildActionContainer(state)
+        _buildActionContainer(context, state)
       ],
     );
   }
@@ -348,9 +329,6 @@ class _CuSeriesState extends State<CuSeries> {
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
           child: TextFormField(
               controller: _contentController,
-              onChanged: (value) {
-                state.series?.content = value;
-              },
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Vui lòng nhập nội dung';
@@ -362,7 +340,7 @@ class _CuSeriesState extends State<CuSeries> {
                 hintText: 'Viết nội dung ở đây...',
               )),
         ),
-        if (widget.id != null)
+        if (!isCreateMode)
           Container(
             decoration: const BoxDecoration(
                 boxShadow: [
@@ -391,7 +369,8 @@ class _CuSeriesState extends State<CuSeries> {
                       children: [
                         Expanded(child: PostItem(postUser: postUser)),
                         TextButton(
-                          onPressed: () => _removeSelectedPost(postUser, state),
+                          onPressed: () =>
+                              _removeSelectedPost(context, postUser, state),
                           child: const Icon(Icons.close,
                               size: 20, color: Colors.black54, opticalSize: 20),
                         ),
@@ -428,12 +407,13 @@ class _CuSeriesState extends State<CuSeries> {
               ],
             ),
           ),
-        _buildActionContainer(state)
+        _buildActionContainer(context, state)
       ],
     );
   }
 
-  Container _buildActionContainer(CuSeriesSubState state) {
+  Container _buildActionContainer(
+      BuildContext context, CuSeriesSubState state) {
     return Container(
         margin: const EdgeInsets.only(top: 16),
         child: Row(
@@ -441,7 +421,7 @@ class _CuSeriesState extends State<CuSeries> {
           children: [
             FilledButton(
               onPressed: () {
-                saveSeries(false, state);
+                saveSeries(context, false, state);
               },
               child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
             ),
@@ -450,7 +430,7 @@ class _CuSeriesState extends State<CuSeries> {
               child: TextButton(
                 style: TextButton.styleFrom(),
                 onPressed: () {
-                  saveSeries(true, state);
+                  saveSeries(context, true, state);
                 },
                 child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
               ),
@@ -463,35 +443,33 @@ class _CuSeriesState extends State<CuSeries> {
       BuildContext context, CuSeriesSubState state) {
     return showModalBottomSheet(
         context: context,
-        builder: (context) {
-          return SizedBox(
-            height: 500,
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(top: 16, bottom: 16),
-                  child: const Text(
-                    'Thêm bài viết',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+        builder: (bottomSheetContext) {
+          return Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'Thêm bài viết',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                Expanded(
-                  child: openModal(state),
-                ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: _openModal(bottomSheetContext, context, state),
+              ),
+            ],
           );
         });
   }
 
-  ListView _buildPostListView(CuSeriesSubState state) {
+  ListView _buildPostListView(BuildContext bottomSheetContext, BuildContext context, CuSeriesSubState state) {
     return ListView.builder(
       itemCount: state.postUsers.length,
-      itemBuilder: (context, index) {
+      itemBuilder: (listViewContext, index) {
         return PostItem(
             postUser: state.postUsers[index],
             onTap: () {
-              _addSelectedPost(state.postUsers[index], state);
+              _addSelectedPost(context, state.postUsers[index], state);
+              Navigator.of(bottomSheetContext).pop();
             });
       },
     );
@@ -505,7 +483,7 @@ class _CuSeriesState extends State<CuSeries> {
     return '$title  \n###### $posts\n  # \n  $content';
   }
 
-  saveSeries(bool isPrivate, CuSeriesSubState state) {
+  saveSeries(BuildContext context, bool isPrivate, CuSeriesSubState state) {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -517,15 +495,15 @@ class _CuSeriesState extends State<CuSeries> {
     }
 
     if (isCreateMode) {
-      _bloc.add(CreateSeriesEvent(
-          seriesDTO: createDTO(isPrivate, state),
+      context.read<CuSeriesBloc>().add(CreateSeriesEvent(
+          seriesDTO: _createDTO(isPrivate, state),
           isEditMode: state.isEditMode,
           series: state.series,
           selectedPostUsers: state.selectedPostUsers,
           postUsers: state.postUsers));
     } else {
-      _bloc.add(UpdateSeriesEvent(
-          seriesDTO: createDTO(isPrivate, state),
+      context.read<CuSeriesBloc>().add(UpdateSeriesEvent(
+          seriesDTO: _createDTO(isPrivate, state),
           isEditMode: state.isEditMode,
           series: state.series,
           selectedPostUsers: state.selectedPostUsers,
@@ -533,10 +511,10 @@ class _CuSeriesState extends State<CuSeries> {
     }
   }
 
-  SeriesDTO createDTO(bool isPrivate, CuSeriesSubState state) {
+  SeriesDTO _createDTO(bool isPrivate, CuSeriesSubState state) {
     return SeriesDTO(
         title: _titleController.text,
-        content: _titleController.text,
+        content: _contentController.text,
         isPrivate: isPrivate,
         postIds: state.selectedPostUsers.map((e) => e.id!).toList());
   }
@@ -559,10 +537,10 @@ class _CuSeriesState extends State<CuSeries> {
     }
   }
 
-  void _removeSelectedPost(post, CuSeriesSubState state) {
+  void _removeSelectedPost(BuildContext context, post, CuSeriesSubState state) {
     Series newSeries = _getNewSeries(state);
 
-    _bloc.add(RemovePostEvent(
+    context.read<CuSeriesBloc>().add(RemovePostEvent(
         postUser: post,
         isEditMode: state.isEditMode,
         series: newSeries,
@@ -570,10 +548,10 @@ class _CuSeriesState extends State<CuSeries> {
         postUsers: state.postUsers));
   }
 
-  void _addSelectedPost(post, CuSeriesSubState state) {
+  void _addSelectedPost(BuildContext context, post, CuSeriesSubState state) {
     Series newSeries = _getNewSeries(state);
 
-    _bloc.add(AddPostEvent(
+    context.read<CuSeriesBloc>().add(AddPostEvent(
         postUser: post,
         isEditMode: state.isEditMode,
         series: newSeries,
@@ -581,9 +559,9 @@ class _CuSeriesState extends State<CuSeries> {
         postUsers: state.postUsers));
   }
 
-  openModal(CuSeriesSubState state) {
+  _openModal(BuildContext bottomSheetContext, BuildContext context, CuSeriesSubState state) {
     if (state.postUsers.isEmpty) {
-      return Container(
+      return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -601,14 +579,6 @@ class _CuSeriesState extends State<CuSeries> {
       );
     }
 
-    return _buildPostListView(state);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _titleController.dispose();
-    _contentController.dispose();
-    _bloc.close();
+    return _buildPostListView(bottomSheetContext, context, state);
   }
 }

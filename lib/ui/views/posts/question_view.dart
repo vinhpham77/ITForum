@@ -10,6 +10,8 @@ import 'package:cay_khe/ui/views/posts/widgets/right_page/right.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../common/app_constants.dart';
+
 class QuestionView extends StatefulWidget {
   const QuestionView({super.key, this.indexSelected = 0, required this.params});
   final Map<String, String> params;
@@ -44,29 +46,27 @@ class _QuestionViewState extends State<QuestionView> {
         return Padding(
           padding: EdgeInsets.fromLTRB(0, 32, 0, 32),
           child: Container(
-            width: constraints.maxWidth,
-            child: Center(
-              child: Container(
-                width: 1200,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SingleChildScrollView(
-                      child: LeftMenu(listSelectBtn: listSelectBtn),
+            alignment: Alignment.topCenter,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: maxContent),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    child: LeftMenu(listSelectBtn: listSelectBtn),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: listSelectBtn[widget.indexSelected].widget,
                     ),
-                    Expanded(
-                      child: Padding(
-                          padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                          child: listSelectBtn[widget.indexSelected].widget,
-                      ),
-                    ),
-                    Container(
-                      width: 280,
-                      child: Right(page: 1, limit: 5, isQuestion: false,),
-                    )
-                  ],
-                ),
+                  ),
+                  Container(
+                    width: 280,
+                    child: Right(page: 1, limit: 5, isQuestion: false,),
+                  )
+                ],
               ),
             ),
           ),

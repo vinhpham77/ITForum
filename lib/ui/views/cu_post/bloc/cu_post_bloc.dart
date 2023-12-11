@@ -12,6 +12,7 @@ import '../../../../repositories/tag_repository.dart';
 import '../../../common/utils/message_from_exception.dart';
 
 part 'cu_post_event.dart';
+
 part 'cu_post_state.dart';
 
 class CuPostBloc extends Bloc<CuPostEvent, CuPostState> {
@@ -110,10 +111,9 @@ class CuPostBloc extends Bloc<CuPostEvent, CuPostState> {
           emit(const UnAuthorizedState(
               message:
                   "Bạn không có quyền để thực hiện chức năng trên bài viết này"));
-        } else {
-          String message = getMessageFromException(error);
-          emit(CuPostLoadErrorState(message: message));
         }
+        String message = getMessageFromException(error);
+        emit(CuPostLoadErrorState(message: message));
       }
     }
   }
@@ -135,16 +135,15 @@ class CuPostBloc extends Bloc<CuPostEvent, CuPostState> {
           emit(const UnAuthorizedState(
               message:
                   "Bạn không có quyền để thực hiện chức năng trên bài viết này"));
-        } else {
-          String message = getMessageFromException(error);
-          emit(CuOperationErrorState(
-              message: message,
-              post: event.post,
-              isEditMode: event.isEditMode,
-              selectedTags: event.selectedTags,
-              tags: event.tags,
-              isQuestion: event.isQuestion));
         }
+        String message = getMessageFromException(error);
+        emit(CuOperationErrorState(
+            message: message,
+            post: event.post,
+            isEditMode: event.isEditMode,
+            selectedTags: event.selectedTags,
+            tags: event.tags,
+            isQuestion: event.isQuestion));
       }
     }
   }
@@ -166,16 +165,15 @@ class CuPostBloc extends Bloc<CuPostEvent, CuPostState> {
           emit(const UnAuthorizedState(
               message:
                   "Bạn không có quyền để thực hiện chức năng trên bài viết này"));
-        } else {
-          String message = getMessageFromException(error);
-          emit(CuOperationErrorState(
-              message: message,
-              post: event.post,
-              isEditMode: event.isEditMode,
-              selectedTags: event.selectedTags,
-              tags: event.tags,
-              isQuestion: event.isQuestion));
         }
+        String message = getMessageFromException(error);
+        emit(CuOperationErrorState(
+            message: message,
+            post: event.post,
+            isEditMode: event.isEditMode,
+            selectedTags: event.selectedTags,
+            tags: event.tags,
+            isQuestion: event.isQuestion));
       }
     }
   }

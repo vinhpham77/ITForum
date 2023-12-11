@@ -9,54 +9,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-import '../../../repositories/post_repository.dart';
-import '../../../repositories/tag_repository.dart';
 import '/ui/widgets/notification.dart';
 import 'bloc/cu_post_bloc.dart';
+import 'bloc/cu_post_provider.dart';
 import 'widgets/tag_item.dart';
 
 const int _left = 3;
 const int _right = 1;
 const double contentHeight = 382 - bodyVerticalSpace;
+final TextEditingController _contentController = TextEditingController();
+final TextEditingController _titleController = TextEditingController();
+final _formKey = GlobalKey<FormState>();
 
-class CuPost extends StatefulWidget {
+class CuPost extends StatelessWidget {
   final String? id;
   final bool isQuestion;
 
   const CuPost({super.key, this.id, this.isQuestion = false});
 
-  @override
-  State<CuPost> createState() => _CuPostState();
-}
+  String get headingP1 => id == null ? 'Tạo' : 'Sửa';
 
-class _CuPostState extends State<CuPost> {
-  final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _titleController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  String get headingP1 => widget.id == null ? 'Tạo' : 'Sửa';
-
-  bool get isCreateMode => widget.id == null;
-  final CuPostBloc _bloc = CuPostBloc(
-    postRepository: PostRepository(),
-    tagRepository: TagRepository(),
-  );
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (isCreateMode) {
-      _bloc.add(InitEmptyPostEvent(isQuestion: widget.isQuestion));
-    } else {
-      _bloc.add(LoadPostEvent(id: widget.id!, isQuestion: widget.isQuestion));
-    }
-  }
+  bool get isCreateMode => id == null;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => _bloc,
+    return CuPostBlocProvider(
+      id: id,
+      isQuestion: isQuestion,
       child: BlocListener<CuPostBloc, CuPostState>(
         listener: (context, state) {
           if (state is CuPostOperationSuccessState) {
@@ -69,7 +48,6 @@ class _CuPostState extends State<CuPost> {
             appRouter.go('/forbidden');
           } else if (state is CuPostLoadErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
-            appRouter.go('/');
           } else if (state is CuOperationErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
           }
@@ -81,15 +59,14 @@ class _CuPostState extends State<CuPost> {
               BoxConstraints(minWidth: MediaQuery.of(context).size.width),
           child: BlocBuilder<CuPostBloc, CuPostState>(
             builder: (context, state) {
-              if (state is SwitchModeState) {
-                _titleController.text = state.post?.title ?? '';
-                _contentController.text = state.post?.content ?? '';
-                return buildBodyContainer(child: _buildCuPost(context, state));
-              }
               if (state is CuPostSubState) {
                 _titleController.text = state.post?.title ?? '';
                 _contentController.text = state.post?.content ?? '';
                 return buildBodyContainer(child: _buildCuPost(context, state));
+              } else if (state is CuPostLoadErrorState) {
+                return buildBodyContainer(
+                    child: Text(state.message,
+                        style: const TextStyle(color: Colors.red)));
               }
 
               return buildBodyContainer(
@@ -115,13 +92,13 @@ class _CuPostState extends State<CuPost> {
       key: _formKey,
       child: Column(
         children: [
-          _buildTopBarRow(state),
+          _buildTopBarRow(context, state),
           Row(
             children: [
               Expanded(
                 flex: _left,
                 child: state.isEditMode
-                    ? _buildPostEditingTab(state)
+                    ? _buildPostEditingTab(context, state)
                     : _buildPostPreviewTab(context, state),
               ),
               Expanded(
@@ -139,7 +116,7 @@ class _CuPostState extends State<CuPost> {
     );
   }
 
-  Row _buildTopBarRow(CuPostSubState state) {
+  Row _buildTopBarRow(BuildContext context, CuPostSubState state) {
     return Row(
       children: [
         Expanded(
@@ -167,9 +144,9 @@ class _CuPostState extends State<CuPost> {
                 Row(
                   children: [
                     buildSwitchModeButton(
-                        'Chỉnh sửa', true, state.isEditMode, state),
+                        context, 'Chỉnh sửa', true, state.isEditMode, state),
                     buildSwitchModeButton(
-                        'Xem trước', false, state.isEditMode, state)
+                        context, 'Xem trước', false, state.isEditMode, state)
                   ],
                 ),
               ],
@@ -244,12 +221,12 @@ class _CuPostState extends State<CuPost> {
             softLineBreak: true,
           ),
         ),
-        _buildActionContainer(state)
+        _buildActionContainer(context, state)
       ],
     );
   }
 
-  Column _buildPostEditingTab(CuPostSubState state) {
+  Column _buildPostEditingTab(BuildContext context, CuPostSubState state) {
     return Column(
       children: [
         Container(
@@ -313,12 +290,12 @@ class _CuPostState extends State<CuPost> {
               for (var tag in state.selectedTags)
                 CustomTagItem(
                   tagName: tag.name,
-                  onDelete: () => removeSelectedTag(tag, state),
+                  onDelete: () => removeSelectedTag(context, tag, state),
                 ),
               if (state.selectedTags.length < 3)
                 TagDropdown(
                     tags: state.tags,
-                    onTagSelected: (tag) => _selectTag(tag, state),
+                    onTagSelected: (tag) => _selectTag(context, tag, state),
                     label: state.selectedTags.isEmpty
                         ? 'Gắn một đến ba thẻ...'
                         : "Gắn thêm thẻ khác..."),
@@ -355,13 +332,13 @@ class _CuPostState extends State<CuPost> {
             ),
           ),
         ),
-        _buildActionContainer(state)
+        _buildActionContainer(context, state)
       ],
     );
   }
 
-  TextButton buildSwitchModeButton(
-      String text, bool origin, bool active, CuPostSubState state) {
+  TextButton buildSwitchModeButton(BuildContext context, String text,
+      bool origin, bool active, CuPostSubState state) {
     return TextButton(
       onPressed: () {
         if (origin == active) {
@@ -388,7 +365,7 @@ class _CuPostState extends State<CuPost> {
               tags: tags);
         }
 
-        _bloc.add(SwitchModeEvent(
+        context.read<CuPostBloc>().add(SwitchModeEvent(
             isEditMode: origin,
             post: newPost,
             selectedTags: state.selectedTags,
@@ -409,7 +386,7 @@ class _CuPostState extends State<CuPost> {
         color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400);
   }
 
-  Container _buildActionContainer(CuPostSubState state) {
+  Container _buildActionContainer(BuildContext context, CuPostSubState state) {
     return Container(
         margin: const EdgeInsets.only(top: 16),
         child: Row(
@@ -417,7 +394,7 @@ class _CuPostState extends State<CuPost> {
           children: [
             FilledButton(
               onPressed: () {
-                savePost(false, state);
+                savePost(context, false, state);
               },
               child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
             ),
@@ -426,7 +403,7 @@ class _CuPostState extends State<CuPost> {
               child: TextButton(
                 style: TextButton.styleFrom(),
                 onPressed: () {
-                  savePost(true, state);
+                  savePost(context, true, state);
                 },
                 child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
               ),
@@ -435,10 +412,10 @@ class _CuPostState extends State<CuPost> {
         ));
   }
 
-  void removeSelectedTag(Tag tag, CuPostSubState state) {
+  void removeSelectedTag(BuildContext context, Tag tag, CuPostSubState state) {
     Post post = getNewPost(state);
 
-    _bloc.add(RemoveTagEvent(
+    context.read<CuPostBloc>().add(RemoveTagEvent(
         tag: tag,
         isEditMode: state.isEditMode,
         post: post,
@@ -447,10 +424,10 @@ class _CuPostState extends State<CuPost> {
         tags: state.tags));
   }
 
-  _selectTag(Tag tag, CuPostSubState state) {
+  _selectTag(BuildContext context, Tag tag, CuPostSubState state) {
     Post post = getNewPost(state);
 
-    _bloc.add(AddTagEvent(
+    context.read<CuPostBloc>().add(AddTagEvent(
         tag: tag,
         isEditMode: state.isEditMode,
         post: post,
@@ -489,13 +466,13 @@ class _CuPostState extends State<CuPost> {
     return '$title  \n###### $tags\n  # \n  $content';
   }
 
-  savePost(bool isPrivate, CuPostSubState state) async {
-    if (!validateOnPressed(state)) {
+  savePost(BuildContext context, bool isPrivate, CuPostSubState state) async {
+    if (!validateOnPressed(context, state)) {
       return;
     }
 
     if (isCreateMode) {
-      _bloc.add(CreatePostEvent(
+      context.read<CuPostBloc>().add(CreatePostEvent(
           postDTO: createDTO(isPrivate, state),
           isEditMode: state.isEditMode,
           post: state.post,
@@ -503,7 +480,7 @@ class _CuPostState extends State<CuPost> {
           selectedTags: state.selectedTags,
           tags: state.tags));
     } else {
-      _bloc.add(UpdatePostEvent(
+      context.read<CuPostBloc>().add(UpdatePostEvent(
           postDTO: createDTO(isPrivate, state),
           isEditMode: state.isEditMode,
           post: state.post,
@@ -532,7 +509,7 @@ class _CuPostState extends State<CuPost> {
     return null;
   }
 
-  bool validateOnPressed(CuPostSubState state) {
+  bool validateOnPressed(BuildContext context, CuPostSubState state) {
     if (_formKey.currentState!.validate()) {
       String? tagValidation = validateSelectedTags(state.selectedTags);
 

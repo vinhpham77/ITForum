@@ -1,6 +1,5 @@
 import "package:cay_khe/api_config.dart";
 import "package:cay_khe/dtos/follow_dto.dart";
-import "package:cay_khe/dtos/series_dto.dart";
 import "package:cay_khe/ui/common/utils/index.dart";
 import 'package:dio/dio.dart';
 

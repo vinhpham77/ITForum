@@ -21,11 +21,8 @@ class SeriesTabBlocProvider extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<SeriesTabBloc>(
       create: (context) {
-        final bloc = SeriesTabBloc(seriesRepository: SeriesRepository());
-        bloc.add(LoadSeriesEvent(
-            username: username,
-            page: page,
-            limit: limit));
+        final bloc = SeriesTabBloc(seriesRepository: SeriesRepository())
+          ..add(LoadSeriesEvent(username: username, page: page, limit: limit));
         return bloc;
       },
       child: child,

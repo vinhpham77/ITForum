@@ -48,7 +48,8 @@ class _PostsViewState extends State<PostsView> {
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
           padding: const EdgeInsets.fromLTRB(0, 32, 0, 32),
-          child: Center(
+          child: Container(
+            alignment: Alignment.topCenter,
             child: Container(
               constraints: const BoxConstraints(maxWidth: maxContent),
               child: Row(

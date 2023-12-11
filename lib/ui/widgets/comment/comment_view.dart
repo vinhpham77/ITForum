@@ -40,6 +40,12 @@ class _CommentState extends State<CommentView> {
     getComment(subId: '');
   }
 
+  @override
+  void didUpdateWidget(CommentView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    getComment(subId: '');
+  }
+
   void upComment(SubCommentAggreGate subCommentAggreGate) {
     setState(() {
       _comments.insert(0, Comment(subCommentAggreGate: subCommentAggreGate));
@@ -87,7 +93,7 @@ class _CommentState extends State<CommentView> {
 
   Widget listSubCommentView({required double paddingLeft, required List<Comment> comments}){
     return Container(
-      padding: EdgeInsets.only(left: paddingLeft),
+      padding: EdgeInsets.only(left: paddingLeft, top: 8),
       child: Column(
         children: comments.map((e) {
           return subCommentView(comment: e, comments: comments);
@@ -102,6 +108,7 @@ class _CommentState extends State<CommentView> {
         border: Border.all(color: Colors.black26, width: 1),
         borderRadius: BorderRadius.circular(8)
       ),
+      padding: EdgeInsets.all(8),
       margin: EdgeInsets.only(bottom: 16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
