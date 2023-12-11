@@ -26,6 +26,7 @@ import '../../../repositories/post_repository.dart';
 import '../../../repositories/sp_repository.dart';
 import '../../../repositories/vote_repository.dart';
 import '../../router.dart';
+import '../../widgets/comment/comment_view.dart';
 
 class SeriesDetail extends StatefulWidget {
   final String id;
@@ -105,50 +106,56 @@ class _SeriesDetailState extends State<SeriesDetail> {
         Center(
           child: Container(
             width: 1200,
-            child: Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                VoteSection(
-                    stateVote: stateVote,
-                    upVote: upVote,
-                    downVote: downVote,
-                    score: score,
-                    onUpVote: _upVote,
-                    onDownVote: _downVote),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      StreamBuilder<Sp>(
-                        stream: seriesDetailBloc.spStream,
-                        builder: (BuildContext context, snapshot) {
-                          if (snapshot.hasData) {
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    VoteSection(
+                        stateVote: stateVote,
+                        upVote: upVote,
+                        downVote: downVote,
+                        score: score,
+                        onUpVote: _upVote,
+                        onDownVote: _downVote),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          StreamBuilder<Sp>(
+                            stream: seriesDetailBloc.spStream,
+                            builder: (BuildContext context, snapshot) {
+                              if (snapshot.hasData) {
 
-                              return SeriesContentWidget(sp: snapshot.data!);
-                          } else if (snapshot.hasError) {
-                            return Text('Lỗi: ${snapshot.error}');
-                          } else {
-                            return _buildLoadingIndicator();
-                          }
-                        },
+                                return SeriesContentWidget(sp: snapshot.data!);
+                              } else if (snapshot.hasError) {
+                                return Text('Lỗi: ${snapshot.error}');
+                              } else {
+                                return _buildLoadingIndicator();
+                              }
+                            },
+                          ),
+                          _sectionTitleLine(),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: listPostDetail.map((e) {
+                                return PostTabItem(postUser: e);
+                              }).toList()),
+                          if(AuthorSeries.id == user.id) MoreHoriz(
+                              type: type, idContent: widget.id),
+                        ],
                       ),
-                      _sectionTitleLine(),
-                      Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: listPostDetail.map((e) {
-                            return PostTabItem(postUser: e);
-                          }).toList()),
-                      if(AuthorSeries.id == user.id) MoreHoriz(
-                          type: type, idContent: widget.id),
-                    ],
-                  ),
-
+                    ),
+                    const SizedBox(width: 12),
+                    StickeySideBar(),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                StickeySideBar(),
+                CommentView(postId: widget.id)
               ],
-            ),
+            )
           ),
         ): const Center(child: Text("Bạn không có quyền xem bài viết này",style: TextStyle(fontSize: 28),))
       );

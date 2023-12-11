@@ -116,8 +116,7 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                             height: 36,
                             width: 100,
                             child: FloatingActionButton(
-                              hoverColor: Colors.black38,
-                              backgroundColor: Colors.black,
+                              backgroundColor: Color.fromRGBO(96, 120, 254, 1),
                               onPressed: () {
                                 if(!validateOnPressed())
                                   return;
