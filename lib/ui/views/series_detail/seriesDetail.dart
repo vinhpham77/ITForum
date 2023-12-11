@@ -494,7 +494,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
         });
 
     }
-    print(listPostDetail);
+
   }
 
   Widget _buildIconWithText(IconData icon, String text) {

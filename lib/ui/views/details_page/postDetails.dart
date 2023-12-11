@@ -366,7 +366,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Future<void> _loadUser(String username) async {
-    print(JwtPayload.sub);
+
     if (JwtPayload.sub != null) {
       var futureUser = await userRepository.getUser(username);
       if (mounted) {
@@ -408,10 +408,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Future<void> _loadTotalFollower(String followedId) async {
-    print("chay total follower");
     var future = await followRepository.totalFollower(followedId);
     if (future.data is int) {
-      print(future.data);
       if (mounted) {
         setState(() {
           totalFollow = future.data;
