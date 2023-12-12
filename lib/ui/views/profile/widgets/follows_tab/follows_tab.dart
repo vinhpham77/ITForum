@@ -4,6 +4,7 @@ import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../dtos/jwt_payload.dart';
 import '../../../../../dtos/pagination_states.dart';
 import '../../../../widgets/pagination2.dart';
 import '../../blocs/follows_tab/follows_tab_bloc.dart';
@@ -22,6 +23,8 @@ class FollowsTab extends StatelessWidget {
     required this.limit,
     required this.isFollowers,
   });
+
+  bool get isAuthorised => JwtPayload.sub != null && JwtPayload.sub == username;
 
   String get object => isFollowers ? "followers" : "followings";
 
@@ -68,6 +71,7 @@ class FollowsTab extends StatelessWidget {
             FollowTabItem(
               userMetrics: userMetrics,
               isFollowingsTab: !isFollowers,
+              isAuthorised: isAuthorised,
             ),
         ],
       ),

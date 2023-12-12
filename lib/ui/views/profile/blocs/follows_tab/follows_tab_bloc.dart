@@ -1,5 +1,4 @@
 import 'package:cay_khe/dtos/user_metrics.dart';
-import 'package:cay_khe/repositories/follow_repository.dart';
 import 'package:cay_khe/ui/common/utils/index.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,7 +8,6 @@ import '../../../../../models/result_count.dart';
 import '../../../../../repositories/user_repository.dart';
 
 part 'follows_tab_event.dart';
-
 part 'follows_tab_state.dart';
 
 class FollowsTabBloc extends Bloc<FollowsTabEvent, FollowsTabState> {

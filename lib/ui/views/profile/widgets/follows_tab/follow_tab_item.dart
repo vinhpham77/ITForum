@@ -12,11 +12,12 @@ import '../../blocs/follow_item/follow_item_bloc.dart';
 class FollowTabItem extends StatelessWidget {
   final UserMetrics userMetrics;
   final bool isFollowingsTab;
+  final bool isAuthorised;
 
   const FollowTabItem({
     super.key,
     required this.userMetrics,
-    required this.isFollowingsTab,
+    required this.isFollowingsTab, required this.isAuthorised,
   });
 
   @override
@@ -93,7 +94,7 @@ class FollowTabItem extends StatelessWidget {
                 _buildFieldCount(
                     Icons.category_outlined, userMetrics.seriesCount),
               ]),
-              if (isFollowingsTab) _buildFollowButton(context, state)
+              if (isFollowingsTab && isAuthorised) _buildFollowButton(context, state)
             ],
           ),
         ],
