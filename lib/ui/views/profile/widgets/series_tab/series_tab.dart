@@ -9,6 +9,7 @@ import '../../../../../dtos/notify_type.dart';
 import '../../../../../dtos/pagination_states.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination2.dart';
+import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/series_tab/series_tab_bloc.dart';
 
 class SeriesTab extends StatelessWidget {
@@ -33,9 +34,20 @@ class SeriesTab extends StatelessWidget {
           if (state is SeriesDeleteSuccessState) {
             showTopRightSnackBar(
               context,
-              "Xoá series ${state.seriesUser.title} thành công!",
+              "Xoá series \"${state.seriesUser.title}\" thành công!",
               NotifyType.success,
             );
+
+            final ProfileBloc profileBloc = context.read<ProfileBloc>();
+            final profileState = profileBloc.state as ProfileSubState;
+
+            profileBloc.add(DecreaseSeriesCountEvent(
+              isFollowing: profileState.isFollowing,
+              profileStats: profileState.profileStats,
+              tagCounts: profileState.tagCounts,
+              user: profileState.user,
+            ));
+
             context.read<SeriesTabBloc>().add(
                 LoadSeriesEvent(username: username, page: page, limit: limit));
           } else if (state is SeriesDeleteErrorState) {
@@ -90,8 +102,8 @@ class SeriesTab extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
       child: Column(
         children: [
-          for (var postUser in state.seriesUsers.resultList)
-            buildOneRow(context, postUser, state),
+          for (var seriesPost in state.seriesUsers.resultList)
+            buildOneRow(context, seriesPost, state),
         ],
       ),
     );

@@ -1,20 +1,13 @@
 
 class User {
   String id;
-
   String username;
-
   String email;
-
   bool? gender;
-  //
   DateTime? birthdate;
-  //
   String? avatarUrl;
-  //
   String? bio;
   String role;
-
   String displayName;
 
   User({
@@ -54,4 +47,27 @@ class User {
     );
   }
 
+  User copyWith({
+    String? id,
+    String? username,
+    String? email,
+    bool? gender,
+    DateTime? birthdate,
+    String? avatarUrl,
+    String? bio,
+    String? role,
+    String? displayName,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      gender: gender ?? this.gender,
+      birthdate: birthdate ?? this.birthdate,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
+      role: role ?? this.role,
+      displayName: displayName ?? this.displayName,
+    );
+  }
 }

@@ -1,5 +1,5 @@
 import 'package:cay_khe/dtos/jwt_payload.dart';
-import 'package:cay_khe/models/result_count.dart';
+import 'package:cay_khe/dtos/result_count.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dio/dio.dart';

@@ -67,9 +67,9 @@ class FollowsTab extends StatelessWidget {
       child: Wrap(
         spacing: 20,
         children: [
-          for (var userMetrics in state.userMetricsList.resultList)
+          for (var userStats in state.userStatsList.resultList)
             FollowTabItem(
-              userMetrics: userMetrics,
+              userStats: userStats,
               isFollowingsTab: !isFollowers,
               isAuthorised: isAuthorised,
             ),
@@ -81,7 +81,7 @@ class FollowsTab extends StatelessWidget {
   Pagination2 _buildPagination(FollowsSubState state) {
     return Pagination2(
         pagingStates: PaginationStates(
-            count: state.userMetricsList.count,
+            count: state.userStatsList.count,
             limit: limit,
             currentPage: page,
             range: 2,

@@ -85,42 +85,23 @@ final class RemoveTagEvent extends CuPostTagEvent {
       required super.isQuestion});
 }
 
-final class CreatePostEvent extends CuPostSubEvent {
+final class CuPostOperationEvent extends CuPostSubEvent {
   final PostDTO postDTO;
+  final bool isCreate;
 
-  const CreatePostEvent(
-      {required super.isEditMode,
+  const CuPostOperationEvent(
+      {required this.postDTO,
+      required this.isCreate,
+      required super.isEditMode,
       required super.post,
       required super.selectedTags,
       required super.tags,
-      required super.isQuestion,
-      required this.postDTO});
+      required super.isQuestion});
 
   @override
   List<Object?> get props => [
         postDTO,
-        super.isEditMode,
-        super.post,
-        super.selectedTags,
-        super.tags,
-        super.isQuestion
-      ];
-}
-
-final class UpdatePostEvent extends CuPostSubEvent {
-  final PostDTO postDTO;
-
-  const UpdatePostEvent(
-      {required super.isEditMode,
-      required super.post,
-      required super.selectedTags,
-      required super.tags,
-      required super.isQuestion,
-      required this.postDTO});
-
-  @override
-  List<Object?> get props => [
-        postDTO,
+        isCreate,
         super.isEditMode,
         super.post,
         super.selectedTags,

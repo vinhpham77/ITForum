@@ -12,21 +12,24 @@ final class FollowsTabInitialState extends FollowsTabState {
   const FollowsTabInitialState();
 }
 
-final class FollowsEmptyState extends FollowsTabState {}
+final class FollowsEmptyState extends FollowsSubState {
+  const FollowsEmptyState(
+      {required super.userStatsList});
+}
 
 @immutable
 sealed class FollowsSubState extends FollowsTabState {
-  final ResultCount<UserMetrics> userMetricsList;
+  final ResultCount<UserStats> userStatsList;
 
-  const FollowsSubState({required this.userMetricsList});
+  const FollowsSubState({required this.userStatsList});
 
   @override
-  List<Object> get props => [userMetricsList];
+  List<Object> get props => [userStatsList];
 }
 
 final class FollowsLoadedState extends FollowsSubState {
   const FollowsLoadedState(
-      {required super.userMetricsList});
+      {required super.userStatsList});
 }
 
 final class FollowsLoadErrorState extends FollowsTabState {

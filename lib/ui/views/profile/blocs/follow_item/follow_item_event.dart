@@ -19,10 +19,10 @@ sealed class FollowItemSubEvent extends FollowItemEvent {
   List<Object> get props => [username, isFollowed];
 }
 
-final class FollowEvent extends FollowItemSubEvent {
-  const FollowEvent({required super.isFollowed, required super.username});
+final class HandleFollowItemEvent extends FollowItemSubEvent {
+  const HandleFollowItemEvent({required super.isFollowed, required super.username});
 }
 
-final class UnfollowEvent extends FollowItemSubEvent {
-  const UnfollowEvent({required super.isFollowed, required super.username});
+final class HandleUnfollowItemEvent extends FollowItemSubEvent {
+  const HandleUnfollowItemEvent({required super.isFollowed, required super.username});
 }

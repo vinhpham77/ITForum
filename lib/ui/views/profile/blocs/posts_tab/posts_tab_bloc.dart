@@ -1,5 +1,5 @@
 import 'package:cay_khe/models/post_aggregation.dart';
-import 'package:cay_khe/models/result_count.dart';
+import 'package:cay_khe/dtos/result_count.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dio/dio.dart';

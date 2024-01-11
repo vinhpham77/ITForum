@@ -17,15 +17,17 @@ class FollowItemBloc extends Bloc<FollowItemEvent, FollowItemState> {
       {required this.isFollowing, required FollowRepository followRepository})
       : _followRepository = followRepository,
         super(FollowItemInitialState(isFollowing: isFollowing)) {
-    on<FollowEvent>(_follow);
-    on<UnfollowEvent>(_unfollow);
+    on<HandleFollowItemEvent>(_follow);
+    on<HandleUnfollowItemEvent>(_unfollow);
   }
 
   Future<void> _follow(
-    FollowEvent event,
-    Emitter<FollowItemState> emit,
-  ) async {
+      HandleFollowItemEvent event,
+      Emitter<FollowItemState> emit,
+      ) async {
     try {
+      emit(FollowOperationWaitingState(isFollowing: event.isFollowed));
+
       await _followRepository.follow(event.username);
       emit(const FollowSuccessState(isFollowing: true));
     } on Exception catch (e) {
@@ -36,10 +38,11 @@ class FollowItemBloc extends Bloc<FollowItemEvent, FollowItemState> {
   }
 
   Future<void> _unfollow(
-    UnfollowEvent event,
-    Emitter<FollowItemState> emit,
-  ) async {
+      HandleUnfollowItemEvent event,
+      Emitter<FollowItemState> emit,
+      ) async {
     try {
+      emit(FollowOperationWaitingState(isFollowing: event.isFollowed));
       await _followRepository.unfollow(event.username);
       emit(const UnfollowSuccessState(isFollowing: false));
     } on Exception catch (e) {

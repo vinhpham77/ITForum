@@ -30,4 +30,8 @@ class UserRepository {
       },
     );
   }
+
+  Future<Response<dynamic>> getStats(String username) async {
+    return dio.get("/stats/$username");
+  }
 }

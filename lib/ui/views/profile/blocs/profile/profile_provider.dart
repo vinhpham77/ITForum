@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../repositories/follow_repository.dart';
+import '../../../../../repositories/post_repository.dart';
 import '../../../../../repositories/user_repository.dart';
 
 class ProfileBlocProvider extends StatelessWidget {
@@ -18,7 +19,8 @@ class ProfileBlocProvider extends StatelessWidget {
       create: (context) {
         final bloc = ProfileBloc(
             followRepository: FollowRepository(),
-            userRepository: UserRepository())
+            userRepository: UserRepository(),
+            postRepository: PostRepository())
           ..add(LoadProfileEvent(username: username));
         return bloc;
       },
