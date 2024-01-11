@@ -1,14 +1,13 @@
 import 'package:cay_khe/blocs/post_bloc.dart';
 import 'package:cay_khe/dtos/limit_page.dart';
-import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/dtos/result_count.dart';
+import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:flutter/material.dart';
 
 import '../../widgets/pagination.dart';
-import '../../widgets/post_feed_item.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key, required this.params});
@@ -164,7 +163,8 @@ class _SearchViewState extends State<SearchView> {
                                         return Center(
                                             child: Text(
                                           "Lỗi! Không thể sort theo ${widget.params['sortField']}",
-                                          style: const TextStyle(color: Colors.red),
+                                          style: const TextStyle(
+                                              color: Colors.red),
                                         ));
                                       }
                                       if (snapshot.hasData) {
@@ -175,8 +175,9 @@ class _SearchViewState extends State<SearchView> {
                                             //build lai
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.fromLTRB(
-                                                    8, 16, 8, 4),
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        8, 16, 8, 4),
                                                 decoration: const BoxDecoration(
                                                     border: Border(
                                                         bottom: BorderSide(
@@ -226,7 +227,8 @@ class _SearchViewState extends State<SearchView> {
                                                     ),
                                                     Row(
                                                       children: [
-                                                        const Text("Sắp xếp theo:"),
+                                                        const Text(
+                                                            "Sắp xếp theo:"),
                                                         DropdownButtonHideUnderline(
                                                             child:
                                                                 DropdownButton<
@@ -271,18 +273,16 @@ class _SearchViewState extends State<SearchView> {
                                                                 padding:
                                                                     const EdgeInsets
                                                                         .all(
-                                                                            8.0),
+                                                                        8.0),
                                                                 child:
                                                                     Text(value),
                                                               ),
                                                             );
                                                           }).toList(),
                                                           focusColor:
-                                                              const Color.fromRGBO(
-                                                                  242,
-                                                                  238,
-                                                                  242,
-                                                                  1),
+                                                              const Color
+                                                                  .fromRGBO(242,
+                                                                  238, 242, 1),
                                                         ))
                                                       ],
                                                     )
@@ -322,8 +322,8 @@ class _SearchViewState extends State<SearchView> {
                                             return Center(
                                                 child: Text(
                                               "Lỗi! Tổng số trang là $totalPages, không thể truy cập trang $page",
-                                              style:
-                                                  const TextStyle(color: Colors.red),
+                                              style: const TextStyle(
+                                                  color: Colors.red),
                                             ));
                                           }
                                         }
@@ -342,9 +342,9 @@ class _SearchViewState extends State<SearchView> {
                         ),
                       ),
                     ),
-                    Container(
+                    const SizedBox(
                       width: 368,
-                      child: const Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -414,7 +414,8 @@ class _SearchViewState extends State<SearchView> {
       ),
       child: Text(
         text,
-        style: const TextStyle(color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),
+        style: const TextStyle(
+            color: Color.fromRGBO(144, 147, 153, 1), fontSize: 12),
       ),
     );
   }

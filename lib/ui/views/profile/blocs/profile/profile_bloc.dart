@@ -8,13 +8,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../dtos/profile_stats.dart';
 import '../../../../../dtos/tag_count.dart';
-import '../../../../../models/post.dart';
 import '../../../../../models/user.dart';
 import '../../../../../repositories/follow_repository.dart';
 import '../../../../../repositories/post_repository.dart';
 import '../../../../common/utils/message_from_exception.dart';
 
 part 'profile_event.dart';
+
 part 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
@@ -24,7 +24,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   ProfileBloc(
       {required UserRepository userRepository,
-      required FollowRepository followRepository, required PostRepository postRepository})
+      required FollowRepository followRepository,
+      required PostRepository postRepository})
       : _userRepository = userRepository,
         _followRepository = followRepository,
         _postRepository = postRepository,
