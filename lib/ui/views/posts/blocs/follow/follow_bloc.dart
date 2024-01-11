@@ -21,10 +21,11 @@ class FollowBloc extends Bloc<FollowEvent, FollowState> {
   final FollowRepository _followRepository = FollowRepository();
 
   FollowBloc() : super(FollowInitialState()) {
-    on<LoadPostsFollowEvent>(_loadPosts);
+    on<LoadPostsFollowEvent>(_loadFollowPosts);
+    on<LoadSeriesFollowEvent>(_loadFollowSeries);
   }
 
-  Future<void> _loadPosts(
+  Future<void> _loadFollowPosts(
       LoadPostsFollowEvent event, Emitter<FollowState> emit) async {
     try {
       Response<dynamic> response = await _postAggregationRepository.getFollow(
@@ -44,7 +45,7 @@ class FollowBloc extends Bloc<FollowEvent, FollowState> {
     }
   }
 
-  Future<void> _loadBookmarkSeries(LoadSeriesFollowEvent event, Emitter<FollowState> emit) async {
+  Future<void> _loadFollowSeries(LoadSeriesFollowEvent event, Emitter<FollowState> emit) async {
     try {
       Response<dynamic> response = await _followRepository.getSeries(
         page: event.page,

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
-import '../../blocs/post_follow/follow_bloc.dart';
+import '../../blocs/follow/follow_bloc.dart';
 import '../../../../widgets/pagination.dart';
 import '../series_feed_item.dart';
 

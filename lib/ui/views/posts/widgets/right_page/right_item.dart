@@ -27,22 +27,39 @@ class RightItem extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Icon(
-                postAggregation.score < 0
-                    ? Icons.arrow_downward
-                    : Icons.arrow_upward,
-                size: 16,
-                color: Colors.black87,
-              ),
-              Text('${postAggregation.score}', style: const TextStyle(fontSize: 12, color: Colors.black87)),
+              buildFieldCount(Icons.comment_outlined, postAggregation.commentCount),
+              buildFieldCount(
+                  postAggregation.score < 0
+                      ? Icons.trending_down_outlined
+                      : Icons.trending_up_outlined,
+                  postAggregation.score),
             ],
           ),
           InkWell(
-            onTap: () {},
+            onTap: () => appRouter.go('/profile/${postAggregation.user.username}', extra: {}),
             child: Text(postAggregation.user.displayName,
               style: TextStyle(color: Colors.black38),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  buildFieldCount(IconData icon, int count) {
+    return Container(
+      margin: const EdgeInsets.only(right: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: Colors.grey[700],
+          ),
+          const SizedBox(width: 2),
+          Text('$count',
+              style: TextStyle(fontSize: 13, color: Colors.grey[700])),
         ],
       ),
     );

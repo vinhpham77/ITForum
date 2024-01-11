@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
-import '../../../profile/widgets/posts_tab/post_tab_item.dart';
-import '../../blocs/post_follow/follow_bloc.dart';
+import '../post_feed_item.dart';
+import '../../blocs/follow/follow_bloc.dart';
 
 
 class FollowPost extends StatefulWidget {
@@ -88,8 +88,8 @@ class _FollowPostState extends State<FollowPost> {
                   Column(
                       children: state.postUsers.resultList
                           .map((e) {
-                        return PostTabItem(
-                            postUser: e);
+                        return PostFeedItem(
+                            postAggregation: e);
                       }).toList()),
                   Pagination(
                     path: indexing['path'] ?? '',

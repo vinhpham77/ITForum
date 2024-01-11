@@ -1,4 +1,3 @@
-import 'package:cay_khe/ui/views/profile/widgets/series_tab/series_tab_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +6,7 @@ import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
 import '../../blocs/series/series_bloc.dart';
+import '../series_feed_item.dart';
 
 
 class SeriesFeed extends StatefulWidget {
@@ -80,8 +80,8 @@ class _SeriesFeedState extends State<SeriesFeed> {
                   Column(
                       children: state.seriesUser.resultList
                           .map((e) {
-                        return SeriesTabItem(
-                            seriesUser: e);
+                        return SeriesFeedItem(
+                            seriesPost: e);
                       }).toList()),
                   Pagination(
                     path: "viewseries",
