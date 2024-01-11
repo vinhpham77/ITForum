@@ -1,8 +1,8 @@
 import 'package:cay_khe/ui/views/cu_post/cu_post_view.dart';
 import 'package:cay_khe/ui/views/cu_series/cu_series_view.dart';
-import 'package:cay_khe/ui/views/details_page/postDetails.dart';
 import 'package:cay_khe/ui/views/forbidden/forbidden_view.dart';
 import 'package:cay_khe/ui/views/not_found/not_found_view.dart';
+import 'package:cay_khe/ui/views/post_detail/postDetails.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/question_view.dart';
 import 'package:cay_khe/ui/views/profile/profile_view.dart';

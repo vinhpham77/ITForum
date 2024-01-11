@@ -9,9 +9,9 @@ import 'package:go_router/go_router.dart';
 class MoreHoriz extends StatefulWidget {
   final String username;
   final String authorname;
-  const MoreHoriz({super.key, required this.type, required this.idContent, required this.username, required this.authorname});
   final String type;
   final String idContent;
+  const MoreHoriz({super.key, required this.type, required this.idContent, required this.username, required this.authorname});
   @override
   State<MoreHoriz> createState() => _MoreHorizState();
 }
@@ -68,7 +68,11 @@ class _MoreHorizState extends State<MoreHoriz> {
       menuChildren: [
         MenuItemButton(
           onPressed: () {
-            // Action for "Sửa" item
+            if(widget.type=="series"){
+              appRouter.go("/series/${widget.idContent}/edit");
+            }else{
+              appRouter.go("/posts/${widget.idContent}/edit");
+            }
           },
           child: const Row(
             children: [

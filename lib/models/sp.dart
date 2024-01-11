@@ -14,6 +14,19 @@ class Sp {
   List<Post> posts;
   User user;
 
+  Sp.constructor()
+  :id = '',
+  title = '',
+  content = '',
+  postIds = [],
+  score = 0,
+  isPrivate = false,
+  commentCount = 0,
+  createdBy = '',
+  updatedAt = DateTime.now(),
+  posts = [],
+  user = User.empty();
+
   Sp({
     required this.id,
     required this.title,

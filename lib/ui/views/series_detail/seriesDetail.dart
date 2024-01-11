@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cay_khe/blocs/seriesDetail_bloc.dart';
 import 'package:cay_khe/dtos/follow_dto.dart';
 import 'package:cay_khe/models/bookmarkInfo.dart';
@@ -10,7 +11,6 @@ import 'package:cay_khe/repositories/bookmark_repository.dart';
 import 'package:cay_khe/repositories/follow_repository.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/repositories/user_repository.dart';
-import 'package:cay_khe/ui/views/details_page/menuAnchor.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:cay_khe/ui/views/series_detail/seriesContent.dart';
 import 'package:cay_khe/ui/views/series_detail/votes_side.dart';
@@ -20,13 +20,17 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../dtos/jwt_payload.dart';
+import '../../../dtos/notify_type.dart';
 import '../../../dtos/vote_dto.dart';
 import '../../../models/vote.dart';
 import '../../../repositories/post_repository.dart';
 import '../../../repositories/sp_repository.dart';
 import '../../../repositories/vote_repository.dart';
+import '../../common/utils/message_from_exception.dart';
 import '../../router.dart';
 import '../../widgets/comment/comment_view.dart';
+import '../../widgets/notification.dart';
+import '../post_detail/menuAnchor.dart';
 
 class SeriesDetail extends StatefulWidget {
   final String id;
@@ -71,8 +75,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
   int totalFollow = 0;
   int score = 0;
   User user = User.empty();
-  User AuthorSeries = User.empty();
+  User authorSeries = User.empty();
   List<String> listTag = [];
+  String textPrivate = "";
+  int scoreNormal = 0;
+   Sp sp=Sp.constructor();
+  final Completer<void> _loadingCompleter = Completer<void>();
 
   @override
   void initState() {
@@ -98,14 +106,22 @@ class _SeriesDetailState extends State<SeriesDetail> {
     setState(() {
       isLoading = true;
     });
-    await _loadCheckVote(widget.id, JwtPayload.sub ?? '');
-    await _loadScoreSeries(widget.id);
     await _loadListPost(widget.id);
-    await _loadUser(username);
-    await _loadFollow(user.username, AuthorSeries.username);
-    await _loadBookmark(widget.id, username);
-    await _loadTotalSeries(AuthorSeries.username);
-    await _loadTotalFollower(AuthorSeries.username);
+    var futureCheckVote = _loadCheckVote(widget.id, JwtPayload.sub ?? '');
+    var futureUser = _loadUser(username);
+    var futureFollow = _loadFollow(user.username, authorSeries.username);
+    var futureBookmark = _loadBookmark(widget.id, username);
+    var futureTotalSeries = _loadTotalSeries(authorSeries.username);
+    var futureTotalFollower = _loadTotalFollower(authorSeries.username);
+    await Future.wait([
+      futureCheckVote,
+      futureUser,
+      futureFollow,
+      futureBookmark,
+      futureTotalSeries,
+      futureTotalFollower
+    ]);
+    await _loadingCompleter.future;
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -115,79 +131,69 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   @override
   Widget build(BuildContext context) {
-    seriesDetailBloc = SeriesDetailBloc(context: context);
-    seriesDetailBloc.getOneSP(widget.id);
-
-    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
+    if(isLoading) {
+      return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       return Container(
           width: constraints.maxWidth,
-          child: checkPrivate(
-              widget.id, username, AuthorSeries.username, isPrivate)
+          child: checkPrivate(username, authorSeries.username, isPrivate)
               ? Center(
-            child: Container(
-                width: 1200,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        VoteSection(
-                            stateVote: stateVote,
-                            upVote: upVote,
-                            downVote: downVote,
-                            score: score,
-                            onUpVote: _upVote,
-                            onDownVote: _downVote),
-                        Expanded(
-                          child: Column(
+                  child: Container(
+                      width: 1200,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              MoreHoriz(
-                                  type: type,
-                                  idContent: widget.id,
-                                  authorname: AuthorSeries.username,
-                                  username: username),
-                              StreamBuilder<Sp>(
-                                stream: seriesDetailBloc.spStream,
-                                builder:
-                                    (BuildContext context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    return SeriesContentWidget(
-                                        sp: snapshot.data!);
-                                  } else if (snapshot.hasError) {
-                                    return Text('Lỗi: ${snapshot.error}');
-                                  } else {
-                                    return _buildLoadingIndicator();
-                                  }
-                                },
+                              VoteSection(
+                                  stateVote: stateVote,
+                                  upVote: upVote,
+                                  downVote: downVote,
+                                  score: score,
+                                  onUpVote: _upVote,
+                                  onDownVote: _downVote),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    MoreHoriz(
+                                        type: type,
+                                        idContent: widget.id,
+                                        authorname: authorSeries.username,
+                                        username: username),
+                                    if (sp != null)
+                                      SeriesContentWidget(sp: sp)
+                                    else
+                                      const CircularProgressIndicator(),
+                                    _sectionTitleLine(),
+                                    Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: listPostDetail.map((e) {
+                                          return PostTabItem(postUser: e);
+                                        }).toList()),
+                                  ],
+                                ),
                               ),
-                              _sectionTitleLine(),
-                              Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: listPostDetail.map((e) {
-                                    return PostTabItem(postUser: e);
-                                  }).toList()),
+                              const SizedBox(width: 12),
+                              StickeySideBar(),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        StickeySideBar(),
-                      ],
-                    ),
-                    CommentView(postId: widget.id)
-                  ],
-                )),
-          )
+                          CommentView(postId: widget.id)
+                        ],
+                      )),
+                )
               : const Center(
-              child: Text(
-                "Bạn không có quyền xem bài viết này",
-                style: TextStyle(fontSize: 28),
-              )));
+                  child: Text(
+                  "Bạn không có quyền xem bài viết này",
+                  style: TextStyle(fontSize: 28),
+                )));
     });
+    }else {
+      return _buildLoadingIndicator();
+    }
   }
 
   Widget _sectionTitleLine() {
@@ -223,11 +229,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
     );
   }
 
-  bool checkPrivate(String postId, String userName, String authorName,
-      bool isPrivate) {
+  bool checkPrivate(String userName, String authorName, bool isPrivate) {
     if (isPrivate && userName == authorName || !isPrivate) {
+      textPrivate = "";
       return true;
     } else {
+      textPrivate = "Bạn không có quyền xem bài viết này";
       return false;
     }
   }
@@ -315,12 +322,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
               children: [
                 InkWell(
                   onTap: () {
-                    appRouter.go("/profile/${AuthorSeries.username}/posts");
+                    appRouter.go("/profile/${authorSeries.username}/posts");
                   },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child:
-                    UserAvatar(imageUrl: AuthorSeries.avatarUrl, size: 48),
+                        UserAvatar(imageUrl: authorSeries.avatarUrl, size: 48),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -342,10 +349,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
                       child: GestureDetector(
                         onTap: () {
                           appRouter
-                              .go("/profile/${AuthorSeries.username}/posts");
+                              .go("/profile/${authorSeries.username}/posts");
                         },
                         child: Text(
-                          AuthorSeries.displayName,
+                          authorSeries.displayName,
                           style: TextStyle(
                             color: isHoveredUserLink
                                 ? Colors.lightBlueAccent
@@ -358,22 +365,22 @@ class _SeriesDetailState extends State<SeriesDetail> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text("@${AuthorSeries.username}"),
+                    Text("@${authorSeries.username}"),
                     const SizedBox(height: 8),
-                    if(AuthorSeries.id != user.id )
-                    ElevatedButton(
-                      onPressed: () => _follow(),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          isFollow
-                              ? const Icon(Icons.check)
-                              : const Icon(Icons.add),
-                          isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
-                        ],
+                    if (authorSeries.id != user.id)
+                      ElevatedButton(
+                        onPressed: () => _follow(),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            isFollow
+                                ? const Icon(Icons.check)
+                                : const Icon(Icons.add),
+                            isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
@@ -394,7 +401,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
               padding: const EdgeInsets.only(top: 8),
               child: Container(
                 child: ElevatedButton(
-                  onPressed: AuthorSeries.id != user.id
+                  onPressed: authorSeries.id != user.id
                       ? () => _toggleBookmark()
                       : null,
                   child: Row(
@@ -449,10 +456,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
           const SizedBox(width: 16),
           IconButton(
               icon: const Icon(Icons.share),
-              onPressed: () =>
-                  _shareTwitter(
-                      "http://localhost:8000/posts/$idPost",
-                      "Đã share lên Twitter")),
+              onPressed: () => _shareTwitter(
+                  "http://localhost:8000/posts/$idPost",
+                  "Đã share lên Twitter")),
         ],
       ),
     );
@@ -460,7 +466,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   void _shareFacebook(String url) async {
     url =
-    'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
+        'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
     final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
 
     if (await canLaunchUrlString(fbUrl)) {
@@ -488,28 +494,23 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   Future<void> _loadListPost(String seriesId) async {
     var futureSeries = await spRepository.getOne(seriesId);
-    Sp sp = Sp.fromJson(futureSeries.data);
-    int count = 1;
-    AuthorSeries = sp.user;
+    sp = Sp.fromJson(futureSeries.data);
+    authorSeries = sp.user;
     for (var e in sp.posts) {
       PostAggregation p = PostAggregation.empty();
-      p.user = AuthorSeries;
+      p.user = authorSeries;
       p.title = e.title;
       p.id = e.id;
       p.score = e.score;
       p.content = e.content;
       p.updatedAt = e.updatedAt;
       p.tags = e.tags;
-      // if (count <= sp.posts.length) {
-      //   listTag.addAll(e.tags);
-      //   count++;
-      // }
       p.private = e.isPrivate;
-      setState(() {
-        if (listPostDetail.length < sp.posts.length) {
-          listPostDetail.add(p);
-        }
-      });
+      score = sp.score;
+      isPrivate = sp.isPrivate;
+      if (listPostDetail.length < sp.posts.length) {
+        listPostDetail.add(p);
+      }
     }
     // Map<String, int> uniqueTagCount = countUniqueTags(listTag);
     // List<String> getTop5Tags = this.getTop5Tags(uniqueTagCount);
@@ -575,6 +576,16 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
   }
 
+  Future<void> _loadSeriesDetail(String id) async {
+    var future = seriesRepository.getOneDetail(id);
+    future.then((response) {
+      sp = Sp.fromJson(response.data);
+    }).catchError((error) {
+      String message = getMessageFromException(error);
+      showTopRightSnackBar(context, message, NotifyType.error);
+    });
+  }
+
   Future<void> _loadBookmark(String itemId, String username) async {
     var future = await bookmarkRepository.checkBookmark(itemId, username);
     if (future.data == true) {
@@ -619,7 +630,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     } else {
       if (isFollow == true) {
         var future = await followRepository.checkfollow(
-            user.username, AuthorSeries.username);
+            user.username, authorSeries.username);
         if (future.data != "Follow not found") {
           Follow follow = Follow.fromJson(future.data);
           await followRepository.delete(follow.id);
@@ -632,7 +643,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       } else {
         FollowDTO newFollow = FollowDTO(
             follower: user.username,
-            followed: AuthorSeries.username,
+            followed: authorSeries.username,
             createdAt: DateTime.now());
         await followRepository.add(newFollow);
         if (mounted) {
@@ -641,7 +652,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
           });
         }
       }
-      _loadTotalFollower(AuthorSeries.username);
+      _loadTotalFollower(authorSeries.username);
     }
   }
 
@@ -674,7 +685,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       } else {
         if (isBookmark == false) {
           BookmarkInfo bookmarkInfo =
-          BookmarkInfo(itemId: widget.id, type: "series");
+              BookmarkInfo(itemId: widget.id, type: "series");
           await bookmarkRepository.addBookmark(bookmarkInfo, JwtPayload.sub!);
           setState(() {
             isBookmark = !isBookmark;
@@ -689,6 +700,13 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   void _upVote() async {
+    if (typeVote == true) {
+      scoreNormal = score - 1;
+    } else {
+      if (typeVote == false) {
+        scoreNormal = score + 1;
+      }
+    }
     bool hasVoted;
     if (JwtPayload.sub == null) {
       appRouter.go('/login');
@@ -708,7 +726,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
           updatedAt: DateTime.now());
       await voteRepository.createVote(voteDTO);
       var seriesScore =
-      await seriesRepository.updateScore(widget.id, score + 1);
+          await seriesRepository.updateScore(widget.id, score + 1);
       Series series = Series.fromJson(seriesScore.data);
       setState(() {
         score = series.score;
@@ -716,9 +734,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
         downVote = false;
       });
     } else {
-      if (hasVoted == true && typeVote == true) {
+      if (hasVoted == true && upVote == true) {
         var seriesScore =
-        await seriesRepository.updateScore(widget.id, score - 1);
+            await seriesRepository.updateScore(widget.id, score - 1);
         Series series = Series.fromJson(seriesScore.data);
         setState(() {
           score = series.score;
@@ -727,16 +745,16 @@ class _SeriesDetailState extends State<SeriesDetail> {
         });
         await voteRepository.deleteVote(idVote);
       } else {
-        if (hasVoted == true && typeVote == false) {
+        if (hasVoted == true && downVote == true) {
           var seriesScore =
-          await seriesRepository.updateScore(widget.id, score + 1);
+              await seriesRepository.updateScore(widget.id, score + 2);
           Series series = Series.fromJson(seriesScore.data);
           setState(() {
             score = series.score;
-            upVote = false;
+            upVote = true;
             downVote = false;
           });
-          await voteRepository.deleteVote(idVote);
+          //await voteRepository.deleteVote(idVote);
         }
       }
     }
@@ -755,7 +773,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
         setState(() {
           stateVote = true;
         });
-
         hasVoted = await checkVote(widget.id, JwtPayload.sub!);
         if (hasVoted == false) {
           VoteDTO voteDTO = VoteDTO(
@@ -765,7 +782,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
               updatedAt: DateTime.now());
           await voteRepository.createVote(voteDTO);
           var seriesScore =
-          await seriesRepository.updateScore(widget.id, score - 1);
+              await seriesRepository.updateScore(widget.id, score - 1);
 
           Series series = Series.fromJson(seriesScore.data);
           setState(() {
@@ -774,9 +791,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
             upVote = false;
           });
         } else {
-          if (hasVoted == true && typeVote == false) {
+          if (hasVoted == true && downVote == true) {
             var seriesScore =
-            await seriesRepository.updateScore(widget.id, score + 1);
+                await seriesRepository.updateScore(widget.id, score + 1);
             Series series = Series.fromJson(seriesScore.data);
             setState(() {
               score = series.score;
@@ -785,17 +802,15 @@ class _SeriesDetailState extends State<SeriesDetail> {
             });
             await voteRepository.deleteVote(idVote);
           } else {
-            if (hasVoted == true && typeVote == true) {
+            if (hasVoted == true && upVote == true) {
               var seriesScore =
-              await seriesRepository.updateScore(widget.id, score - 1);
+                  await seriesRepository.updateScore(widget.id, score - 2);
               Series series = Series.fromJson(seriesScore.data);
               setState(() {
                 score = series.score;
-                downVote = false;
+                downVote = true;
                 upVote = false;
               });
-
-              await voteRepository.deleteVote(idVote);
             }
           }
         }

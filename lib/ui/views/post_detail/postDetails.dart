@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cay_khe/dtos/follow_dto.dart';
 import 'package:cay_khe/dtos/vote_dto.dart';
 import 'package:cay_khe/dtos/post_detail_dto.dart';
@@ -74,6 +76,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final bookmarkRepository = BookmarkRepository();
   final userRepository = UserRepository();
   final followRepository = FollowRepository();
+  Completer<void> _loadingCompleter = Completer<void>();
   @override
   void initState() {
     super.initState();
@@ -101,7 +104,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     await _loadTotalPost(authorPost.username);
     await _loadFollow(username, postDetailDTO.user.username);
     await _loadTotalFollower(authorPost.username);
-
+  //  await _loadingCompleter.future;
       setState(() {
         isLoading = false;
       });
@@ -116,7 +119,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 widget.id, username, authorPost.username, postDetailDTO.private)
             ? Container(
                 width: constraints.maxWidth,
-                // color: Colors.white,
                 child:  Center(
                   child: SizedBox(
                     width: 1200,
@@ -673,7 +675,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             downVote = false;
           });
         } else {
-          if (hasVoted == true && typeVote == true) {
+          if (hasVoted == true && upVote == true) {
             var postScore =
                 await postRepository.updateScore(widget.id, score - 1);
             Post post = Post.fromJson(postScore.data);
@@ -684,16 +686,16 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             });
             await voteRepository.deleteVote(idVote);
           } else {
-            if (hasVoted == true && typeVote == false) {
+            if (hasVoted == true && downVote == true) {
               var postScore =
-                  await postRepository.updateScore(widget.id, score + 1);
+                  await postRepository.updateScore(widget.id, score + 2);
               Post post = Post.fromJson(postScore.data);
               setState(() {
                 score = post.score;
-                upVote = false;
+                upVote = true;
                 downVote = false;
               });
-              await voteRepository.deleteVote(idVote);
+         //     await voteRepository.deleteVote(idVote);
             }
           }
         }
@@ -733,7 +735,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             upVote = false;
           });
         } else {
-          if (hasVoted == true && typeVote == false) {
+          if (hasVoted == true && downVote == true) {
             var postScore =
                 await postRepository.updateScore(widget.id, score + 1);
             Post post = Post.fromJson(postScore.data);
@@ -744,17 +746,17 @@ class _PostDetailsPage extends State<PostDetailsPage> {
             });
             await voteRepository.deleteVote(idVote);
           } else {
-            if (hasVoted == true && typeVote == true) {
+            if (hasVoted == true && upVote == true) {
               var postScore =
-                  await postRepository.updateScore(widget.id, score - 1);
+                  await postRepository.updateScore(widget.id, score - 2);
               Post post = Post.fromJson(postScore.data);
               setState(() {
                 score = post.score;
-                downVote = false;
+                downVote = true;
                 upVote = false;
               });
 
-              await voteRepository.deleteVote(idVote);
+            //  await voteRepository.deleteVote(idVote);
             }
           }
         }

@@ -54,4 +54,7 @@ class SeriesRepository {
     return dio
         .get('/totalSeries/$username');
   }
+  Future<Response<dynamic>> getOneDetail(String id) async {
+    return dio.get('/detail/$id');
+  }
 }

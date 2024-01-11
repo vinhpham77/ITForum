@@ -4,7 +4,7 @@ class TableOfContents extends StatelessWidget {
   final List<String> headings;
   final ScrollController scrollController;
 
-  TableOfContents({required this.headings, required this.scrollController});
+  const TableOfContents({super.key, required this.headings, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
