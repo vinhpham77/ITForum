@@ -193,7 +193,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       return '';
     });
 
-    if (questionTag!.isNotEmpty) {
+    if (questionTag.isNotEmpty) {
       event.profileStats?.questionCount--;
     }
 
