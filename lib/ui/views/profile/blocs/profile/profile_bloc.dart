@@ -189,7 +189,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     var tags = event.postUser.tags;
     String? questionTag =
-        tags?.firstWhere((element) => element == 'HoiDap', orElse: () {
+        tags.firstWhere((element) => element == 'HoiDap', orElse: () {
       return '';
     });
 
@@ -198,7 +198,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
 
     var tagCounts = event.tagCounts.map((e) {
-      if (tags!.contains(e.tag)) {
+      if (tags.contains(e.tag)) {
         return TagCount(tag: e.tag, count: e.count - 1);
       }
 

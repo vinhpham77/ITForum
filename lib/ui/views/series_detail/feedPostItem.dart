@@ -104,7 +104,7 @@ class _PostFeedItemState extends State<PostFeedItemSeries> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-              child: TagListWidget(tags: widget.postAggregation.tags!),
+              child: TagListWidget(tags: widget.postAggregation.tags),
             ),
           ],
         )

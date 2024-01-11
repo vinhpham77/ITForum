@@ -75,7 +75,7 @@ class PostItem extends StatelessWidget {
                       : MainAxisAlignment.spaceBetween,
                   children: [
                     Row(children: [
-                      for (var tag in postUser.tags!)
+                      for (var tag in postUser.tags)
                         Container(
                           margin: const EdgeInsets.only(right: 8),
                           padding: const EdgeInsets.symmetric(
