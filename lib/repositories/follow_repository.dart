@@ -50,4 +50,12 @@ class FollowRepository {
   Future<Response<dynamic>> totalFollower(String followedId) async {
     return dio.get('/totalFollower/$followedId');
   }
+
+  Future<Response<dynamic>> getSeries({
+    required int page,
+    int? limit
+  }) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    return dio.get('/get/series?page=${page}&limit=${limit}');
+  }
 }

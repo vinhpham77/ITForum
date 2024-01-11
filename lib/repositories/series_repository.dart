@@ -3,6 +3,8 @@ import "package:cay_khe/dtos/series_dto.dart";
 import "package:cay_khe/ui/common/utils/index.dart";
 import 'package:dio/dio.dart';
 
+import "../dtos/limit_page.dart";
+
 class SeriesRepository {
   late Dio dio;
 
@@ -56,5 +58,16 @@ class SeriesRepository {
   }
   Future<Response<dynamic>> getOneDetail(String id) async {
     return dio.get('/detail/$id');
+  }
+
+  Future<Response<dynamic>> getSearch({
+    required String fieldSearch,
+    required String searchContent,
+    required String sort,
+    required String sortField,
+    required String page,
+    int? limit
+  }) async {
+    return dio.get('/search?searchField=$fieldSearch&search=$searchContent&sort=$sort&sortField=$sortField&page=$page&limit=${limit ?? limitPage}');
   }
 }

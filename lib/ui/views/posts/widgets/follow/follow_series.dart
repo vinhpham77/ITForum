@@ -4,47 +4,43 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
+import '../../blocs/follow/follow_bloc.dart';
 import '../../../../widgets/pagination.dart';
-import '../../blocs/bookmark/bookmark_bloc.dart';
 import '../series_feed_item.dart';
 
-class BookmarkSeries extends StatefulWidget {
-  final String username;
+class FollowSeries extends StatefulWidget {
   final int page;
   final int limit;
   final Map<String, String> params;
 
-  const BookmarkSeries(
+  const FollowSeries(
       {super.key,
-        required this.username,
         required this.page,
         required this.limit,
         required this.params
       });
 
   @override
-  State<BookmarkSeries> createState() => _BookmarkSeriesState();
+  State<FollowSeries> createState() => _FollowSeriesState();
 }
 
-class _BookmarkSeriesState extends State<BookmarkSeries> {
-  late BookmarkBloc _bloc;
+class _FollowSeriesState extends State<FollowSeries> {
+  late FollowBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    _bloc = BookmarkBloc()
-      ..add(LoadBookmarkSeriesEvent(
-          username: widget.username,
-          limit: widget.limit,
-          page: widget.page,
+    _bloc = FollowBloc()
+      ..add(LoadSeriesFollowEvent(
+        limit: widget.limit,
+        page: widget.page,
       ));
   }
 
   @override
-  void didUpdateWidget(BookmarkSeries oldWidget) {
+  void didUpdateWidget(FollowSeries oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _bloc..add(LoadBookmarkSeriesEvent(
-      username: widget.username,
+    _bloc.add(LoadSeriesFollowEvent(
       limit: widget.limit,
       page: widget.page,
     ));
@@ -61,15 +57,15 @@ class _BookmarkSeriesState extends State<BookmarkSeries> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => _bloc,
-      child: BlocListener<BookmarkBloc, BookmarkState>(
+      child: BlocListener<FollowBloc, FollowState>(
         listener: (context, state) {
-          if (state is BookmarkTabErrorState) {
+          if (state is FollowTabErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
           }
         },
-        child: BlocBuilder<BookmarkBloc, BookmarkState>(
+        child: BlocBuilder<FollowBloc, FollowState>(
           builder: (context, state) {
-            if (state is BookmarkEmptyState) {
+            if (state is FollowEmptyState) {
               return Container(
                 alignment: Alignment.center,
                 child: Text(
@@ -77,7 +73,7 @@ class _BookmarkSeriesState extends State<BookmarkSeries> {
                   style: const TextStyle(fontSize: 16),
                 ),
               );
-            } else if (state is BookmarkSeriesLoadedState) {
+            } else if (state is SeriesFollowLoadedState) {
               return Column(
                 children: [
                   Column(
@@ -87,14 +83,14 @@ class _BookmarkSeriesState extends State<BookmarkSeries> {
                             seriesPost: e);
                       }).toList()),
                   Pagination(
-                    path: "viewseries",
+                    path: "viewfollow",
                     totalItem: state.seriesUser.count,
                     params: widget.params,
                     selectedPage: widget.page,
                   )
                 ],
               );
-            } else if (state is BookmarkLoadErrorState) {
+            } else if (state is FollowLoadErrorState) {
               return Container(
                 alignment: Alignment.center,
                 child:
@@ -105,6 +101,7 @@ class _BookmarkSeriesState extends State<BookmarkSeries> {
             return Container(
                 alignment: Alignment.center,
                 child: const CircularProgressIndicator());
+
           },
         ),
       ),

@@ -176,22 +176,7 @@ class CuSeries extends StatelessWidget {
           return;
         }
 
-        Series newSeries;
-        if (state.series == null) {
-          newSeries = Series(
-              title: _titleController.text,
-              content: _contentController.text,
-              postIds: [],
-              isPrivate: false,
-              createdBy: '',
-              updatedAt: DateTime.now(),
-              score: 0,
-              commentCount: 0,
-              id: '');
-        } else {
-          newSeries = state.series!.copyWith(
-              title: _titleController.text, content: _contentController.text);
-        }
+        Series newSeries = _getNewSeries(state);
 
         context.read<CuSeriesBloc>().add(SwitchModeEvent(
             isEditMode: origin,
@@ -413,25 +398,54 @@ class CuSeries extends StatelessWidget {
 
   Container _buildActionContainer(
       BuildContext context, CuSeriesSubState state) {
+    bool isWaiting = state is CuPublicSeriesWaitingState ||
+        state is CuPrivateSeriesWaitingState;
+
     return Container(
         margin: const EdgeInsets.only(top: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FilledButton(
-              onPressed: () {
-                saveSeries(context, false, state);
-              },
-              child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                FilledButton(
+                  onPressed: isWaiting
+                      ? null
+                      : () {
+                    saveSeries(context, false, state);
+                  },
+                  child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
+                ),
+                if (state is CuPublicSeriesWaitingState)
+                  const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(),
+                  )
+              ],
             ),
             Container(
               margin: const EdgeInsets.only(left: 6),
-              child: TextButton(
-                style: TextButton.styleFrom(),
-                onPressed: () {
-                  saveSeries(context, true, state);
-                },
-                child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
+              child: Stack(
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(),
+                    onPressed: isWaiting
+                        ? null
+                        : () {
+                      saveSeries(context, true, state);
+                    },
+                    child:
+                    const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
+                  ),
+                  if (state is CuPrivateSeriesWaitingState)
+                    const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(),
+                    )
+                ],
               ),
             ),
           ],
@@ -460,7 +474,8 @@ class CuSeries extends StatelessWidget {
         });
   }
 
-  ListView _buildPostListView(BuildContext bottomSheetContext, BuildContext context, CuSeriesSubState state) {
+  ListView _buildPostListView(BuildContext bottomSheetContext,
+      BuildContext context, CuSeriesSubState state) {
     return ListView.builder(
       itemCount: state.postUsers.length,
       itemBuilder: (listViewContext, index) {
@@ -493,21 +508,13 @@ class CuSeries extends StatelessWidget {
       return;
     }
 
-    if (isCreateMode) {
-      context.read<CuSeriesBloc>().add(CreateSeriesEvent(
-          seriesDTO: _createDTO(isPrivate, state),
-          isEditMode: state.isEditMode,
-          series: state.series,
-          selectedPostUsers: state.selectedPostUsers,
-          postUsers: state.postUsers));
-    } else {
-      context.read<CuSeriesBloc>().add(UpdateSeriesEvent(
-          seriesDTO: _createDTO(isPrivate, state),
-          isEditMode: state.isEditMode,
-          series: state.series,
-          selectedPostUsers: state.selectedPostUsers,
-          postUsers: state.postUsers));
-    }
+    context.read<CuSeriesBloc>().add(CuSeriesOperationEvent(
+        seriesDTO: _createDTO(isPrivate, state),
+        isCreate: isCreateMode,
+        isEditMode: state.isEditMode,
+        series: state.series,
+        selectedPostUsers: state.selectedPostUsers,
+        postUsers: state.postUsers));
   }
 
   SeriesDTO _createDTO(bool isPrivate, CuSeriesSubState state) {
@@ -558,7 +565,8 @@ class CuSeries extends StatelessWidget {
         postUsers: state.postUsers));
   }
 
-  _openModal(BuildContext bottomSheetContext, BuildContext context, CuSeriesSubState state) {
+  _openModal(BuildContext bottomSheetContext, BuildContext context,
+      CuSeriesSubState state) {
     if (state.postUsers.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),

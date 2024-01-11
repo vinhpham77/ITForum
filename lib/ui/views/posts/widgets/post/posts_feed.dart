@@ -1,4 +1,3 @@
-import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +6,7 @@ import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
 import '../../blocs/post/post_bloc.dart';
+import '../post_feed_item.dart';
 
 
 class PostsFeed extends StatefulWidget {
@@ -86,8 +86,8 @@ class _PostsFeedState extends State<PostsFeed> {
                   Column(
                       children: state.postUsers.resultList
                           .map((e) {
-                        return PostTabItem(
-                            postUser: e);
+                        return PostFeedItem(
+                            postAggregation: e);
                       }).toList()),
                   Pagination(
                     path: indexing['path'] ?? '',

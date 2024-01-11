@@ -44,6 +44,24 @@ final class CuSeriesLoadedState extends CuSeriesSubState {
       required super.postUsers});
 }
 
+final class CuPrivateSeriesWaitingState extends CuSeriesSubState {
+  const CuPrivateSeriesWaitingState({
+    required super.isEditMode,
+    required super.series,
+    required super.selectedPostUsers,
+    required super.postUsers,
+  });
+}
+
+final class CuPublicSeriesWaitingState extends CuSeriesSubState {
+  const CuPublicSeriesWaitingState({
+    required super.isEditMode,
+    required super.series,
+    required super.selectedPostUsers,
+    required super.postUsers,
+  });
+}
+
 sealed class CuSeriesErrorState extends CuSeriesState {
   final String message;
 

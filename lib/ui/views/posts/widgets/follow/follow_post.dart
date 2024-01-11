@@ -5,17 +5,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination.dart';
-import '../../../profile/widgets/posts_tab/post_tab_item.dart';
-import '../../blocs/post_follow/post_follow_bloc.dart';
+import '../post_feed_item.dart';
+import '../../blocs/follow/follow_bloc.dart';
 
 
-class PostsFeedFollow extends StatefulWidget {
+class FollowPost extends StatefulWidget {
   final int page;
   final int limit;
   final bool isQuestion;
   final Map<String, String> params;
 
-  const PostsFeedFollow(
+  const FollowPost(
       {super.key,
         required this.page,
         required this.limit,
@@ -24,19 +24,19 @@ class PostsFeedFollow extends StatefulWidget {
       });
 
   @override
-  State<PostsFeedFollow> createState() => _PostsFeedFollowState();
+  State<FollowPost> createState() => _FollowPostState();
 }
 
-class _PostsFeedFollowState extends State<PostsFeedFollow> {
-  late PostFollowBloc _bloc;
+class _FollowPostState extends State<FollowPost> {
+  late FollowBloc _bloc;
   late Map<String, String> indexing = widget.isQuestion ? {'name' : 'hỏi đáp', 'path': '/viewquestionfollow'} :
-  {'name' : 'bài viết', 'path': '/viewpostsfollow'};
+  {'name' : 'bài viết', 'path': '/viewfollow'};
 
   @override
   void initState() {
     super.initState();
-    _bloc = PostFollowBloc()
-      ..add(LoadPostsEvent(
+    _bloc = FollowBloc()
+      ..add(LoadPostsFollowEvent(
           limit: widget.limit,
           page: widget.page,
           isQuestion: widget.isQuestion
@@ -44,10 +44,10 @@ class _PostsFeedFollowState extends State<PostsFeedFollow> {
   }
 
   @override
-  void didUpdateWidget(PostsFeedFollow oldWidget) {
+  void didUpdateWidget(FollowPost oldWidget) {
 
     super.didUpdateWidget(oldWidget);
-    _bloc..add(LoadPostsEvent(
+    _bloc..add(LoadPostsFollowEvent(
         limit: widget.limit,
         page: widget.page,
         isQuestion: widget.isQuestion
@@ -66,15 +66,15 @@ class _PostsFeedFollowState extends State<PostsFeedFollow> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => _bloc,
-      child: BlocListener<PostFollowBloc, PostFollowState>(
+      child: BlocListener<FollowBloc, FollowState>(
         listener: (context, state) {
-          if (state is PostFollowTabErrorState) {
+          if (state is FollowTabErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
           }
         },
-        child: BlocBuilder<PostFollowBloc, PostFollowState>(
+        child: BlocBuilder<FollowBloc, FollowState>(
           builder: (context, state) {
-            if (state is PostFollowEmptyState) {
+            if (state is FollowEmptyState) {
               return Container(
                 alignment: Alignment.center,
                 child: Text(
@@ -88,8 +88,8 @@ class _PostsFeedFollowState extends State<PostsFeedFollow> {
                   Column(
                       children: state.postUsers.resultList
                           .map((e) {
-                        return PostTabItem(
-                            postUser: e);
+                        return PostFeedItem(
+                            postAggregation: e);
                       }).toList()),
                   Pagination(
                     path: indexing['path'] ?? '',
@@ -99,7 +99,7 @@ class _PostsFeedFollowState extends State<PostsFeedFollow> {
                   )
                 ],
               );
-            } else if (state is PostFollowLoadErrorState) {
+            } else if (state is FollowLoadErrorState) {
               return Container(
                 alignment: Alignment.center,
                 child:

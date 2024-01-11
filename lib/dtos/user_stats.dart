@@ -1,15 +1,15 @@
-class UserMetrics {
+class UserStats {
   final String id;
   final String username;
   final String email;
   final String displayName;
-  final String avatarUrl;
+  final String? avatarUrl;
   final String role;
   final int postCount;
   final int seriesCount;
   final int followerCount;
 
-  UserMetrics({
+  UserStats({
     required this.id,
     required this.username,
     required this.email,
@@ -21,8 +21,8 @@ class UserMetrics {
     required this.followerCount,
   });
 
-  factory UserMetrics.fromJson(Map<String, dynamic> json) {
-    return UserMetrics(
+  factory UserStats.fromJson(Map<String, dynamic> json) {
+    return UserStats(
       id: json['id'],
       username: json['username'],
       email: json['email'],

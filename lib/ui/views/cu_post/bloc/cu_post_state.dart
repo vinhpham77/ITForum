@@ -59,6 +59,26 @@ final class CuPostLoadedState extends CuPostSubState {
   });
 }
 
+final class CuPublicPostWaitingState extends CuPostSubState {
+  const CuPublicPostWaitingState({
+    required super.isEditMode,
+    required super.post,
+    required super.selectedTags,
+    required super.tags,
+    required super.isQuestion,
+  });
+}
+
+final class CuPrivatePostWaitingState extends CuPostSubState {
+  const CuPrivatePostWaitingState({
+    required super.isEditMode,
+    required super.post,
+    required super.selectedTags,
+    required super.tags,
+    required super.isQuestion,
+  });
+}
+
 @immutable
 sealed class CuPostErrorState extends CuPostState {
   final String message;

@@ -3,9 +3,9 @@ import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_feed.dart';
 import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_post.dart';
+import 'package:cay_khe/ui/views/posts/widgets/follow/follow_post.dart';
 import 'package:cay_khe/ui/views/posts/widgets/left_menu.dart';
 import 'package:cay_khe/ui/views/posts/widgets/post/posts_feed.dart';
-import 'package:cay_khe/ui/views/posts/widgets/post_follow/posts_feed_follow.dart';
 import 'package:cay_khe/ui/views/posts/widgets/right_page/right.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -76,16 +76,16 @@ class _QuestionViewState extends State<QuestionView> {
   }
 
   List<NavigationPost> get naviSignin => [
-    NavigationPost(index: 0, text: "Mới nhất", path: "/viewquestion/${converPageParams(widget.params)}",
-      widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
-    NavigationPost(index: 1, text: "Đang theo dõi", path: "/viewquestionfollow/${converPageParams(widget.params)}",
-      widget: PostsFeedFollow(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
-    NavigationPost(index: 2, text: "Đã Bookmark", path: "/viewquestionbookmark/${converPageParams(widget.params)}",
-      widget: BookmarkPost(username: JwtPayload.sub, page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
+    NavigationPost(index: 0, text: "Mới nhất", path: "/viewquestion",
+        widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
+    NavigationPost(index: 1, text: "Đang theo dõi", path: "/viewquestionfollow",
+        widget: FollowPost(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
+    NavigationPost(index: 2, text: "Đã Bookmark", path: "/viewquestionbookmark}",
+        widget: BookmarkPost(username: JwtPayload.sub!, page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
   ];
 
   List<NavigationPost> get navi => [
-    NavigationPost(index: 0, text: "Mới nhất", path: "/viewquestion/${converPageParams(widget.params)}",
+    NavigationPost(index: 0, text: "Mới nhất", path: "/viewquestion",
         widget: PostsFeed(page: getPage(widget.params['page'] ?? "1"), limit: 10, isQuestion: true, params: widget.params,)),
   ];
 }
