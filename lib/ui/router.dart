@@ -303,10 +303,10 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: "/viewpostsfollow",
+      path: "/viewfollow",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: const ValueKey("viewpostsfollow"),
+            key: const ValueKey("viewfollow"),
             child: ScreenWithHeaderAndFooter(
               body:
                   PostsView(indexSelected: 2, params: convertQuery(query: "")),
@@ -314,10 +314,10 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: "/viewpostsfollow/:query",
+      path: "/viewfollow/:query",
       pageBuilder: (context, state) {
         return MaterialPage<void>(
-            key: const ValueKey("viewpostsfollow"),
+            key: const ValueKey("viewfollow"),
             child: ScreenWithHeaderAndFooter(
               body: PostsView(
                   indexSelected: 2,
