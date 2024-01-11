@@ -22,11 +22,12 @@ class PostFeedItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => appRouter.go('/profile/${postAggregation.user.username}', extra: {}),
+            onTap: () => appRouter
+                .go('/profile/${postAggregation.user?.username}', extra: {}),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: UserAvatar(
-                  imageUrl: postAggregation.user.avatarUrl,
+                  imageUrl: postAggregation.user?.avatarUrl,
                   size: 54,
                 )),
           ),
@@ -38,9 +39,14 @@ class PostFeedItem extends StatelessWidget {
                 Row(
                   children: [
                     InkWell(
-                      onTap: () => appRouter.go('/profile/${postAggregation.user.username}', extra: {}),
+                      onTap: postAggregation.user == null
+                          ? null
+                          : () => appRouter.go(
+                              '/profile/${postAggregation.user!.username}',
+                              extra: {}),
                       child: Text(
-                        postAggregation.user.displayName,
+                        postAggregation.user?.displayName ??
+                            'Người dùng ẩn danh',
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w300,
@@ -61,10 +67,12 @@ class PostFeedItem extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.only(top: 2, bottom: 4),
                   child: InkWell(
-                    onTap: () => {appRouter.go('/posts/${postAggregation.id}', extra: {})},
+                    onTap: postAggregation.title == null ? null : () => {
+                      appRouter.go('/posts/${postAggregation.id}', extra: {})
+                    },
                     hoverColor: Colors.black12,
                     child: Text(
-                      postAggregation.title,
+                      postAggregation.title ?? 'Bài viết không còn tồn tại',
                       style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w400,
@@ -96,7 +104,8 @@ class PostFeedItem extends StatelessWidget {
                           ),
                         ),
                       const SizedBox(width: 16),
-                      buildFieldCount(Icons.comment_outlined, postAggregation.commentCount),
+                      buildFieldCount(
+                          Icons.comment_outlined, postAggregation.commentCount),
                       buildFieldCount(
                           postAggregation.score < 0
                               ? Icons.trending_down_outlined

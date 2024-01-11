@@ -35,7 +35,7 @@ class _PostFeedItemState extends State<PostFeedItemSeries> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: UserAvatar(
-                  imageUrl: widget.postAggregation.user.avatarUrl,
+                  imageUrl: widget.postAggregation.user?.avatarUrl,
                   size: 54,
                 ),
               ),
@@ -63,7 +63,7 @@ class _PostFeedItemState extends State<PostFeedItemSeries> {
                   print('Navigate to: ${widget.postAggregation.id}');
                 },
                 child: Text(
-                  widget.postAggregation.user.displayName,
+                  widget.postAggregation.user!.displayName,
                   style: TextStyle(
                     color: isHoveredUserLink
                         ? Colors.lightBlueAccent
@@ -93,7 +93,7 @@ class _PostFeedItemState extends State<PostFeedItemSeries> {
                   print('Navigate to post: ${widget.postAggregation.id}');
                 },
                 child: Text(
-                  widget.postAggregation.title,
+                  widget.postAggregation.title!,
                   style: TextStyle(
                     color: isHoveredTitle ? Colors.blue : Colors.black,
                     fontSize: 24,
@@ -104,7 +104,7 @@ class _PostFeedItemState extends State<PostFeedItemSeries> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-              child: TagListWidget(tags: widget.postAggregation.tags),
+              child: TagListWidget(tags: widget.postAggregation.tags!),
             ),
           ],
         )

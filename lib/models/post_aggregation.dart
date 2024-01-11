@@ -4,14 +4,14 @@ import 'package:cay_khe/models/user.dart';
 
 class PostAggregation {
   String? id;
-  String title;
+  String? title;
   List<String> tags;
-  String content;
+  String? content;
   int score;
   int commentCount;
   bool private;
-  DateTime updatedAt;
-  User user;
+  DateTime? updatedAt;
+  User? user;
 
   PostAggregation({
     required this.id,
@@ -41,12 +41,12 @@ class PostAggregation {
       id: json['id'],
       title: json['title'],
       content: json['content'],
-      tags: List<String>.from(json['tags']),
+      tags: json['tags'] == null ? [] : json['tags'].cast<String>(),
       score: json['score'],
       commentCount: json['commentCount'],
       private: json['private'],
-      updatedAt: DateTime.parse(json['updatedAt']),
-      user: User.fromJson(json['user']),
+      updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt']),
+      user: json['user'] == null ? null : User.fromJson(json['user']),
     );
   }
 

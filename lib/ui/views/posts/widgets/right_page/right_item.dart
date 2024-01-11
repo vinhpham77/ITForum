@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../models/post_aggregation.dart';
@@ -6,21 +5,21 @@ import '../../../../router.dart';
 
 class RightItem extends StatelessWidget {
   final PostAggregation postAggregation;
-  const RightItem({required this.postAggregation});
+  const RightItem({super.key, required this.postAggregation});
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 8, bottom: 8),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.black38))
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => appRouter.push('/posts/${postAggregation.user.id}', extra: {}),
-            child: Text(postAggregation.title,
-              style: TextStyle(fontSize: 16),
+            onTap: () => appRouter.push('/posts/${postAggregation.user?.id}', extra: {}),
+            child: Text(postAggregation.title!,
+              style: const TextStyle(fontSize: 16),
               softWrap: true,
             ),
           ),
@@ -36,9 +35,9 @@ class RightItem extends StatelessWidget {
             ],
           ),
           InkWell(
-            onTap: () => appRouter.go('/profile/${postAggregation.user.username}', extra: {}),
-            child: Text(postAggregation.user.displayName,
-              style: TextStyle(color: Colors.black38),
+            onTap: () => appRouter.go('/profile/${postAggregation.user?.username}', extra: {}),
+            child: Text(postAggregation.user!.displayName,
+              style: const TextStyle(color: Colors.black38),
             ),
           ),
         ],

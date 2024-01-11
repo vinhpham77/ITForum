@@ -188,17 +188,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     event.profileStats?.postCount--;
 
     var tags = event.postUser.tags;
-    String questionTag =
-        tags.firstWhere((element) => element == 'HoiDap', orElse: () {
+    String? questionTag =
+        tags?.firstWhere((element) => element == 'HoiDap', orElse: () {
       return '';
     });
 
-    if (questionTag.isNotEmpty) {
+    if (questionTag!.isNotEmpty) {
       event.profileStats?.questionCount--;
     }
 
     var tagCounts = event.tagCounts.map((e) {
-      if (tags.contains(e.tag)) {
+      if (tags!.contains(e.tag)) {
         return TagCount(tag: e.tag, count: e.count - 1);
       }
 

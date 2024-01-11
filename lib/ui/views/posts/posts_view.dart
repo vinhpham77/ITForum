@@ -39,10 +39,11 @@ class _PostsViewState extends State<PostsView> {
 
   @override
   Widget build(BuildContext context) {
-    if(JwtPayload.sub == null)
+    if(JwtPayload.sub == null) {
       listSelectBtn = navi;
-    else
+    } else {
       listSelectBtn = naviSignin;
+    }
     listSelectBtn[widget.indexSelected].isSelected = true;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {

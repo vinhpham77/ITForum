@@ -36,15 +36,16 @@ class _QuestionViewState extends State<QuestionView> {
   }
   @override
   Widget build(BuildContext context) {
-    if(JwtPayload.sub == null)
+    if(JwtPayload.sub == null) {
       listSelectBtn = navi;
-    else
+    } else {
       listSelectBtn = naviSignin;
+    }
     listSelectBtn[widget.indexSelected].isSelected = true;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Padding(
-          padding: EdgeInsets.fromLTRB(0, 32, 0, 32),
+          padding: const EdgeInsets.fromLTRB(0, 32, 0, 32),
           child: Container(
             alignment: Alignment.topCenter,
             child: Container(
@@ -58,13 +59,13 @@ class _QuestionViewState extends State<QuestionView> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                       child: listSelectBtn[widget.indexSelected].widget,
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 280,
-                    child: Right(page: 1, limit: 5, isQuestion: false,),
+                    child: const Right(page: 1, limit: 5, isQuestion: false),
                   )
                 ],
               ),
