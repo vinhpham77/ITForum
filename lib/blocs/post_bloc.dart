@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../dtos/notify_type.dart';
 import '../models/post_aggregation.dart';
-import '../models/result_count.dart';
+import '../dtos/result_count.dart';
 import '../repositories/post_aggregation_repository.dart';
 import '../ui/common/utils/message_from_exception.dart';
 import '../ui/widgets/notification.dart';

@@ -12,23 +12,22 @@ import '../../../../repositories/tag_repository.dart';
 import '../../../common/utils/message_from_exception.dart';
 
 part 'cu_post_event.dart';
-
 part 'cu_post_state.dart';
 
 class CuPostBloc extends Bloc<CuPostEvent, CuPostState> {
   final PostRepository _postRepository;
   final TagRepository _tagRepository;
 
-  CuPostBloc({
-    required PostRepository postRepository,
-    required TagRepository tagRepository,
-  })  : _postRepository = postRepository,
+  CuPostBloc(
+      {required PostRepository postRepository,
+      required TagRepository tagRepository})
+      : _postRepository = postRepository,
         _tagRepository = tagRepository,
         super(CuPostInitState()) {
+
     on<InitEmptyPostEvent>(_initEmptyPost);
     on<LoadPostEvent>(_loadPost);
-    on<CreatePostEvent>(_createPost);
-    on<UpdatePostEvent>(_updatePost);
+    on<CuPostOperationEvent>(_cuPost);
     on<SwitchModeEvent>(_switchMode);
     on<AddTagEvent>(_addTag);
     on<RemoveTagEvent>(_removeTag);
@@ -112,48 +111,41 @@ class CuPostBloc extends Bloc<CuPostEvent, CuPostState> {
               message:
                   "Bạn không có quyền để thực hiện chức năng trên bài viết này"));
         }
+
         String message = getMessageFromException(error);
         emit(CuPostLoadErrorState(message: message));
       }
     }
   }
 
-  Future<void> _createPost(
-      CreatePostEvent event, Emitter<CuPostState> emit) async {
+  Future<void> _cuPost(
+      CuPostOperationEvent event, Emitter<CuPostState> emit) async {
     try {
-      var postDTO = event.postDTO;
-
-      var response = await _postRepository.add(postDTO);
-      Post post = Post.fromJson(response.data);
-
-      emit(CuPostOperationSuccessState(post: post));
-    } catch (error) {
-      if (error is DioException) {
-        if (error.response?.statusCode == 404) {
-          emit(const PostNotFoundState(message: "Không tìm thấy bài viết"));
-        } else if (error.response?.statusCode == 403) {
-          emit(const UnAuthorizedState(
-              message:
-                  "Bạn không có quyền để thực hiện chức năng trên bài viết này"));
-        }
-        String message = getMessageFromException(error);
-        emit(CuOperationErrorState(
-            message: message,
+      if (event.postDTO.isPrivate) {
+        emit(CuPrivatePostWaitingState(
+            post: event.post,
+            isEditMode: event.isEditMode,
+            selectedTags: event.selectedTags,
+            tags: event.tags,
+            isQuestion: event.isQuestion));
+      } else {
+        emit(CuPublicPostWaitingState(
             post: event.post,
             isEditMode: event.isEditMode,
             selectedTags: event.selectedTags,
             tags: event.tags,
             isQuestion: event.isQuestion));
       }
-    }
-  }
 
-  Future<void> _updatePost(
-      UpdatePostEvent event, Emitter<CuPostState> emit) async {
-    try {
       var postDTO = event.postDTO;
+      late Response response;
 
-      var response = await _postRepository.update(event.post!.id, postDTO);
+      if (event.isCreate) {
+        response = await _postRepository.add(postDTO);
+      } else {
+        response = await _postRepository.update(event.post!.id, postDTO);
+      }
+
       Post post = Post.fromJson(response.data);
 
       emit(CuPostOperationSuccessState(post: post));

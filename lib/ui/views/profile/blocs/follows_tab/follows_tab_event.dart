@@ -10,12 +10,12 @@ sealed class FollowsTabEvent extends Equatable {
 
 @immutable
 sealed class FollowsSubEvent extends FollowsTabEvent {
-  final ResultCount<UserMetrics> userMetricsList;
+  final ResultCount<UserStats> userStatsList;
 
-  const FollowsSubEvent({required this.userMetricsList});
+  const FollowsSubEvent({required this.userStatsList});
 
   @override
-  List<Object> get props => [userMetricsList];
+  List<Object> get props => [userStatsList];
 }
 
 final class LoadFollowsEvent extends FollowsTabEvent {

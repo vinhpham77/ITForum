@@ -8,12 +8,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../dtos/jwt_payload.dart';
-import '../../../../models/result_count.dart';
+import '../../../../dtos/result_count.dart';
 import '../../../../repositories/post_repository.dart';
 import '../../../common/utils/message_from_exception.dart';
 
 part 'cu_series_event.dart';
-
 part 'cu_series_state.dart';
 
 class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
@@ -28,8 +27,7 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
         super(CuSeriesInitState()) {
     on<InitEmptySeriesEvent>(_initEmptySeries);
     on<LoadSeriesEvent>(_loadSeries);
-    on<CreateSeriesEvent>(_createSeries);
-    on<UpdateSeriesEvent>(_updateSeries);
+    on<CuSeriesOperationEvent>(_cuSeries);
     on<SwitchModeEvent>(_switchMode);
     on<AddPostEvent>(_addPost);
     on<RemovePostEvent>(_removePost);
@@ -93,15 +91,35 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
     }
   }
 
-  Future<void> _createSeries(
-      CreateSeriesEvent event, Emitter<CuSeriesState> emit) async {
+  Future<void> _cuSeries(
+      CuSeriesOperationEvent event, Emitter<CuSeriesState> emit) async {
     try {
-      SeriesDTO seriesDTO = event.seriesDTO;
+      if (event.seriesDTO.isPrivate) {
+        emit(CuPrivateSeriesWaitingState(
+            postUsers: event.postUsers,
+            selectedPostUsers: event.selectedPostUsers,
+            series: event.series,
+            isEditMode: event.isEditMode));
+      } else {
+        emit(CuPublicSeriesWaitingState(
+            postUsers: event.postUsers,
+            selectedPostUsers: event.selectedPostUsers,
+            series: event.series,
+            isEditMode: event.isEditMode));
+      }
 
-      var response = await _seriesRepository.add(seriesDTO);
-      Series series = Series.fromJson(response.data);
+      Response<dynamic> response;
 
-      emit(SeriesCreatedState(series: series));
+      if (event.isCreate) {
+        response = await _seriesRepository.add(event.seriesDTO);
+        Series series = Series.fromJson(response.data);
+        emit(SeriesCreatedState(series: series));
+      } else {
+        response = await _seriesRepository.update(
+            event.series!.id!, event.seriesDTO);
+        Series series = Series.fromJson(response.data);
+        emit(SeriesUpdatedState(series: series));
+      }
     } catch (error) {
       if (error is DioException) {
         if (error.response?.statusCode == 404) {
@@ -120,36 +138,6 @@ class CuSeriesBloc extends Bloc<CuSeriesEvent, CuSeriesState> {
             postUsers: event.postUsers,
             selectedPostUsers: event.selectedPostUsers));
       }
-    }
-  }
-
-  Future<void> _updateSeries(
-      UpdateSeriesEvent event, Emitter<CuSeriesState> emit) async {
-    try {
-      SeriesDTO seriesDTO = event.seriesDTO;
-
-      var response =
-          await _seriesRepository.update(event.series!.id!, seriesDTO);
-      Series series = Series.fromJson(response.data);
-
-      emit(SeriesUpdatedState(series: series));
-    } catch (error) {
-      if (error is DioException) {
-        if (error.response?.statusCode == 404) {
-          emit(const SeriesNotFoundState(message: "Không tìm thấy series"));
-        } else if (error.response?.statusCode == 403) {
-          emit(const UnAuthorizedState(
-              message:
-                  "Bạn không có quyền để thực hiện chức năng trên series này"));
-        }
-      }
-      String message = getMessageFromException(error);
-      emit(CuOperationErrorState(
-          message: message,
-          series: event.series,
-          isEditMode: event.isEditMode,
-          postUsers: event.postUsers,
-          selectedPostUsers: event.selectedPostUsers));
     }
   }
 

@@ -172,11 +172,10 @@ class CuPost extends StatelessWidget {
   }
 
   Column _buildPostPreviewTab(BuildContext context, CuPostSubState state) {
-    var space = (state.selectedTags.length == 3 ? 8 : 0);
     return Column(
       children: [
         Container(
-          height: contentHeight + 196 - space,
+          height: contentHeight + 196,
           decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -317,7 +316,7 @@ class CuPost extends StatelessWidget {
             color: Colors.white,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
-          height: contentHeight,
+          height: contentHeight + (state.selectedTags.length == 3 ? 8 : 0),
           child: TextFormField(
             controller: _contentController,
             validator: (value) {
@@ -387,25 +386,49 @@ class CuPost extends StatelessWidget {
   }
 
   Container _buildActionContainer(BuildContext context, CuPostSubState state) {
+    bool isWaiting = state is CuPublicPostWaitingState || state is CuPrivatePostWaitingState;
+
     return Container(
         margin: const EdgeInsets.only(top: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             FilledButton(
-              onPressed: () {
+              onPressed: isWaiting ? null : () {
                 savePost(context, false, state);
               },
-              child: const Text('Đăng lên', style: TextStyle(fontSize: 16)),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Text('Đăng lên', style: TextStyle(fontSize: 16)),
+                  if (state is CuPublicPostWaitingState)
+                    const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(),
+                    )
+                ],
+              ),
             ),
             Container(
               margin: const EdgeInsets.only(left: 6),
-              child: TextButton(
-                style: TextButton.styleFrom(),
-                onPressed: () {
-                  savePost(context, true, state);
-                },
-                child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(),
+                    onPressed: isWaiting ? null : () {
+                      savePost(context, true, state);
+                    },
+                    child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
+                  ),
+                  if (state is CuPrivatePostWaitingState)
+                    const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(),
+                    )
+                ],
               ),
             ),
           ],
@@ -471,23 +494,14 @@ class CuPost extends StatelessWidget {
       return;
     }
 
-    if (isCreateMode) {
-      context.read<CuPostBloc>().add(CreatePostEvent(
-          postDTO: createDTO(isPrivate, state),
-          isEditMode: state.isEditMode,
-          post: state.post,
-          isQuestion: state.isQuestion,
-          selectedTags: state.selectedTags,
-          tags: state.tags));
-    } else {
-      context.read<CuPostBloc>().add(UpdatePostEvent(
-          postDTO: createDTO(isPrivate, state),
-          isEditMode: state.isEditMode,
-          post: state.post,
-          isQuestion: state.isQuestion,
-          selectedTags: state.selectedTags,
-          tags: state.tags));
-    }
+    context.read<CuPostBloc>().add(CuPostOperationEvent(
+        postDTO: createDTO(isPrivate, state),
+        isEditMode: state.isEditMode,
+        isCreate: isCreateMode,
+        post: state.post,
+        isQuestion: state.isQuestion,
+        selectedTags: state.selectedTags,
+        tags: state.tags));
   }
 
   PostDTO createDTO(bool isPrivate, CuPostSubState state) {

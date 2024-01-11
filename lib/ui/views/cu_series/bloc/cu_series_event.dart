@@ -76,11 +76,13 @@ final class LoadSeriesEvent extends CuSeriesEvent {
   List<Object?> get props => [id];
 }
 
-final class CreateSeriesEvent extends CuSeriesSubEvent {
+final class CuSeriesOperationEvent extends CuSeriesSubEvent {
   final SeriesDTO seriesDTO;
+  final bool isCreate;
 
-  const CreateSeriesEvent(
+  const CuSeriesOperationEvent(
       {required this.seriesDTO,
+      required this.isCreate,
       required super.isEditMode,
       required super.series,
       required super.selectedPostUsers,
@@ -92,27 +94,8 @@ final class CreateSeriesEvent extends CuSeriesSubEvent {
         super.isEditMode,
         super.series,
         super.selectedPostUsers,
-        super.postUsers
-      ];
-}
-
-final class UpdateSeriesEvent extends CuSeriesSubEvent {
-  final SeriesDTO seriesDTO;
-
-  const UpdateSeriesEvent(
-      {required this.seriesDTO,
-      required super.isEditMode,
-      required super.series,
-      required super.selectedPostUsers,
-      required super.postUsers});
-
-  @override
-  List<Object?> get props => [
-        seriesDTO,
-        super.isEditMode,
-        super.series,
-        super.selectedPostUsers,
-        super.postUsers
+        super.postUsers,
+        isCreate
       ];
 }
 

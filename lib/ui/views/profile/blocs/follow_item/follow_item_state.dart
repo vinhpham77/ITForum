@@ -43,4 +43,6 @@ final class FollowOperationErrorState extends FollowItemSubState {
   List<Object> get props => [message, isFollowing];
 }
 
-
+final class FollowOperationWaitingState extends FollowItemSubState {
+  const FollowOperationWaitingState({required super.isFollowing});
+}

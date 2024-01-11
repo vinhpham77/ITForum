@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../dtos/series_user.dart';
-import '../../../../../models/result_count.dart';
+import '../../../../../dtos/result_count.dart';
 import '../../../../../repositories/series_repository.dart';
 import '../../../../common/utils/message_from_exception.dart';
 

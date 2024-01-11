@@ -1,6 +1,6 @@
 import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/models/post_aggregation.dart';
-import 'package:cay_khe/models/result_count.dart';
+import 'package:cay_khe/dtos/result_count.dart';
 import 'package:cay_khe/ui/views/profile/blocs/posts_tab/posts_tab_provider.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/post_tab_item.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
@@ -11,6 +11,7 @@ import '../../../../../dtos/jwt_payload.dart';
 import '../../../../../dtos/pagination_states.dart';
 import '../../../../widgets/pagination2.dart';
 import '../../blocs/posts_tab/posts_tab_bloc.dart';
+import '../../blocs/profile/profile_bloc.dart';
 
 class PostsTab extends StatelessWidget {
   final String username;
@@ -41,15 +42,25 @@ class PostsTab extends StatelessWidget {
           if (state is PostsDeleteSuccessState) {
             showTopRightSnackBar(
               context,
-              "Xoá ${target['name']} ${state.postUser.title} thành công!",
+              "Xoá ${target['name']} \"${state.postUser.title}\" thành công!",
               NotifyType.success,
             );
             context.read<PostsTabBloc>().add(LoadPostsEvent(
-                  username: username,
-                  page: page,
-                  limit: limit,
-                  isQuestion: isQuestion,
-                ));
+              username: username,
+              page: page,
+              limit: limit,
+              isQuestion: isQuestion,
+            ));
+            final ProfileBloc profileBloc = context.read<ProfileBloc>();
+            final profileState = profileBloc.state as ProfileSubState;
+
+            profileBloc.add(DecreasePostsCountEvent(
+              isFollowing: profileState.isFollowing,
+              profileStats: profileState.profileStats,
+              tagCounts: profileState.tagCounts,
+              user: profileState.user,
+              postUser: state.postUser,
+            ));
           } else if (state is PostsTabErrorState) {
             showTopRightSnackBar(context, state.message, NotifyType.error);
           }
@@ -73,7 +84,7 @@ class PostsTab extends StatelessWidget {
             } else if (state is PostsLoadErrorState) {
               return buildSimpleContainer(
                 child:
-                    Text(state.message, style: const TextStyle(fontSize: 16)),
+                Text(state.message, style: const TextStyle(fontSize: 16)),
               );
             } else if (state is PostsTabErrorState) {
               return Column(
@@ -108,21 +119,20 @@ class PostsTab extends StatelessWidget {
             params: {}));
   }
 
-  Padding buildPostList(
-      BuildContext context, ResultCount<PostAggregation> postUsers) {
+  Padding buildPostList(BuildContext context, ResultCount<PostAggregation> postUsers) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
       child: Column(
         children: [
-          for (var postUser in postUsers.resultList)
-            buildOneRow(context, postUser, postUsers),
+          for (var post in postUsers.resultList)
+            buildOneRow(context, post, postUsers),
         ],
       ),
     );
   }
 
-  Row buildOneRow(BuildContext context, PostAggregation postUser,
-      ResultCount<PostAggregation> postUsers) {
+  Row buildOneRow(
+      BuildContext context, PostAggregation postUser, ResultCount<PostAggregation> postUsers) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -142,7 +152,7 @@ class PostsTab extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                 textStyle: const TextStyle(fontSize: 13)),
             onPressed: () =>
                 showDeleteConfirmationDialog(context, postUser, postUsers),
@@ -159,8 +169,8 @@ class PostsTab extends StatelessWidget {
     );
   }
 
-  Future<void> showDeleteConfirmationDialog(BuildContext context,
-      PostAggregation postUser, ResultCount<PostAggregation> postUsers) async {
+  Future<void> showDeleteConfirmationDialog(
+      BuildContext context, PostAggregation postUser, ResultCount<PostAggregation> postUsers) async {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -183,8 +193,9 @@ class PostsTab extends StatelessWidget {
           TextButton(
             child: const Text('Xác nhận'),
             onPressed: () {
-              context.read<PostsTabBloc>().add(
-                  ConfirmDeleteEvent(postUser: postUser, postUsers: postUsers));
+              context
+                  .read<PostsTabBloc>()
+                  .add(ConfirmDeleteEvent(postUser: postUser, postUsers: postUsers));
               Navigator.of(dialogContext).pop();
             },
           ),

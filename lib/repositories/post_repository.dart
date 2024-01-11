@@ -66,4 +66,8 @@ class PostRepository {
     return dio
         .get('/totalPost/$username');
   }
+
+  Future<Response<dynamic>> getTagCounts(String username) async {
+    return dio.get("/$username/tags");
+  }
 }
