@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../../../models/series.dart';
+import '../../widgets/add_image.dart';
 import '/ui/widgets/notification.dart';
 import 'bloc/cu_series_provider.dart';
 
@@ -292,6 +293,29 @@ class CuSeries extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
               maxLines: 1),
+        ),
+        Container(
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+            color: Colors.white,
+          ),
+          padding: const EdgeInsets.only(
+            left: 48,
+            right: 48,
+            top: 8,
+            bottom: 12,
+          ),
+          child: Row(
+            children: [
+              AddImage(imageCallback: insertText)
+            ],
+          )
         ),
         Container(
           height: contentHeight,
@@ -587,5 +611,19 @@ class CuSeries extends StatelessWidget {
     }
 
     return _buildPostListView(bottomSheetContext, context, state);
+  }
+
+  void insertText(String input) {
+    final text = _contentController.text;
+    final textSelection = _contentController.selection;
+    final newText;
+    if(!textSelection.isValid)
+      newText = input;
+    else
+      newText = text.replaceRange(textSelection.start, textSelection.end, input);
+    final textSelectionNew = TextSelection.collapsed(offset: textSelection.start + input.length);
+
+    _contentController.text = newText;
+    _contentController.selection = textSelectionNew;
   }
 }

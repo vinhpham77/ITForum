@@ -1,14 +1,14 @@
-import 'package:cay_khe/models/post_aggregation.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../dtos/bookmark_item.dart';
 import '../../../../common/utils/date_time.dart';
 import '../../../../router.dart';
 
-class PostTabItem extends StatelessWidget {
-  final PostAggregation postUser;
+class PostBookmarkItem extends StatelessWidget {
+  final PostBookmark postBookmark;
 
-  const PostTabItem({super.key, required this.postUser});
+  const PostBookmarkItem({super.key, required this.postBookmark});
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +16,14 @@ class PostTabItem extends StatelessWidget {
   }
 
   Padding _buildContainer() {
+    final TextStyle fieldCountStyle = TextStyle(
+        fontSize: 13, color: Colors.grey[700]);
+    final TextStyle timeStyle = TextStyle(
+      fontSize: 13,
+      color: Colors.grey[700],
+      fontWeight: FontWeight.w300,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
       child: Row(
@@ -24,7 +32,7 @@ class PostTabItem extends StatelessWidget {
           ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: UserAvatar(
-                imageUrl: postUser.user?.avatarUrl,
+                imageUrl: postBookmark.user?.avatarUrl,
                 size: 54,
               )),
           const SizedBox(width: 12),
@@ -34,32 +42,32 @@ class PostTabItem extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    postUser.user?.displayName ?? 'Người dùng ẩn danh',
+                    postBookmark.user?.displayName ?? 'Người dùng ẩn danh',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
                         color: Colors.indigo[700]),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    getTimeAgo(postUser.updatedAt),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
+                  buildIconField(Icons.auto_fix_high_outlined,
+                      getTimeAgo(postBookmark.updatedAt), timeStyle)
+                  ,
+                  buildIconField(Icons.access_time_outlined,
+                      getTimeAgo(postBookmark.bookmarkedAt), timeStyle)
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: InkWell(
-                  onTap: postUser.title == null ? null : () => {
-                    appRouter.go('/posts/${postUser.id}', extra: {})
+                  onTap: postBookmark.title == null
+                      ? null
+                      : () =>
+                  {
+                    appRouter.go('/posts/${postBookmark.id}', extra: {})
                   },
                   hoverColor: Colors.black12,
                   child: Text(
-                    postUser.title ?? 'Bài viết không còn tồn tại',
+                    postBookmark.title ?? 'Bài viết không còn tồn tại',
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w400,
@@ -71,7 +79,7 @@ class PostTabItem extends StatelessWidget {
               Row(
                 children: [
                   Row(children: [
-                    for (var tag in postUser.tags)
+                    for (var tag in postBookmark.tags)
                       Container(
                         margin: const EdgeInsets.only(right: 10),
                         padding: const EdgeInsets.symmetric(
@@ -89,23 +97,32 @@ class PostTabItem extends StatelessWidget {
                           ),
                         ),
                       ),
-                    if (postUser.tags.isNotEmpty)
-                      const SizedBox(width: 16),
-                    buildFieldCount(Icons.comment_outlined, postUser.commentCount),
-                    buildFieldCount(postUser.score < 0
-                        ? Icons.trending_down_outlined
-                        : Icons.trending_up_outlined, postUser.score),
+                    if (postBookmark.tags.isNotEmpty) const SizedBox(width: 16),
+                    buildIconField(
+                        Icons.comment_outlined,
+                        postBookmark.commentCount.toString(), fieldCountStyle),
+                    buildIconField(
+                        postBookmark.score < 0
+                            ? Icons.trending_down_outlined
+                            : Icons.trending_up_outlined,
+                        postBookmark.score.toString(), fieldCountStyle),
                   ]),
                 ],
               ),
             ],
           ),
-        ],
-      ),
+        ]
+        ,
+      )
+      ,
     );
   }
 
-  buildFieldCount(IconData icon, int count) {
+  Widget buildIconField(IconData icon, String text, TextStyle textStyle) {
+    if (text.isEmpty) {
+      return Container();
+    }
+
     return Container(
       margin: const EdgeInsets.only(right: 10),
       child: Row(
@@ -117,7 +134,8 @@ class PostTabItem extends StatelessWidget {
             color: Colors.grey[700],
           ),
           const SizedBox(width: 2),
-          Text('$count', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+          Text(text,
+              style: textStyle),
         ],
       ),
     );

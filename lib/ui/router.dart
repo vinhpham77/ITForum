@@ -13,7 +13,6 @@ import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
 import 'package:cay_khe/ui/views/user_use/login_page.dart';
 import 'package:cay_khe/ui/views/user_use/register_page.dart';
 import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
-import 'package:cay_khe/ui/widgets/comment/comment_view.dart';
 import 'package:cay_khe/ui/widgets/screen_with_header_and_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -130,19 +129,49 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('search'),
         child: ScreenWithHeaderAndFooter(
-          body: SearchView(params: {}),
+          body: SearchView(params: {}, indexSelected: 0),
         ),
       ),
     ),
     GoRoute(
+      path: '/viewsearch',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('viewsearch'),
+        child: ScreenWithHeaderAndFooter(
+          body: SearchView(params: {}, indexSelected: 0),
+        ),
+      ),),
+    GoRoute(
         path: '/viewsearch/:query',
         pageBuilder: (context, state) {
           return MaterialPage<void>(
-              key: state.pageKey,
+              key: const ValueKey('viewsearch'),
               child: ScreenWithHeaderAndFooter(
                 body: SearchView(
                     params: convertQuery(
-                        query: state.pathParameters["query"] ?? "")),
+                        query: state.pathParameters["query"] ?? ""),
+                    indexSelected: 0),
+              ));
+        }),
+    GoRoute(
+      path: '/viewsearchSeries',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+        key: ValueKey('viewsearchSeries'),
+        child: ScreenWithHeaderAndFooter(
+          body: SearchView(params: {}, indexSelected: 1),
+        ),
+      ),
+    ),
+    GoRoute(
+        path: '/viewsearchSeries/:query',
+        pageBuilder: (context, state) {
+          return MaterialPage<void>(
+              key: const ValueKey('viewsearchSeries'),
+              child: ScreenWithHeaderAndFooter(
+                body: SearchView(
+                    params: convertQuery(
+                        query: state.pathParameters["query"] ?? ""),
+                    indexSelected: 1),
               ));
         }),
     GoRoute(
@@ -229,12 +258,6 @@ final appRouter = GoRouter(
         key: ValueKey('login'),
         child: LoginPage(),
       ),
-    ),
-    GoRoute(
-      name: 'onepost',
-      path: '/onepost',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-          key: ValueKey('onepost'), child: Text("test")),
     ),
     GoRoute(
       path: '/register',
@@ -394,7 +417,23 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-        path: '/profile/:username/bookmarks',
+      path: '/profile/:username/bookmarks',
+      redirect: (BuildContext context, GoRouterState state) async {
+        return '/profile/${state.pathParameters['username']}/bookmarks/posts';
+      },
+    ),
+    GoRoute(
+        path: '/profile/:username/bookmarks/posts',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 3,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
+    GoRoute(
+        path: '/profile/:username/bookmarks/series',
         pageBuilder: (context, state) => MaterialPage<void>(
             key: UniqueKey(),
             child: ScreenWithHeaderAndFooter(

@@ -9,7 +9,7 @@ sealed class BookmarkEvent extends Equatable {
 }
 
 final class LoadBookmarkPostEvent extends BookmarkEvent {
-  final String username;
+  final String? username;
   final int page;
   final int limit;
   final bool isQuestion;
@@ -26,7 +26,7 @@ final class LoadBookmarkPostEvent extends BookmarkEvent {
 }
 
 final class LoadBookmarkSeriesEvent extends BookmarkEvent {
-  final String username;
+  final String? username;
   final int page;
   final int limit;
 

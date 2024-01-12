@@ -2,14 +2,14 @@ import 'package:cay_khe/models/user.dart';
 
 class SeriesUser {
   String? id;
-  String title;
+  String? title;
   List<String> postIds;
-  String content;
+  String? content;
   int score;
   int commentCount;
   bool private;
-  DateTime updatedAt;
-  User user;
+  DateTime? updatedAt;
+  User? user;
 
   SeriesUser(
       {required this.id,
@@ -27,12 +27,12 @@ class SeriesUser {
       id: json['id'],
       title: json['title'],
       content: json['content'],
-      postIds: List<String>.from(json['postIds']),
+      postIds: json['postIds'] == null ? [] : List<String>.from(json['postIds']),
       score: json['score'],
       commentCount: json['commentCount'],
       private: json['private'],
-      updatedAt: DateTime.parse(json['updatedAt']),
-      user: User.fromJson(json['user']),
+      updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt']),
+      user: json['user'] == null ? null : User.fromJson(json['user']),
     );
   }
 }

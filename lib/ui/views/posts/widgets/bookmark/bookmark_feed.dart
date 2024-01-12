@@ -2,11 +2,10 @@ import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_post.dart';
 import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_series.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class BookmarkFeed extends StatefulWidget {
-  final username;
+  final String? username;
   final int page;
   final int limit;
   final bool isQuestion;
@@ -29,15 +28,16 @@ class _BookmarkFeedState extends State<BookmarkFeed> {
   Widget build(BuildContext context) {
     String isSeriesStr = widget.params['isSeries'] ?? 'false';
     bool isSeries = false;
-    if(isSeriesStr == 'true')
+    if(isSeriesStr == 'true') {
       isSeries = true;
+    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Row(
           children: [
             const Text("Sắp xếp theo:"),
-            SizedBox(width: 16,),
+            const SizedBox(width: 16),
             DropdownButtonHideUnderline(
               child:  DropdownButton<String>(
                 value: isSeries ? 'Series' : 'Bài viết',

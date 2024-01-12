@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import '../../widgets/add_image.dart';
 import '/ui/widgets/notification.dart';
 import 'bloc/cu_post_bloc.dart';
 import 'bloc/cu_post_provider.dart';
@@ -286,6 +287,10 @@ class CuPost extends StatelessWidget {
           ),
           child: Row(
             children: [
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                child: AddImage(imageCallback: insertText),
+              ),
               for (var tag in state.selectedTags)
                 CustomTagItem(
                   tagName: tag.name,
@@ -542,5 +547,19 @@ class CuPost extends StatelessWidget {
       return 'câu hỏi';
     }
     return 'bài viết';
+  }
+
+  void insertText(String input) {
+    final text = _contentController.text;
+    final textSelection = _contentController.selection;
+    final newText;
+    if(!textSelection.isValid)
+      newText = input;
+    else
+      newText = text.replaceRange(textSelection.start, textSelection.end, input);
+    final textSelectionNew = TextSelection.collapsed(offset: textSelection.start + input.length);
+
+    _contentController.text = newText;
+    _contentController.selection = textSelectionNew;
   }
 }

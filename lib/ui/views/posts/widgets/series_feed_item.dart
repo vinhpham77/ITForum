@@ -18,11 +18,12 @@ class SeriesFeedItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => appRouter.go('/profile/${seriesPost.user.username}', extra: {}),
+            onTap: () => appRouter
+                .go('/profile/${seriesPost.user?.username}', extra: {}),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: UserAvatar(
-                  imageUrl: seriesPost.user.avatarUrl,
+                  imageUrl: seriesPost.user?.avatarUrl,
                   size: 54,
                 )),
           ),
@@ -34,9 +35,13 @@ class SeriesFeedItem extends StatelessWidget {
                 Row(
                   children: [
                     InkWell(
-                      onTap: () => appRouter.go('/profile/${seriesPost.user.username}', extra: {}),
+                      onTap: seriesPost.user == null
+                          ? null
+                          : () => appRouter.go(
+                              '/profile/${seriesPost.user?.username}',
+                              extra: {}),
                       child: Text(
-                        seriesPost.user.displayName,
+                        seriesPost.user?.displayName ?? 'Người dùng ẩn danh',
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w300,
@@ -57,11 +62,13 @@ class SeriesFeedItem extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2, bottom: 4),
                   child: InkWell(
-                    onTap: () =>
-                        appRouter.go('/series/${seriesPost.id}', extra: {}),
+                    onTap: seriesPost.title == null
+                        ? null
+                        : () =>
+                            appRouter.go('/series/${seriesPost.id}', extra: {}),
                     hoverColor: Colors.black12,
                     child: Text(
-                      seriesPost.title,
+                      seriesPost.title ?? 'Series không còn tồn tại',
                       style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w400,

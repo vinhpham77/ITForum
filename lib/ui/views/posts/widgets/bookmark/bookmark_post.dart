@@ -10,7 +10,7 @@ import '../post_feed_item.dart';
 
 
 class BookmarkPost extends StatefulWidget {
-  final username;
+  final String? username;
   final int page;
   final int limit;
   final bool isQuestion;
@@ -49,7 +49,7 @@ class _BookmarkPostState extends State<BookmarkPost> {
   @override
   void didUpdateWidget(BookmarkPost oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _bloc..add(LoadBookmarkPostEvent(
+    _bloc.add(LoadBookmarkPostEvent(
         username: widget.username,
         limit: widget.limit,
         page: widget.page,

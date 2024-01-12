@@ -31,7 +31,7 @@ class PostItem extends StatelessWidget {
           ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: UserAvatar(
-                imageUrl: postUser.user.avatarUrl,
+                imageUrl: postUser.user?.avatarUrl,
                 size: 48,
               )),
           const SizedBox(width: 8),
@@ -42,7 +42,7 @@ class PostItem extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      postUser.user.displayName,
+                      postUser.user!.displayName,
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
@@ -50,7 +50,7 @@ class PostItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      getTimeAgo(postUser.updatedAt),
+                      getTimeAgo(postUser.updatedAt!),
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.black54,
@@ -61,7 +61,7 @@ class PostItem extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2, bottom: 4),
                   child: Text(
-                    postUser.title,
+                    postUser.title!,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,

@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../dtos/bookmark_item.dart';
 import '../../../../../dtos/profile_stats.dart';
 import '../../../../../dtos/tag_count.dart';
 import '../../../../../models/user.dart';
@@ -188,7 +189,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     event.profileStats?.postCount--;
 
     var tags = event.postUser.tags;
-    String questionTag =
+    String? questionTag =
         tags.firstWhere((element) => element == 'HoiDap', orElse: () {
       return '';
     });
