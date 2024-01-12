@@ -65,7 +65,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
   bool isHoveredUserLink = false;
   bool isFollow = false;
   bool isBookmark = false;
-  bool isLoading = true;
+  bool isLoading = false;
   bool isPrivate = true;
   String idVote = '';
   String type = "series";
@@ -79,8 +79,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
   List<String> listTag = [];
   String textPrivate = "";
   int scoreNormal = 0;
-   Sp sp=Sp.constructor();
+  Sp sp = Sp.constructor();
   final Completer<void> _loadingCompleter = Completer<void>();
+  bool isView = false;
+  String loi="";
 
   @override
   void initState() {
@@ -103,9 +105,11 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _initSeries(String id) async {
-    setState(() {
-      isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
     await _loadListPost(widget.id);
     var futureCheckVote = _loadCheckVote(widget.id, JwtPayload.sub ?? '');
     var futureUser = _loadUser(username);
@@ -121,79 +125,78 @@ class _SeriesDetailState extends State<SeriesDetail> {
       futureTotalSeries,
       futureTotalFollower
     ]);
-    await _loadingCompleter.future;
     if (mounted) {
       setState(() {
         isLoading = false;
       });
     }
+    // await _loadingCompleter.future;
   }
 
   @override
   Widget build(BuildContext context) {
-    if(isLoading) {
-      return LayoutBuilder(builder: (context, BoxConstraints constraints) {
+    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       return Container(
           width: constraints.maxWidth,
-          child: checkPrivate(username, authorSeries.username, isPrivate)
-              ? Center(
-                  child: Container(
-                      width: 1200,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+          child: !checkPrivate(username, authorSeries.username, isPrivate)
+              ? !isLoading
+                  ? Center(
+                      child: Container(
+                          width: 1200,
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              VoteSection(
-                                  stateVote: stateVote,
-                                  upVote: upVote,
-                                  downVote: downVote,
-                                  score: score,
-                                  onUpVote: _upVote,
-                                  onDownVote: _downVote),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    MoreHoriz(
-                                        type: type,
-                                        idContent: widget.id,
-                                        authorname: authorSeries.username,
-                                        username: username),
-                                    if (sp != null)
-                                      SeriesContentWidget(sp: sp)
-                                    else
-                                      const CircularProgressIndicator(),
-                                    _sectionTitleLine(),
-                                    Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: listPostDetail.map((e) {
-                                          return PostTabItem(postUser: e);
-                                        }).toList()),
-                                  ],
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  VoteSection(
+                                      stateVote: stateVote,
+                                      upVote: upVote,
+                                      downVote: downVote,
+                                      score: score,
+                                      onUpVote: _upVote,
+                                      onDownVote: _downVote),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        MoreHoriz(
+                                            type: type,
+                                            idContent: widget.id,
+                                            authorname: authorSeries.username,
+                                            username: username),
+                                        if (sp != null)
+                                          SeriesContentWidget(sp: sp)
+                                        else
+                                          const CircularProgressIndicator(),
+                                        _sectionTitleLine(),
+                                        Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: listPostDetail.map((e) {
+                                              return PostTabItem(postUser: e);
+                                            }).toList()),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  StickeySideBar(),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              StickeySideBar(),
+                              CommentView(postId: widget.id)
                             ],
-                          ),
-                          CommentView(postId: widget.id)
-                        ],
-                      )),
-                )
+                          )),
+                    )
+                  : _buildLoadingIndicator()
               : const Center(
                   child: Text(
                   "Bạn không có quyền xem bài viết này",
                   style: TextStyle(fontSize: 28),
                 )));
     });
-    }else {
-      return _buildLoadingIndicator();
-    }
   }
 
   Widget _sectionTitleLine() {
@@ -493,24 +496,27 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadListPost(String seriesId) async {
-    var futureSeries = await spRepository.getOne(seriesId);
-    sp = Sp.fromJson(futureSeries.data);
-    authorSeries = sp.user;
-    for (var e in sp.posts) {
-      PostAggregation p = PostAggregation.empty();
-      p.user = authorSeries;
-      p.title = e.title;
-      p.id = e.id;
-      p.score = e.score;
-      p.content = e.content;
-      p.updatedAt = e.updatedAt;
-      p.tags = e.tags;
-      p.private = e.isPrivate;
-      score = sp.score;
-      isPrivate = sp.isPrivate;
-      if (listPostDetail.length < sp.posts.length) {
-        listPostDetail.add(p);
-      }
+    var futureSeries = await seriesRepository.getOneDetail(seriesId);
+
+      sp = Sp.fromJson(futureSeries.data);
+    print(sp.isPrivate);
+      authorSeries = sp.user;
+      for (var e in sp.posts) {
+        PostAggregation p = PostAggregation.empty();
+        p.user = authorSeries;
+        p.title = e.title;
+        p.id = e.id;
+        p.score = e.score;
+        p.content = e.content;
+        p.updatedAt = e.updatedAt;
+        p.tags = e.tags;
+        p.private = e.isPrivate;
+        score = sp.score;
+        isPrivate = sp.isPrivate;
+        if (listPostDetail.length < sp.posts.length) {
+          listPostDetail.add(p);
+        }
+
     }
     // Map<String, int> uniqueTagCount = countUniqueTags(listTag);
     // List<String> getTop5Tags = this.getTop5Tags(uniqueTagCount);
