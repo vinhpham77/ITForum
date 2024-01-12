@@ -19,9 +19,6 @@ class RightItem extends StatelessWidget {
         children: [
           InkWell(
             onTap: () => {appRouter.go('/posts/${postAggregation.id}', extra: {})},
-            child: Text(postAggregation.title,
-              style: TextStyle(fontSize: 16),
-            onTap: () => appRouter.push('/posts/${postAggregation.user?.id}', extra: {}),
             child: Text(postAggregation.title!,
               style: const TextStyle(fontSize: 16),
               softWrap: true,
@@ -39,8 +36,9 @@ class RightItem extends StatelessWidget {
             ],
           ),
           InkWell(
-            onTap: () => appRouter.go('/profile/${postAggregation.user.username}', extra: {}),
-            child: Text(postAggregation.user.displayName,
+            onTap: () => appRouter
+                .go('/profile/${postAggregation.user?.username}', extra: {}),
+            child: Text(postAggregation.user!.displayName,
               style: TextStyle(color: Colors.black38),
             ),
           ),
