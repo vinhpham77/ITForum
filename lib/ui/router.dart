@@ -260,12 +260,6 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-      name: 'onepost',
-      path: '/onepost',
-      pageBuilder: (context, state) => const MaterialPage<void>(
-          key: ValueKey('onepost'), child: Text("test")),
-    ),
-    GoRoute(
       path: '/register',
       pageBuilder: (context, state) => const MaterialPage<void>(
           key: ValueKey('register'), child: SignupPage()),
@@ -423,7 +417,23 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-        path: '/profile/:username/bookmarks',
+      path: '/profile/:username/bookmarks',
+      redirect: (BuildContext context, GoRouterState state) async {
+        return '/profile/${state.pathParameters['username']}/bookmarks/posts';
+      },
+    ),
+    GoRoute(
+        path: '/profile/:username/bookmarks/posts',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 3,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
+    GoRoute(
+        path: '/profile/:username/bookmarks/series',
         pageBuilder: (context, state) => MaterialPage<void>(
             key: UniqueKey(),
             child: ScreenWithHeaderAndFooter(

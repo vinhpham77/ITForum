@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../dtos/bookmark_item.dart';
 import '../../../../../dtos/profile_stats.dart';
 import '../../../../../dtos/tag_count.dart';
 import '../../../../../models/user.dart';

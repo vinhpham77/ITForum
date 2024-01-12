@@ -1,6 +1,7 @@
 import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/ui/common/app_constants.dart';
 import 'package:cay_khe/ui/views/profile/blocs/profile/profile_bloc.dart';
+import 'package:cay_khe/ui/views/profile/widgets/bookmarks_tab/bookmarks_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/count_stats.dart';
 import 'package:cay_khe/ui/views/profile/widgets/custom_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/follows_tab/follows_tab.dart';
@@ -319,7 +320,7 @@ class Profile extends StatelessWidget {
       {
         'title': 'Bookmark',
         'path': '/profile/$username/bookmarks',
-        'widget': const Center(child: Text('Tính năng sắp ra mắt')),
+        'widget': _buildBookmarksTab(),
       },
       {
         'title': 'Đang theo dõi',
@@ -351,5 +352,9 @@ class Profile extends StatelessWidget {
   Widget _buildFollowsTab({bool isFollowers = false}) {
     return FollowsTab(
         isFollowers: isFollowers, username: username, page: page, limit: limit);
+  }
+
+  Widget _buildBookmarksTab() {
+    return BookmarksTab(username: username, page: page, limit: limit, isPostBookmarks: true);
   }
 }

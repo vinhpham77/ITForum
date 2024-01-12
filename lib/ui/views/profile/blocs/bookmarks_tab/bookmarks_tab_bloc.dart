@@ -1,7 +1,10 @@
+import 'package:cay_khe/dtos/bookmark_item.dart';
+import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../dtos/result_count.dart';
 import '../../../../../repositories/bookmark_repository.dart';
 
 part 'bookmarks_tab_event.dart';
@@ -16,29 +19,36 @@ class BookmarksTabBloc extends Bloc<BookmarksTabEvent, BookmarksTabState> {
         super(BookmarksInitialState()) {
     on<LoadBookmarksEvent>(_loadBookmarks);
     on<ConfirmDeleteEvent>(_confirmDelete);
-    on<CancelDeleteEvent>(_cancelDelete);
   }
 
   Future<void> _loadBookmarks(
       LoadBookmarksEvent event, Emitter<BookmarksTabState> emit) async {
     try {
-      // Response<dynamic> response = await _bookmarkRepository.getByUser(
-      //   event.username,
-      //   page: event.page,
-      //   limit: event.limit,
-      // );
-      //
-      // ResultCount<BookmarksUser> bookmarkUsers =
-      //     ResultCount.fromJson(response.data, BookmarksUser.fromJson);
-      //
-      // if (bookmarkUsers.resultList.isEmpty) {
-      //   emit(BookmarksEmptyState());
-      // } else {
-      //   emit(BookmarksLoadedState(bookmarkUsers: bookmarkUsers));
-      // }
+      late Response<dynamic> response;
+      late ResultCount<BookmarkItem> bookmarkItems;
+
+      if (event.isPostBookmarks) {
+        response = await _bookmarkRepository.getPostByUserName(
+            username: event.username, page: event.page, limit: event.limit);
+        bookmarkItems =
+            ResultCount.fromJson(response.data, PostBookmark.fromJson);
+      } else {
+        response = await _bookmarkRepository.getSeriesByUserName(
+            username: event.username, page: event.page, limit: event.limit);
+        bookmarkItems =
+            ResultCount.fromJson(response.data, SeriesBookmark.fromJson);
+      }
+
+      if (bookmarkItems.resultList.isEmpty) {
+        emit(BookmarksEmptyState());
+      } else {
+        emit(BookmarksLoadedState(
+            bookmarkItems: bookmarkItems,
+            isPostBookmarks: event.isPostBookmarks));
+      }
     } catch (error) {
-      // emit(const BookmarksLoadErrorState(
-      //     message: "Có lỗi xảy ra. Vui lòng thử lại sau!"));
+      emit(const BookmarksLoadErrorState(
+          message: "Có lỗi xảy ra. Vui lòng thử lại sau!"));
     }
   }
 
@@ -51,9 +61,5 @@ class BookmarksTabBloc extends Bloc<BookmarksTabEvent, BookmarksTabState> {
     //   String message = getMessageFromException(error);
     //   emit(BookmarksTabErrorState(message: message));
     // }
-  }
-
-  void _cancelDelete(CancelDeleteEvent event, Emitter<BookmarksTabState> emit) {
-    // emit(BookmarksDialogCanceledState());
   }
 }

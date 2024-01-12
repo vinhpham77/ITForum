@@ -2,7 +2,6 @@ import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/posts/posts_view.dart';
 import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_post.dart';
 import 'package:cay_khe/ui/views/posts/widgets/bookmark/bookmark_series.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class BookmarkFeed extends StatefulWidget {

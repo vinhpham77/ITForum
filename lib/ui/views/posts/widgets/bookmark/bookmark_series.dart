@@ -72,9 +72,9 @@ class _BookmarkSeriesState extends State<BookmarkSeries> {
             if (state is BookmarkEmptyState) {
               return Container(
                 alignment: Alignment.center,
-                child: Text(
+                child: const Text(
                   "Không có series nào!",
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16),
                 ),
               );
             } else if (state is BookmarkSeriesLoadedState) {
