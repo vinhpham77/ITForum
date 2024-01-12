@@ -1,4 +1,8 @@
-String getTimeAgo(DateTime dateTime) {
+String getTimeAgo(DateTime? dateTime) {
+  if (dateTime == null) {
+    return '';
+  }
+
   final now = DateTime.now();
   final difference = now.difference(dateTime);
 

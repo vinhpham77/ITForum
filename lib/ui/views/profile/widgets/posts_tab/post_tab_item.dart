@@ -24,7 +24,7 @@ class PostTabItem extends StatelessWidget {
           ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: UserAvatar(
-                imageUrl: postUser.user.avatarUrl,
+                imageUrl: postUser.user?.avatarUrl,
                 size: 54,
               )),
           const SizedBox(width: 12),
@@ -34,7 +34,7 @@ class PostTabItem extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    postUser.user.displayName,
+                    postUser.user?.displayName ?? 'Người dùng ẩn danh',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -54,12 +54,12 @@ class PostTabItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: InkWell(
-                  onTap: () => {
+                  onTap: postUser.title == null ? null : () => {
                     appRouter.go('/posts/${postUser.id}', extra: {})
                   },
                   hoverColor: Colors.black12,
                   child: Text(
-                    postUser.title,
+                    postUser.title ?? 'Bài viết không còn tồn tại',
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w400,
@@ -89,7 +89,8 @@ class PostTabItem extends StatelessWidget {
                           ),
                         ),
                       ),
-                    const SizedBox(width: 16),
+                    if (postUser.tags.isNotEmpty)
+                      const SizedBox(width: 16),
                     buildFieldCount(Icons.comment_outlined, postUser.commentCount),
                     buildFieldCount(postUser.score < 0
                         ? Icons.trending_down_outlined

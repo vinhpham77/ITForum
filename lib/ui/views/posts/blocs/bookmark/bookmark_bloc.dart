@@ -21,8 +21,9 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
 
   Future<void> _loadBookmarkPosts(LoadBookmarkPostEvent event, Emitter<BookmarkState> emit) async {
     try {
+
       Response<dynamic> response = await _bookmarkRepository.getPostByUserName(
-        username: event.username,
+        username: event.username!,
         page: event.page,
         limit: event.limit,
         isQuestion: event.isQuestion
@@ -45,7 +46,7 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
   Future<void> _loadBookmarkSeries(LoadBookmarkSeriesEvent event, Emitter<BookmarkState> emit) async {
     try {
       Response<dynamic> response = await _bookmarkRepository.getSeriesByUserName(
-        username: event.username,
+        username: event.username!,
         page: event.page,
         limit: event.limit,
       );

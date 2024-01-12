@@ -6,12 +6,12 @@ import '../../../../router.dart';
 
 class RightItem extends StatelessWidget {
   final PostAggregation postAggregation;
-  const RightItem({required this.postAggregation});
+  const RightItem({super.key, required this.postAggregation});
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 8, bottom: 8),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.black38))
       ),
       child: Column(
@@ -21,6 +21,9 @@ class RightItem extends StatelessWidget {
             onTap: () => {appRouter.go('/posts/${postAggregation.id}', extra: {})},
             child: Text(postAggregation.title,
               style: TextStyle(fontSize: 16),
+            onTap: () => appRouter.push('/posts/${postAggregation.user?.id}', extra: {}),
+            child: Text(postAggregation.title!,
+              style: const TextStyle(fontSize: 16),
               softWrap: true,
             ),
           ),

@@ -9,7 +9,7 @@ import '../../blocs/bookmark/bookmark_bloc.dart';
 import '../series_feed_item.dart';
 
 class BookmarkSeries extends StatefulWidget {
-  final String username;
+  final String? username;
   final int page;
   final int limit;
   final Map<String, String> params;
@@ -43,7 +43,7 @@ class _BookmarkSeriesState extends State<BookmarkSeries> {
   @override
   void didUpdateWidget(BookmarkSeries oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _bloc..add(LoadBookmarkSeriesEvent(
+    _bloc.add(LoadBookmarkSeriesEvent(
       username: widget.username,
       limit: widget.limit,
       page: widget.page,

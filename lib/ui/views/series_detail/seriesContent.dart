@@ -1,19 +1,15 @@
-import 'dart:html';
-
 import 'package:cay_khe/models/post.dart';
 import 'package:cay_khe/models/sp.dart';
-import 'package:cay_khe/ui/views/series_detail/tags.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class SeriesContentWidget extends StatefulWidget {
   final Sp sp;
 
-  const SeriesContentWidget({Key? key, required this.sp}) : super(key: key);
+  const SeriesContentWidget({super.key, required this.sp});
 
   @override
-  _SeriesContentWidgetState createState() => _SeriesContentWidgetState();
+  State<SeriesContentWidget> createState() => _SeriesContentWidgetState();
 }
 
 class _SeriesContentWidgetState extends State<SeriesContentWidget> {
@@ -21,22 +17,25 @@ class _SeriesContentWidgetState extends State<SeriesContentWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Text(widget.sp.title,style: const TextStyle(fontSize: 46,fontWeight: FontWeight.bold),),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Wrap(
-              spacing: 8.0,
-              children: listTags(widget.sp.posts).map((tag) => buildTagButton(tag)).toList(),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Text(
+          widget.sp.title,
+          style: const TextStyle(fontSize: 46, fontWeight: FontWeight.bold),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+          child: Wrap(
+            spacing: 8.0,
+            children: listTags(widget.sp.posts)
+                .map((tag) => buildTagButton(tag))
+                .toList(),
           ),
-          BodyContentWidget(sp: widget.sp),
-        ],
-      ),
+        ),
+        BodyContentWidget(sp: widget.sp),
+      ],
     );
   }
 
@@ -59,8 +58,8 @@ class _SeriesContentWidgetState extends State<SeriesContentWidget> {
     );
   }
 
-  List<String> listTags(List<Post> listPost ) {
-    for(var post in listPost){
+  List<String> listTags(List<Post> listPost) {
+    for (var post in listPost) {
       listTag.addAll(post.tags);
     }
 
@@ -85,7 +84,7 @@ class _SeriesContentWidgetState extends State<SeriesContentWidget> {
 
     for (String tag in tags) {
       if (tagCount.containsKey(tag)) {
-        tagCount[tag] = (tagCount[tag]! + 1)!;
+        tagCount[tag] = (tagCount[tag]! + 1);
       } else {
         tagCount[tag] = 1;
       }
@@ -93,17 +92,15 @@ class _SeriesContentWidgetState extends State<SeriesContentWidget> {
 
     return tagCount;
   }
-
-
 }
 
 class BodyContentWidget extends StatefulWidget {
   final Sp sp;
 
-  const BodyContentWidget({Key? key, required this.sp}) : super(key: key);
+  const BodyContentWidget({super.key, required this.sp});
 
   @override
-  _BodyContentWidgetState createState() => _BodyContentWidgetState();
+  State<BodyContentWidget> createState() => _BodyContentWidgetState();
 }
 
 class _BodyContentWidgetState extends State<BodyContentWidget> {
@@ -115,44 +112,32 @@ class _BodyContentWidgetState extends State<BodyContentWidget> {
           decoration: const BoxDecoration(),
           child: MarkdownBody(
             data: getMarkdown(),
-            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-                .copyWith(
+            styleSheet:
+                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
               // Các style tùy chọn của bạn ở đây
               textScaleFactor: 1.4,
-              h1: Theme
-                  .of(context)
+              h1: Theme.of(context)
                   .textTheme
                   .headlineMedium!
                   .copyWith(fontSize: 32),
-              h2: Theme
-                  .of(context)
+              h2: Theme.of(context)
                   .textTheme
                   .headlineSmall!
                   .copyWith(fontSize: 22),
-              h3: Theme
-                  .of(context)
+              h3: Theme.of(context)
                   .textTheme
                   .titleLarge!
                   .copyWith(fontSize: 18),
-              h6: Theme
-                  .of(context)
+              h6: Theme.of(context)
                   .textTheme
                   .bodyMedium!
                   .copyWith(fontSize: 13),
-              p: Theme
-                  .of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontSize: 14),
-              blockquote: Theme
-                  .of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey.shade700,
-              ),
+              p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
+              blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade700,
+                  ),
               // Custom blockquote style
               listBullet: const TextStyle(
                   fontSize: 16), // Custom list item bullet style
@@ -165,10 +150,7 @@ class _BodyContentWidgetState extends State<BodyContentWidget> {
   }
 
   String getMarkdown() {
-    String titleRaw = widget.sp.title;
-    String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
     String content = widget.sp.content;
-    String tags = "#";
     return content;
   }
 }

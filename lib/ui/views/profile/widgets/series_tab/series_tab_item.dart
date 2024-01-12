@@ -20,7 +20,7 @@ class SeriesTabItem extends StatelessWidget {
           ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: UserAvatar(
-                imageUrl: seriesUser.user.avatarUrl,
+                imageUrl: seriesUser.user?.avatarUrl,
                 size: 54,
               )),
           const SizedBox(width: 12),
@@ -30,7 +30,7 @@ class SeriesTabItem extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    seriesUser.user.displayName,
+                    seriesUser.user?.displayName ?? 'Người dùng ẩn danh',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -50,11 +50,11 @@ class SeriesTabItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: InkWell(
-                  onTap: () =>
+                  onTap: seriesUser.title == null ? null : () =>
                       appRouter.go('/series/${seriesUser.id}', extra: {}),
                   hoverColor: Colors.black12,
                   child: Text(
-                    seriesUser.title,
+                    seriesUser.title ?? 'Series không còn tồn tại',
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w400,
