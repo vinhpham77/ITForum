@@ -18,7 +18,7 @@ class RightItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => appRouter.push('/posts/${postAggregation.user.id}', extra: {}),
+            onTap: () => {appRouter.go('/posts/${postAggregation.id}', extra: {})},
             child: Text(postAggregation.title,
               style: TextStyle(fontSize: 16),
               softWrap: true,
