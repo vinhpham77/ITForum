@@ -26,6 +26,13 @@ class _PostsViewState extends State<PostsView> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getNavigation();
+  }
+
+  @override
+  void didUpdateWidget(PostsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    getNavigation();
   }
 
   @override
@@ -34,14 +41,17 @@ class _PostsViewState extends State<PostsView> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void getNavigation() {
     if (JwtPayload.sub == null) {
       listSelectBtn = navi;
     } else {
       listSelectBtn = naviSignin;
     }
-    listSelectBtn[widget.indexSelected].isSelected = true;
+      listSelectBtn[widget.indexSelected].isSelected = true;
+  }
+  @override
+  Widget build(BuildContext context) {
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(

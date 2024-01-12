@@ -47,9 +47,9 @@ class _PostsFeedState extends State<PostsFeed> {
   void didUpdateWidget(PostsFeed oldWidget) {
     super.didUpdateWidget(oldWidget);
     _bloc..add(LoadPostsEvent(
-    limit: widget.limit,
-    page: widget.page,
-    isQuestion: widget.isQuestion
+      limit: widget.limit,
+      page: widget.page,
+      isQuestion: widget.isQuestion
     ));
   }
 

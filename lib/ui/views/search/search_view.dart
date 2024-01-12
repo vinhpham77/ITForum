@@ -26,6 +26,13 @@ class _SearchViewState extends State<SearchView> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getNavigation();
+  }
+
+  @override
+  void didUpdateWidget(SearchView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    getNavigation();
   }
 
   @override
@@ -35,12 +42,15 @@ class _SearchViewState extends State<SearchView> {
     searchController.dispose();
   }
 
+  void getNavigation() {
+    listSelectBtn = navigations;
+    listSelectBtn[widget.indexSelected].isSelected = true;
+  }
+
   @override
   Widget build(BuildContext context) {
     int page = int.parse(widget.params['page'] ?? "1");
     searchController.text = widget.params['searchContent'] ?? "";
-    listSelectBtn = navigations;
-    listSelectBtn[widget.indexSelected].isSelected = true;
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
