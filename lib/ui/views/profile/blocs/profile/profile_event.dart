@@ -101,16 +101,16 @@ final class DecreasePostsCountEvent extends ProfileSubEvent {
   List<Object?> get props => [postUser];
 }
 
-// final class DecreaseBookmarksCountEvent extends ProfileSubEvent {
-//   final BookmarkItem bookmarkItem;
-//
-//   const DecreaseBookmarksCountEvent(
-//       {required super.user,
-//         required super.isFollowing,
-//         required super.tagCounts,
-//         required super.profileStats,
-//         required this.bookmarkItem});
-//
-//   @override
-//   List<Object?> get props => [bookmarkItem];
-// }
+final class DecreaseBookmarksCountEvent extends ProfileSubEvent {
+  final BookmarkItem bookmarkItem;
+
+  const DecreaseBookmarksCountEvent(
+      {required super.user,
+        required super.isFollowing,
+        required super.tagCounts,
+        required super.profileStats,
+        required this.bookmarkItem});
+
+  @override
+  List<Object?> get props => [bookmarkItem];
+}

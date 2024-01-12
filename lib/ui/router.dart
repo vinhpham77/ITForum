@@ -140,7 +140,8 @@ final appRouter = GoRouter(
         child: ScreenWithHeaderAndFooter(
           body: SearchView(params: {}, indexSelected: 0),
         ),
-      ),),
+      ),
+    ),
     GoRoute(
         path: '/viewsearch/:query',
         pageBuilder: (context, state) {
@@ -424,24 +425,36 @@ final appRouter = GoRouter(
     ),
     GoRoute(
         path: '/profile/:username/bookmarks/posts',
-        pageBuilder: (context, state) => MaterialPage<void>(
-            key: UniqueKey(),
-            child: ScreenWithHeaderAndFooter(
-              body: Profile(
-                  username: state.pathParameters['username']!,
-                  selectedIndex: 3,
-                  params: state.extra as Map<String, dynamic>? ?? {}),
-            ))),
+        pageBuilder: (context, state) {
+          Map<String, dynamic> params =
+              state.extra as Map<String, dynamic>? ?? {};
+          params['postBookmarks'] = 1;
+
+          return MaterialPage<void>(
+              key: UniqueKey(),
+              child: ScreenWithHeaderAndFooter(
+                body: Profile(
+                    username: state.pathParameters['username']!,
+                    selectedIndex: 3,
+                    params: params),
+              ));
+        }),
     GoRoute(
         path: '/profile/:username/bookmarks/series',
-        pageBuilder: (context, state) => MaterialPage<void>(
-            key: UniqueKey(),
-            child: ScreenWithHeaderAndFooter(
-              body: Profile(
-                  username: state.pathParameters['username']!,
-                  selectedIndex: 3,
-                  params: state.extra as Map<String, dynamic>? ?? {}),
-            ))),
+        pageBuilder: (context, state) {
+          Map<String, dynamic> params =
+              state.extra as Map<String, dynamic>? ?? {};
+          params['postBookmarks'] = 0;
+
+          return MaterialPage<void>(
+              key: UniqueKey(),
+              child: ScreenWithHeaderAndFooter(
+                body: Profile(
+                    username: state.pathParameters['username']!,
+                    selectedIndex: 3,
+                    params: params),
+              ));
+        }),
     GoRoute(
         path: '/profile/:username/followings',
         pageBuilder: (context, state) => MaterialPage<void>(

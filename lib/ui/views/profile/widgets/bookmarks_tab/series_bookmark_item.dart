@@ -30,23 +30,44 @@ class SeriesBookmarkItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(50),
+            child: InkWell(
+              onTap: seriesBookmark.user == null
+                  ? null
+                  : () => {
+                        appRouter.go(
+                            '/profile/${seriesBookmark.user?.username}',
+                            extra: {})
+                      },
+              hoverColor: Colors.black12,
               child: UserAvatar(
                 imageUrl: seriesBookmark.user?.avatarUrl,
                 size: 54,
-              )),
+              ),
+            ),
+          ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Text(
-                    seriesBookmark.user?.displayName ?? 'Người dùng ẩn danh',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.indigo[700]),
+                  InkWell(
+                    onTap: seriesBookmark.user == null
+                        ? null
+                        : () => {
+                              appRouter.go(
+                                  '/profile/${seriesBookmark.user?.username}',
+                                  extra: {})
+                            },
+                    hoverColor: Colors.black12,
+                    child: Text(
+                      seriesBookmark.user?.displayName ?? 'Người dùng ẩn danh',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.indigo[700]),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   buildIconField(Icons.auto_fix_high_outlined,
@@ -66,7 +87,7 @@ class SeriesBookmarkItem extends StatelessWidget {
                           },
                   hoverColor: Colors.black12,
                   child: Text(
-                    seriesBookmark.title ?? 'Bài viết không còn tồn tại',
+                    seriesBookmark.title ?? 'Series không còn tồn tại',
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w400,
@@ -77,8 +98,10 @@ class SeriesBookmarkItem extends StatelessWidget {
               ),
               Row(
                 children: [
-                  buildIconField(Icons.backup_table_rounded,
-                      seriesBookmark.postIds.length.toString(), fieldCountStyle),
+                  buildIconField(
+                      Icons.backup_table_rounded,
+                      seriesBookmark.postIds.length.toString(),
+                      fieldCountStyle),
                   buildIconField(Icons.comment_outlined,
                       seriesBookmark.commentCount.toString(), fieldCountStyle),
                   buildIconField(

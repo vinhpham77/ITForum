@@ -27,11 +27,12 @@ final class LoadBookmarksEvent extends BookmarksTabEvent {
 
 final class BookmarksTabSubEvent extends BookmarksTabEvent {
   final ResultCount<BookmarkItem> bookmarkItems;
+  final bool isPostBookmarks;
 
-  const BookmarksTabSubEvent({required this.bookmarkItems});
+  const BookmarksTabSubEvent({required this.bookmarkItems, required this.isPostBookmarks});
 
   @override
-  List<Object?> get props => [bookmarkItems];
+  List<Object?> get props => [bookmarkItems, isPostBookmarks];
 }
 
 final class ConfirmDeleteEvent extends BookmarksTabSubEvent {
@@ -40,9 +41,10 @@ final class ConfirmDeleteEvent extends BookmarksTabSubEvent {
   const ConfirmDeleteEvent({
     required this.bookmarkItem,
     required super.bookmarkItems,
+    required super.isPostBookmarks,
   });
 
   @override
-  List<Object?> get props => [bookmarkItem, bookmarkItems];
+  List<Object?> get props => [bookmarkItem, bookmarkItems, isPostBookmarks];
 }
 

@@ -32,7 +32,7 @@ class Profile extends StatelessWidget {
         required this.params});
 
   int get page => params['page'] ?? 1;
-
+  bool get isPostBookmarks => params['postBookmarks'] != 0;
   int get limit => params['limit'] ?? pageSize;
 
   @override
@@ -140,7 +140,7 @@ class Profile extends StatelessWidget {
       child: Container(
         transform: Matrix4.translationValues(-8.0, 0, 0),
         padding: const EdgeInsets.only(right: 20.0),
-        child: tabs[selectedIndex]['widget']!,
+        child: buildTab(selectedIndex)
       ),
     );
   }
@@ -305,39 +305,53 @@ class Profile extends StatelessWidget {
       {
         'title': 'Bài viết',
         'path': '/profile/$username/posts',
-        'widget': _buildPostTab(),
       },
       {
         'title': 'Câu hỏi',
         'path': '/profile/$username/questions',
-        'widget': _buildPostTab(isQuestion: true),
       },
       {
         'title': 'Series',
         'path': '/profile/$username/series',
-        'widget': _buildSeriesTab(),
       },
       {
         'title': 'Bookmark',
-        'path': '/profile/$username/bookmarks',
-        'widget': _buildBookmarksTab(),
+        'path': isPostBookmarks ? '/profile/$username/bookmarks/posts' : '/profile/$username/bookmarks/series',
       },
       {
         'title': 'Đang theo dõi',
         'path': '/profile/$username/followings',
-        'widget': _buildFollowsTab(),
       },
       {
         'title': 'Người theo dõi',
         'path': '/profile/$username/followers',
-        'widget': _buildFollowsTab(isFollowers: true),
       },
       {
         'title': 'Cá nhân',
         'path': '/profile/$username/personal',
-        'widget': const Center(child: Text('Tính năng sắp ra mắt')),
       }
     ];
+  }
+
+  Widget buildTab(int index) {
+    switch (index) {
+      case 0:
+        return _buildPostTab();
+      case 1:
+        return _buildPostTab(isQuestion: true);
+      case 2:
+        return _buildSeriesTab();
+      case 3:
+        return _buildBookmarksTab();
+      case 4:
+        return _buildFollowsTab();
+      case 5:
+        return _buildFollowsTab(isFollowers: true);
+      case 6:
+        return const Center(child: Text('Tính năng sắp ra mắt'));
+      default:
+        return _buildPostTab();
+    }
   }
 
   Widget _buildPostTab({bool isQuestion = false}) {
@@ -355,6 +369,6 @@ class Profile extends StatelessWidget {
   }
 
   Widget _buildBookmarksTab() {
-    return BookmarksTab(username: username, page: page, limit: limit, isPostBookmarks: true);
+    return BookmarksTab(username: username, page: page, limit: limit, isPostBookmarks: isPostBookmarks);
   }
 }

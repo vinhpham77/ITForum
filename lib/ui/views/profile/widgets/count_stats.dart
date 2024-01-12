@@ -30,6 +30,7 @@ class CountStats extends StatelessWidget {
           _buildCountRow('Bài viết', profileStats.postCount),
           _buildCountRow('Câu hỏi', profileStats.questionCount),
           _buildCountRow('Series', profileStats.seriesCount),
+          _buildCountRow('Bookmark', profileStats.bookmarkCount),
           _buildCountRow('Đang theo dõi', profileStats.followingCount),
           _buildCountRow('Người theo dõi', profileStats.followerCount),
         ],

@@ -10,13 +10,14 @@ import '../../../../../dtos/jwt_payload.dart';
 import '../../../../../dtos/notify_type.dart';
 import '../../../../../dtos/pagination_states.dart';
 import '../../../../../dtos/result_count.dart';
+import '../../../../router.dart';
 import '../../../../widgets/notification.dart';
 import '../../../../widgets/pagination2.dart';
 import '../../blocs/profile/profile_bloc.dart';
 
 const bookmarkDropdownItems = <Map<String, String>>[
-  {'posts': 'bài viết'},
-  {'series': 'series'}
+  {'posts': 'Bài viết'},
+  {'series': 'Series'}
 ];
 
 class BookmarksTab extends StatelessWidget {
@@ -38,42 +39,39 @@ class BookmarksTab extends StatelessWidget {
 
   String get itemValue => bookmarkDropdownItems[itemIndex].values.first;
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   bool isSeries = false;
-  //
-  //   return Column(
-  //     mainAxisAlignment: MainAxisAlignment.start,
-  //     children: [
-  //       Row(
-  //           children: [
-  //             const Text("Sắp xếp theo:"),
-  //             const SizedBox(width: 16),
-  //             DropdownButtonHideUnderline(
-  //               child:  DropdownButton<String>(
-  //                 value: isSeries ? 'Series' : 'Bài viết',
-  //                 onChanged: (String? newValue) {
-  //                   appRouter.go('/profile/$username/bookmarks/$newValue}');
-  //                 },
-  //                 items: bookmarkDropdownItems
-  //                     .map<DropdownMenuItem<String>>((Map<String, String> value) {
-  //                   return DropdownMenuItem<String>(
-  //                     value: value.keys.first,
-  //                     child: Text(value.values.first),
-  //                   );
-  //                 }).toList(),
-  //               ),
-  //             ),
-  //           ]
-  //       ),
-  //       // isPostBookmarks ? BookmarkSeries(username: widget.username, page: widget.page, limit: widget.limit, params: widget.params) :
-  //       // BookmarkPost(username: widget.username, page: widget.page, limit: widget.limit, isQuestion: false, params: widget.params)
-  //     ],
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Row(
+            children: [
+              const Text("Sắp xếp theo:"),
+              const SizedBox(width: 8),
+              DropdownButtonHideUnderline(
+                child:  DropdownButton<String>(
+                  value: itemKey,
+                  onChanged: (String? newValue) {
+                    newValue = newValue?.toLowerCase();
+                    appRouter.go('/profile/$username/bookmarks/$newValue');
+                  },
+                  padding: const EdgeInsets.only(top: 0, bottom: 0, left: 8),
+                  items: bookmarkDropdownItems.map((Map<String, String> map) {
+                    return DropdownMenuItem<String>(
+                      value: map.keys.first,
+                      child: Text(map.values.first),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ]
+        ),
+        buildBookmarksTab(context),
+      ],
+    );
+  }
+
+  Widget buildBookmarksTab(BuildContext context) {
     return BookmarksTabProvider(
       username: username,
       page: page,
@@ -84,7 +82,7 @@ class BookmarksTab extends StatelessWidget {
           if (state is BookmarksDeleteSuccessState) {
             showTopRightSnackBar(
               context,
-              "Xoá $itemValue \"${state.bookmarkItem.title}\" thành công!",
+              "Xoá bookmark ${itemValue.toLowerCase()} \"${state.bookmarkItem.title ?? 'không tồn tại'}\" thành công!",
               NotifyType.success,
             );
 
@@ -98,12 +96,13 @@ class BookmarksTab extends StatelessWidget {
             final ProfileBloc profileBloc = context.read<ProfileBloc>();
             final profileState = profileBloc.state as ProfileSubState;
 
-            // profileBloc.add(DecreaseBookmarksCountEvent(
-            //   isFollowing: profileState.isFollowing,
-            //   profileStats: profileState.profileStats,
-            //   tagCounts: profileState.tagCounts,
-            //   user: profileState.user,
-            // ));
+            profileBloc.add(DecreaseBookmarksCountEvent(
+              isFollowing: profileState.isFollowing,
+              profileStats: profileState.profileStats,
+              tagCounts: profileState.tagCounts,
+              user: profileState.user,
+              bookmarkItem: state.bookmarkItem
+            ));
           } else if (state is BookmarksTabErrorState) {
             showTopRightSnackBar(
               context,
@@ -117,7 +116,7 @@ class BookmarksTab extends StatelessWidget {
           if (state is BookmarksEmptyState) {
             return buildSimpleContainer(
               child: Text(
-                "Không có $itemValue nào!",
+                "Không có bookmark ${itemValue.toLowerCase()} nào!",
                 style: const TextStyle(fontSize: 16),
               ),
             );
@@ -150,7 +149,7 @@ class BookmarksTab extends StatelessWidget {
   Padding buildBookmarkItemList(
       BuildContext context, ResultCount<BookmarkItem> bookmarkItems) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+      padding: const EdgeInsets.fromLTRB(0, 0, 8, 8),
       child: Column(
         children: [
           for (var bookmarkItem in bookmarkItems.resultList)
@@ -161,7 +160,7 @@ class BookmarksTab extends StatelessWidget {
   }
 
   Container buildSimpleContainer({required Widget child}) => Container(
-      padding: const EdgeInsets.only(top: 40),
+      padding: const EdgeInsets.only(top: 20),
       alignment: Alignment.center,
       child: child);
 
@@ -218,7 +217,7 @@ class BookmarksTab extends StatelessWidget {
           child: ListBody(
             children: <Widget>[
               Text(
-                  'Bạn có chắc chắn muốn xoá $itemValue "${bookmarkItem.title}" không?'),
+                  'Bạn có chắc chắn muốn xoá bookmark ${itemValue.toLowerCase()} "${bookmarkItem.title ?? 'không tồn tại'}" không?'),
             ],
           ),
         ),
@@ -233,7 +232,7 @@ class BookmarksTab extends StatelessWidget {
             child: const Text('Xác nhận'),
             onPressed: () {
               context.read<BookmarksTabBloc>().add(ConfirmDeleteEvent(
-                  bookmarkItem: bookmarkItem, bookmarkItems: bookmarkItems));
+                  bookmarkItem: bookmarkItem, bookmarkItems: bookmarkItems, isPostBookmarks: isPostBookmarks));
               Navigator.of(dialogContext).pop();
             },
           ),

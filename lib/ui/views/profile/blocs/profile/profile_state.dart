@@ -67,6 +67,14 @@ final class SeriesCountDecreasedState extends ProfileSubState {
         required super.profileStats});
 }
 
+final class BookmarksCountDecreasedState extends ProfileSubState {
+  const BookmarksCountDecreasedState(
+      {required super.user,
+        required super.isFollowing,
+        required super.tagCounts,
+        required super.profileStats});
+}
+
 final class ProfileFollowedState extends ProfileSubState {
   const ProfileFollowedState(
       {required super.user,

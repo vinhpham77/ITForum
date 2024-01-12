@@ -38,6 +38,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<SuccessUnfollowItemEvent>(_unfollowItem);
     on<DecreaseSeriesCountEvent>(_decreaseSeriesCount);
     on<DecreasePostsCountEvent>(_decreasePostsCount);
+    on<DecreaseBookmarksCountEvent>(_decreaseBookmarksCount);
   }
 
   Future<void> _loadProfile(
@@ -178,7 +179,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     event.profileStats?.seriesCount--;
 
     emit(SeriesCountDecreasedState(
-        user: event.user,
+        user: event.user.copyWith(),
         isFollowing: event.isFollowing,
         tagCounts: event.tagCounts,
         profileStats: event.profileStats));
@@ -210,6 +211,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         user: event.user.copyWith(),
         isFollowing: event.isFollowing,
         tagCounts: tagCounts,
+        profileStats: event.profileStats));
+  }
+
+  void _decreaseBookmarksCount(
+      DecreaseBookmarksCountEvent event, Emitter<ProfileState> emit) {
+    event.profileStats?.bookmarkCount--;
+
+    emit(BookmarksCountDecreasedState(
+        user: event.user.copyWith(),
+        isFollowing: event.isFollowing,
+        tagCounts: event.tagCounts,
         profileStats: event.profileStats));
   }
 }
