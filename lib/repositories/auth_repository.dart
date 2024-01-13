@@ -12,7 +12,6 @@ class AuthRepository {
     dio = Dio(BaseOptions(baseUrl: baseUrl));
   }
   Future<Response<dynamic>> loginUser(String username, String password) async {
-    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
     return dio.post("/signin", data: {
       'username': username,
       'password': password,
