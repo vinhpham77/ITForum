@@ -57,6 +57,7 @@ class SeriesRepository {
         .get('/totalSeries/$username');
   }
   Future<Response<dynamic>> getOneDetail(String id) async {
+    dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/detail/$id');
   }
 

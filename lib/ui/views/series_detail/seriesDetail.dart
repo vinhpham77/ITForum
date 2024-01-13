@@ -66,7 +66,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
   bool isFollow = false;
   bool isBookmark = false;
   bool isLoading = false;
-  bool isPrivate = true;
+  bool isPrivate = false;
   String idVote = '';
   String type = "series";
   String username = JwtPayload.sub ?? '';
@@ -82,7 +82,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
   Sp sp = Sp.constructor();
   final Completer<void> _loadingCompleter = Completer<void>();
   bool isView = false;
-  String loi="";
+  bool loi = false;
 
   @override
   void initState() {
@@ -115,7 +115,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     var futureUser = _loadUser(username);
     var futureFollow = _loadFollow(user.username, authorSeries.username);
     var futureBookmark = _loadBookmark(widget.id, username);
-    var futureTotalSeries = _loadTotalSeries(authorSeries.username);
+    var futureTotalSeries = _loadTotalSeries(sp.createdBy);
     var futureTotalFollower = _loadTotalFollower(authorSeries.username);
     await Future.wait([
       futureCheckVote,
@@ -125,6 +125,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       futureTotalSeries,
       futureTotalFollower
     ]);
+
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -138,7 +139,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       return Container(
           width: constraints.maxWidth,
-          child: !checkPrivate(username, authorSeries.username, isPrivate)
+          child: !loi
               ? !isLoading
                   ? Center(
                       child: Container(
@@ -192,10 +193,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     )
                   : _buildLoadingIndicator()
               : const Center(
-                  child: Text(
-                  "Bạn không có quyền xem bài viết này",
-                  style: TextStyle(fontSize: 28),
-                )));
+              child: Text(
+                "Bạn không có quyền xem bài viết này",
+                style: TextStyle(fontSize: 28),
+              )));
     });
   }
 
@@ -496,10 +497,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadListPost(String seriesId) async {
-    var futureSeries = await seriesRepository.getOneDetail(seriesId);
-
-      sp = Sp.fromJson(futureSeries.data);
-    print(sp.isPrivate);
+    try {
+      var fufutureSeries = await seriesRepository.getOneDetail(seriesId);
+      sp = Sp.fromJson(fufutureSeries.data);
       authorSeries = sp.user;
       for (var e in sp.posts) {
         PostAggregation p = PostAggregation.empty();
@@ -516,8 +516,40 @@ class _SeriesDetailState extends State<SeriesDetail> {
         if (listPostDetail.length < sp.posts.length) {
           listPostDetail.add(p);
         }
-
+      }
+    } catch (error) {
+      loi = true;
     }
+
+    // var fufutureSeries=seriesRepository.getOneDetail(seriesId);
+    // fufutureSeries.then((value) {
+    //   setState(() {
+    //     sp = Sp.fromJson(value.data);
+    //     authorSeries = sp.user;
+    //     for (var e in sp.posts) {
+    //       PostAggregation p = PostAggregation.empty();
+    //       p.user = authorSeries;
+    //       p.title = e.title;
+    //       p.id = e.id;
+    //       p.score = e.score;
+    //       p.content = e.content;
+    //       p.updatedAt = e.updatedAt;
+    //       p.tags = e.tags;
+    //       p.private = e.isPrivate;
+    //       score = sp.score;
+    //       isPrivate = sp.isPrivate;
+    //       if (listPostDetail.length < sp.posts.length) {
+    //         listPostDetail.add(p);
+    //       }
+    //     }
+    //   });
+    //
+    // } ).catchError((error){
+    //   print("loi");
+    //     loi = true;
+    //   });
+    //
+
     // Map<String, int> uniqueTagCount = countUniqueTags(listTag);
     // List<String> getTop5Tags = this.getTop5Tags(uniqueTagCount);
     // listTag = getTop5Tags;
