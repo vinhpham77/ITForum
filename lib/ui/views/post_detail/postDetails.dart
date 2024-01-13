@@ -366,7 +366,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Future<void> _loadUser(String username) async {
 
     if (JwtPayload.sub != null) {
-      var futureUser = await userRepository.getUser(username);
+      var futureUser = await userRepository.get(username);
       if (mounted) {
         user = User.fromJson(futureUser.data);
       }
