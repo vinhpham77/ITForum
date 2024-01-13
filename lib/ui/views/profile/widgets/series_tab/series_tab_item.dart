@@ -24,59 +24,62 @@ class SeriesTabItem extends StatelessWidget {
                 size: 54,
               )),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    seriesUser.user?.displayName ?? 'Người dùng ẩn danh',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.indigo[700]),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    getTimeAgo(seriesUser.updatedAt),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w300,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      seriesUser.user?.displayName ?? 'Người dùng ẩn danh',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.indigo[700]),
                     ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 4),
-                child: InkWell(
-                  onTap: seriesUser.title == null ? null : () =>
-                      appRouter.go('/series/${seriesUser.id}', extra: {}),
-                  hoverColor: Colors.black12,
-                  child: Text(
-                    seriesUser.title ?? 'Series không còn tồn tại',
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                    const SizedBox(width: 12),
+                    Text(
+                      getTimeAgo(seriesUser.updatedAt),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 4),
+                  child: InkWell(
+                    onTap: seriesUser.title == null ? null : () =>
+                        appRouter.go('/series/${seriesUser.id}', extra: {}),
+                    hoverColor: Colors.black12,
+                    child: Text(
+                      seriesUser.title ?? 'Series không còn tồn tại',
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ),
-              ),
-              Row(
-                children: [
-                  buildFieldCount(
-                      Icons.backup_table_rounded, seriesUser.postIds.length),
-                  buildFieldCount(
-                      Icons.comment_outlined, seriesUser.commentCount),
-                  buildFieldCount(
-                      seriesUser.score < 0
-                          ? Icons.trending_down_outlined
-                          : Icons.trending_up_outlined,
-                      seriesUser.score)
-                ],
-              ),
-            ],
+                Row(
+                  children: [
+                    buildFieldCount(
+                        Icons.backup_table_rounded, seriesUser.postIds.length),
+                    buildFieldCount(
+                        Icons.comment_outlined, seriesUser.commentCount),
+                    buildFieldCount(
+                        seriesUser.score < 0
+                            ? Icons.trending_down_outlined
+                            : Icons.trending_up_outlined,
+                        seriesUser.score)
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

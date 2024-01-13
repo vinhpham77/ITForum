@@ -192,7 +192,7 @@ class CuPost extends StatelessWidget {
           child: Markdown(
             data: getMarkdown(state),
             styleSheet:
-                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+            MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
               textScaleFactor: 1.4,
               h1: Theme.of(context)
                   .textTheme
@@ -212,10 +212,10 @@ class CuPost extends StatelessWidget {
                   .copyWith(fontSize: 13),
               p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
               blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey.shade700,
-                  ),
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey.shade700,
+              ),
               listBullet: const TextStyle(fontSize: 16),
             ),
             softLineBreak: true,

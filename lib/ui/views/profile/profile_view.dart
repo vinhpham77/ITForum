@@ -139,7 +139,7 @@ class Profile extends StatelessWidget {
       flex: _left,
       child: Container(
         transform: Matrix4.translationValues(-8.0, 0, 0),
-        padding: const EdgeInsets.only(right: 20.0),
+        padding: const EdgeInsets.only(right: 16.0),
         child: buildTab(selectedIndex)
       ),
     );
