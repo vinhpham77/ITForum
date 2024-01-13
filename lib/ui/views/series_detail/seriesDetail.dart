@@ -58,8 +58,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
   bool upVote = false;
   bool downVote = false;
   bool typeVote = false;
-  bool isHoveredUserlink = false;
-  bool isClickedUserlink = false;
   bool isHoveredTitle = false;
   bool isClickedTitle = false;
   bool isHoveredUserLink = false;
@@ -80,7 +78,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
   String textPrivate = "";
   int scoreNormal = 0;
   Sp sp = Sp.constructor();
-  final Completer<void> _loadingCompleter = Completer<void>();
   bool isView = false;
   bool loi = false;
 
@@ -137,12 +134,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
-      return Container(
+      return SizedBox(
           width: constraints.maxWidth,
           child: !loi
               ? !isLoading
                   ? Center(
-                      child: Container(
+                      child: SizedBox(
                           width: 1200,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -184,7 +181,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  StickeySideBar(),
+                                  stickySideBar(),
                                 ],
                               ),
                               CommentView(postId: widget.id)
@@ -271,7 +268,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   Future<void> _loadCheckVote(String postId, String username) async {
     if (username != null) {
-      var futureVote = await voteRepository.checkVote(postId, username!);
+      var futureVote = await voteRepository.checkVote(postId, username);
       if (futureVote.data is Map<String, dynamic>) {
         Vote vote = Vote.fromJson(futureVote.data);
         setState(() {
@@ -315,7 +312,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
   }
 
-  Widget StickeySideBar() {
+  Widget stickySideBar() {
     return Column(
       children: [
         Column(
@@ -381,7 +378,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                             isFollow
                                 ? const Icon(Icons.check)
                                 : const Icon(Icons.add),
-                            isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
+                            isFollow ? const Text("Đã theo dõi") : const Text('Theo dõi'),
                           ],
                         ),
                       ),
@@ -403,23 +400,21 @@ class _SeriesDetailState extends State<SeriesDetail> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Container(
-                child: ElevatedButton(
-                  onPressed: authorSeries.id != user.id
-                      ? () => _toggleBookmark()
-                      : null,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      isBookmark
-                          ? Icon(Icons.bookmark)
-                          : Icon(Icons.bookmark_add_outlined),
-                      isBookmark
-                          ? Text('HỦY BOOKMARK SERIES')
-                          : Text('BOOKMARK SERIES NÀY'),
-                    ],
-                  ),
+              child: ElevatedButton(
+                onPressed: authorSeries.id != user.id
+                    ? () => _toggleBookmark()
+                    : null,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    isBookmark
+                        ? const Icon(Icons.bookmark)
+                        : const Icon(Icons.bookmark_add_outlined),
+                    isBookmark
+                        ? const Text('HỦY BOOKMARK SERIES')
+                        : const Text('BOOKMARK SERIES NÀY'),
+                  ],
                 ),
               ),
             ),
@@ -497,6 +492,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadListPost(String seriesId) async {
+    var futureSeries = await seriesRepository.getOneDetail(seriesId);
+
+      sp = Sp.fromJson(futureSeries.data);
     try {
       var fufutureSeries = await seriesRepository.getOneDetail(seriesId);
       sp = Sp.fromJson(fufutureSeries.data);
@@ -570,7 +568,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
     for (String tag in tags) {
       if (tagCount.containsKey(tag)) {
-        tagCount[tag] = (tagCount[tag]! + 1)!;
+        tagCount[tag] = (tagCount[tag]! + 1);
       } else {
         tagCount[tag] = 1;
       }
@@ -716,7 +714,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
   Future<void> _toggleBookmark() async {
     if (JwtPayload.sub != null) {
       if (isBookmark == true) {
-        await bookmarkRepository.unBookmark(widget.id, JwtPayload.sub!);
+        await bookmarkRepository.unBookmark(widget.id);
         setState(() {
           isBookmark = !isBookmark;
         });

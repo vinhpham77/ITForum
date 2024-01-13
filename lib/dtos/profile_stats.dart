@@ -4,6 +4,7 @@ class ProfileStats {
   int seriesCount;
   int followingCount;
   int followerCount;
+  int bookmarkCount;
 
   ProfileStats({
     required this.postCount,
@@ -11,6 +12,7 @@ class ProfileStats {
     required this.seriesCount,
     required this.followingCount,
     required this.followerCount,
+    required this.bookmarkCount,
   });
 
   factory ProfileStats.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class ProfileStats {
       seriesCount: json['seriesCount'],
       followingCount: json['followingCount'],
       followerCount: json['followerCount'],
+      bookmarkCount: json['bookmarkCount'],
     );
   }
 
@@ -30,6 +33,7 @@ class ProfileStats {
     int? seriesCount,
     int? followingCount,
     int? followerCount,
+    int? bookmarkCount,
   }) {
     return ProfileStats(
       postCount: postCount ?? this.postCount,
@@ -37,6 +41,7 @@ class ProfileStats {
       seriesCount: seriesCount ?? this.seriesCount,
       followingCount: followingCount ?? this.followingCount,
       followerCount: followerCount ?? this.followerCount,
+      bookmarkCount: bookmarkCount ?? this.bookmarkCount,
     );
   }
 }

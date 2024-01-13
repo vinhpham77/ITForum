@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../dtos/result_count.dart';
 import '../../../../../repositories/bookmark_repository.dart';
+import '../../../../common/utils/message_from_exception.dart';
 
 part 'bookmarks_tab_event.dart';
 
@@ -54,12 +55,12 @@ class BookmarksTabBloc extends Bloc<BookmarksTabEvent, BookmarksTabState> {
 
   void _confirmDelete(
       ConfirmDeleteEvent event, Emitter<BookmarksTabState> emit) async {
-    // try {
-    //   await _bookmarkRepository.delete(event.bookmarkUser.id!);
-    //   emit(BookmarksDeleteSuccessState(bookmarkUser: event.bookmarkUser));
-    // } catch (error) {
-    //   String message = getMessageFromException(error);
-    //   emit(BookmarksTabErrorState(message: message));
-    // }
+    try {
+      await _bookmarkRepository.unBookmark(event.bookmarkItem.id!);
+      emit(BookmarksDeleteSuccessState(bookmarkItem: event.bookmarkItem));
+    } catch (error) {
+      String message = getMessageFromException(error);
+      emit(BookmarksTabErrorState(bookmarkItems: event.bookmarkItems, message: message, isPostBookmarks: event.isPostBookmarks));
+    }
   }
 }

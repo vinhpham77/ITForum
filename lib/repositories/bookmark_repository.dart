@@ -11,11 +11,6 @@ class BookmarkRepository {
         baseUrl: "${ApiConfig.baseUrl}/${ApiConfig.bookmarksEndpoint}"));
   }
 
-  // Future<Response<dynamic>> delete(String id) {
-  //   // TODO: implement delete
-  //   throw UnimplementedError();
-  // }
-
   Future<Response<dynamic>> get() async {
     return dio.get('');
   }
@@ -27,11 +22,10 @@ class BookmarkRepository {
         data: bookmarkInfo.toJson(), queryParameters: {'username': username});
   }
 
-  Future<Response<dynamic>> unBookmark(String itemId, String username) async {
-    dio = JwtInterceptor().addInterceptors(dio);
-    return dio.delete('/unPostBookmark', queryParameters: {
-      'itemId': itemId,
-      'username': username,
+  Future<Response<dynamic>> unBookmark(String itemId) async {
+    dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
+    return dio.delete('/un-bookmark', queryParameters: {
+      'itemId': itemId
     });
   }
 

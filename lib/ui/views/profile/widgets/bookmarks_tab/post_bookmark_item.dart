@@ -29,25 +29,45 @@ class PostBookmarkItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          InkWell(
+            onTap: postBookmark.user == null
+                ? null
+                : () => {
+              appRouter.go(
+                  '/profile/${postBookmark.user?.username}',
+                  extra: {})
+            },
+            hoverColor: Colors.black12,
+            child:
           ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: UserAvatar(
                 imageUrl: postBookmark.user?.avatarUrl,
                 size: 54,
-              )),
+              )),),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
+                  InkWell(
+                    onTap: postBookmark.user == null
+                        ? null
+                        : () => {
+                      appRouter.go(
+                          '/profile/${postBookmark.user?.username}',
+                          extra: {})
+                    },
+                    hoverColor: Colors.black12,
+                    child:
                   Text(
                     postBookmark.user?.displayName ?? 'Người dùng ẩn danh',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
                         color: Colors.indigo[700]),
-                  ),
+                  ),),
                   const SizedBox(width: 12),
                   buildIconField(Icons.auto_fix_high_outlined,
                       getTimeAgo(postBookmark.updatedAt), timeStyle)

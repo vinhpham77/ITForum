@@ -29,6 +29,13 @@ class _QuestionViewState extends State<QuestionView> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getNavigation();
+  }
+
+  @override
+  void didUpdateWidget(QuestionView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    getNavigation();
   }
 
   @override
@@ -38,14 +45,18 @@ class _QuestionViewState extends State<QuestionView> {
     postBloc.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void getNavigation() {
     if (JwtPayload.sub == null) {
       listSelectBtn = navi;
     } else {
       listSelectBtn = naviSignin;
     }
     listSelectBtn[widget.indexSelected].isSelected = true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Padding(

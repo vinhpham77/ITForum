@@ -76,7 +76,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   final bookmarkRepository = BookmarkRepository();
   final userRepository = UserRepository();
   final followRepository = FollowRepository();
-  Completer<void> _loadingCompleter = Completer<void>();
+
   @override
   void initState() {
     super.initState();
@@ -117,7 +117,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       builder: (context, BoxConstraints constraints) {
         return   checkPrivate(
                 widget.id, username, authorPost.username, postDetailDTO.private)
-            ? Container(
+            ? SizedBox(
                 width: constraints.maxWidth,
                 child:  Center(
                   child: SizedBox(
@@ -156,7 +156,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _postActions() {
-    return Container(
+    return SizedBox(
       width: 80,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -325,17 +325,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               alignment: Alignment.center,
               child: const CircularProgressIndicator(),
             )
-          : Container(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  _builderAuthorPostContent(),
-                  postPreview,
+          : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              _builderAuthorPostContent(),
+              postPreview,
 
-                ],
-              ),
-            ),
+            ],
+          ),
     );
   }
 
@@ -486,7 +484,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         isBookmark = isBookmarked;
       }
     } else {
-      print(" lỗi bookmark");
       // Xử lý trường hợp dữ liệu trả về từ API không đúng
     }
   }
@@ -521,24 +518,22 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _buildUserDetails() {
-    return Container(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        //  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          InkWell(
-            onTap: () {appRouter.go("/profile/${postDetailDTO.user.username}/posts");},
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: _buildPostImage(authorPost.avatarUrl ?? ""),
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      //  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        InkWell(
+          onTap: () {appRouter.go("/profile/${postDetailDTO.user.username}/posts");},
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(50),
+            child: _buildPostImage(authorPost.avatarUrl ?? ""),
           ),
-          const SizedBox(width: 16),
-          _buildUserProfile(),
-          const SizedBox(width: 16),
-          if (user.id != authorPost.id) _buildFollowButton(),
-        ],
-      ),
+        ),
+        const SizedBox(width: 16),
+        _buildUserProfile(),
+        const SizedBox(width: 16),
+        if (user.id != authorPost.id) _buildFollowButton(),
+      ],
     );
   }
 
@@ -602,7 +597,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       message: messageValue,
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: 26,
             height: 26,
             child: Center(child: Icon(icon)),
@@ -621,8 +616,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          isFollow ? Icon(Icons.check) : Icon(Icons.add),
-          isFollow ? Text("Đã theo dõi") : Text('Theo dõi'),
+          isFollow ? const Icon(Icons.check) : const Icon(Icons.add),
+          isFollow ? const Text("Đã theo dõi") : const Text('Theo dõi'),
         ],
       ),
     );
@@ -770,7 +765,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Future<void> _toggleBookmark() async {
     if (JwtPayload.sub != null) {
       if (isBookmark == true) {
-        await bookmarkRepository.unBookmark(widget.id, JwtPayload.sub!);
+        await bookmarkRepository.unBookmark(widget.id);
         setState(() {
           isBookmark = !isBookmark;
         });
@@ -812,7 +807,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget _sidebar() {
     // Gọi hàm để lấy widget TableOfContents
     Widget? tableOfContentsWidget = _tableOfContents();
-    return Container(
+    return SizedBox(
       width: 300,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1059,7 +1054,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget _buildPostImage(String avatarUrl) {
     if (avatarUrl != null) {
       return Image.network(
-        avatarUrl!,
+        avatarUrl,
         width: 48,
         height: 48,
         fit: BoxFit.cover,
