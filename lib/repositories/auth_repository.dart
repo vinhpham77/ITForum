@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:cay_khe/api_config.dart';
 import 'package:dio/dio.dart';
 
+import '../ui/common/utils/jwt_interceptor.dart';
+
 class AuthRepository {
   late Dio dio;
   final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.loginEndpoint}";
@@ -9,7 +11,6 @@ class AuthRepository {
   AuthRepository() {
     dio = Dio(BaseOptions(baseUrl: baseUrl));
   }
-  // Phương thức để thực hiện đăng nhập
   Future<Response<dynamic>> loginUser(String username, String password) async {
     return dio.post("/signin", data: {
       'username': username,
