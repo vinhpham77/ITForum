@@ -22,8 +22,11 @@ class PostFeedItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => appRouter
-                .go('/profile/${postAggregation.user?.username}', extra: {}),
+            onTap: postAggregation.user == null
+                ? null
+                : () => appRouter.go(
+                '/profile/${postAggregation.user!.username}',
+                extra: {}),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: UserAvatar(
