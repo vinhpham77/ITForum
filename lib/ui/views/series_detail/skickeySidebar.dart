@@ -1,10 +1,7 @@
-import 'package:cay_khe/dtos/follow_dto.dart';
-import 'package:cay_khe/dtos/jwt_payload.dart';
 import 'package:cay_khe/models/follow.dart';
 import 'package:cay_khe/models/user.dart';
 import 'package:cay_khe/repositories/follow_repository.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
-import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +9,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 class StickySidebar extends StatefulWidget {
   final String idPost;
-  final User AuthorSeries;
+  final User authorSeries;
   final User user;
   final bool isFollow;
   final bool isBookmark;
@@ -21,19 +18,17 @@ class StickySidebar extends StatefulWidget {
   final Function() onBookmarkPressed;
 
    final totalFollow;
-  // final totalSeries;
 
   const StickySidebar({
     super.key,
     required this.idPost,
-    required this.AuthorSeries,
+    required this.authorSeries,
     required this.user,
      required this.isFollow,
     required this.isBookmark,
      required this.onFollowPressed,
     required this.onBookmarkPressed,
      required this.totalFollow,
-    // required this.totalSeries
   });
 
   @override
@@ -48,7 +43,6 @@ class _StickySidebarState extends State<StickySidebar> {
   bool isFollow = false;
   bool isHoveredUserLink = false;
   late Follow follow;
-  bool _isSigned = false;
 
 
   @override
@@ -56,7 +50,6 @@ class _StickySidebarState extends State<StickySidebar> {
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) async{
       if (widget.user != null) {
-        print("username: ${widget.user.username}");
         await _load();
       }
     });
@@ -70,8 +63,8 @@ class _StickySidebarState extends State<StickySidebar> {
   // }
 
   Future<void> _load() async {
-    await _loadTotalFollower(widget.AuthorSeries.id);
-    await _loadFollow(widget.user.username, widget.AuthorSeries.username);
+    await _loadTotalFollower(widget.authorSeries.id);
+    await _loadFollow(widget.user.username, widget.authorSeries.username);
    // await _loadTotalSeries(widget.AuthorSeries.username);
 
   }
@@ -91,7 +84,7 @@ class _StickySidebarState extends State<StickySidebar> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: UserAvatar(
-                        imageUrl: widget.AuthorSeries.avatarUrl, size: 48),
+                        imageUrl: widget.authorSeries.avatarUrl, size: 48),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -115,7 +108,7 @@ class _StickySidebarState extends State<StickySidebar> {
                           print('Navigate to: ');
                         },
                         child: Text(
-                          widget.AuthorSeries.displayName,
+                          widget.authorSeries.displayName,
                           style: TextStyle(
                             color: isHoveredUserLink
                                 ? Colors.lightBlueAccent
@@ -128,9 +121,9 @@ class _StickySidebarState extends State<StickySidebar> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text("@${widget.AuthorSeries.username}"),
+                    Text("@${widget.authorSeries.username}"),
                     const SizedBox(height: 8),
-                    if (widget.AuthorSeries.id != widget.user.id)
+                    if (widget.authorSeries.id != widget.user.id)
                       ElevatedButton(
                         onPressed: () => widget.onFollowPressed,
                         child: Row(
@@ -162,7 +155,7 @@ class _StickySidebarState extends State<StickySidebar> {
               padding: const EdgeInsets.only(top: 8),
               child: Container(
                 child: ElevatedButton(
-                  onPressed: widget.AuthorSeries.id != widget.user.id
+                  onPressed: widget.authorSeries.id != widget.user.id
                       ? widget.onBookmarkPressed
                       : null,
                   child: Row(
@@ -302,50 +295,10 @@ class _StickySidebarState extends State<StickySidebar> {
     }
 
   }
-  //
-  // void _follow() async {
-  //   print("user follow: ${widget.user.username}");
-  //   if (JwtPayload.sub == null) {
-  //     appRouter.go("/login");
-  //   } else {
-  //     if (isFollow == true) {
-  //       var future = await followRepository.checkfollow(
-  //           widget.user.username, widget.AuthorSeries.username);
-  //       if (future.data != "Follow not found") {
-  //         Follow follow = Follow.fromJson(future.data);
-  //         await followRepository.delete(follow.id);
-  //         if (mounted) {
-  //           setState(() {
-  //             isFollow = false;
-  //           });
-  //         }
-  //       }
-  //     } else {
-  //       FollowDTO newFollow = FollowDTO(
-  //           follower: widget.user.username,
-  //           followed: widget.AuthorSeries.username,
-  //           createdAt: DateTime.now());
-  //       await followRepository.add(newFollow);
-  //       if (mounted) {
-  //         setState(() {
-  //           isFollow = true;
-  //         });
-  //       }
-  //     }
-  //     _loadTotalFollower(widget.AuthorSeries.username);
-  //   }
-  // }
 
   Future<void> _loadFollow(String follower, String followed) async {
-    print("s");
-    // if (widget.user.username == '') {
-    // }
-    print("load follow");
-    var future = await followRepository.checkfollow(follower, followed);
-    print("data:");
-    print(future.data);
+    var future = await followRepository.checkFollow(followed);
     if (future.data is Map<String, dynamic>) {
-      print("co du lieu");
       if (mounted) {
         setState(() {
           follow = Follow.fromJson(future.data);
@@ -354,20 +307,8 @@ class _StickySidebarState extends State<StickySidebar> {
       }
     } else {
       if (mounted) {
-        print("khong co du lieu");
         setState(() {
           isFollow = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadTotalSeries(String username) async {
-    var future = await seriesRespository.totalSeries(username);
-    if (future.data is int) {
-      if (mounted) {
-        setState(() {
-          totalSeries = future.data;
         });
       }
     }

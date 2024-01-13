@@ -25,10 +25,10 @@ class VoteRepository {
      return dio.get('',queryParameters: { 'postId': postId});
    }
 
-  Future<Response<dynamic>> checkVote(String postId, String username) async {
+  Future<Response<dynamic>> checkVote(String postId) async {
 
     dio = JwtInterceptor().addInterceptors(dio);
-    return dio.get('/checkVote', queryParameters: { 'id': postId,'username': username,});
+    return dio.get('/checkVote', queryParameters: { 'id': postId});
   }
   Future<Response<dynamic>> createVote(VoteDTO voteDTO) async {
     dio = JwtInterceptor().addInterceptors(dio);

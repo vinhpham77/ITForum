@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:cay_khe/dtos/follow_dto.dart';
 import 'package:cay_khe/dtos/vote_dto.dart';
 import 'package:cay_khe/dtos/post_detail_dto.dart';
 import 'package:cay_khe/models/bookmarkInfo.dart';
 import 'package:cay_khe/models/follow.dart';
-import 'package:cay_khe/models/tag.dart';
 import 'package:cay_khe/repositories/bookmark_repository.dart';
 import 'package:cay_khe/repositories/follow_repository.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
@@ -15,10 +13,10 @@ import 'package:cay_khe/ui/common/utils/date_time.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/views/series_detail/votes_side.dart';
 import 'package:cay_khe/ui/widgets/comment/comment_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../dtos/jwt_payload.dart';
 import '../../../models/post.dart';
@@ -43,33 +41,24 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   bool upVote = false;
   bool downVote = false;
   bool typeVote = false;
-  bool isCheckBookmark = false;
   bool isBookmark = false;
-  bool isHovered = false;
   bool isLoading = true;
   bool isFollow = false;
-  bool isLoadingFollow = false;
-  bool postsSameAuthorIsNull = false;
-  PostDetailDTO postDetailDTO = PostDetailDTO.empty();
   String type = "bài viết";
   String username = JwtPayload.sub ?? '';
   String idVote = '';
-  String updatedAt ='';
+  String updatedAt = '';
   String _currentId = "";
   int totalPost = 0;
   int totalFollow = 0;
   int score = 0;
-  IconData? get icon => Icons.add;
-  Color textColor = Colors.grey;
   List<String> listTag = [];
   List<DateTime> listDateTime = [];
   List<Post> posts = [];
-  List<Tag> selectedTags = [];
   late List<String> listTitlePost;
+  PostDetailDTO postDetailDTO = PostDetailDTO.empty();
   User user = User.empty();
-  User authorPost = User.empty();
   Follow follow = Follow.empty();
-  Tag? selectedTag;
   final postRepository = PostRepository();
   final tagRepository = TagRepository();
   final voteRepository = VoteRepository();
@@ -97,52 +86,49 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       isLoading = true;
     });
     await _loadPost(id);
-    await _loadUser(username);
-    await _loadCheckVote(id, username);
-    await _loadBookmark(id, username);
-    await _loadPostsByTheSameAuthor(authorPost.username, widget.id);
-    await _loadTotalPost(authorPost.username);
+    await _loadUser(JwtPayload.sub ?? '');
+    await _loadCheckVote(id);
+    await _loadBookmark(id);
+    await _loadPostsByTheSameAuthor(postDetailDTO.user.username, widget.id);
+    await _loadTotalPost(postDetailDTO.user.username);
     await _loadFollow(username, postDetailDTO.user.username);
-    await _loadTotalFollower(authorPost.username);
-  //  await _loadingCompleter.future;
-      setState(() {
-        isLoading = false;
-      });
-
+    await _loadTotalFollower(postDetailDTO.user.username);
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
-        return   checkPrivate(
-                widget.id, username, authorPost.username, postDetailDTO.private)
+        return checkPrivate(widget.id, JwtPayload.sub ?? '',
+                postDetailDTO.user.username, postDetailDTO.private)
             ? SizedBox(
                 width: constraints.maxWidth,
-                child:  Center(
+                child: Center(
                   child: SizedBox(
                     width: 1200,
                     child: Padding(
-                      padding: const EdgeInsets.all(50.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              _postActions(),
-                              const SizedBox(width: 10),
-                              _postBody(),
-                              const SizedBox(width: 20),
-                              _sidebar(),
-                            ],
-                          ),
-                          CommentView(postId: widget.id)
-                        ],
-                      )
-                    ),
+                        padding: const EdgeInsets.all(50.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                _postActions(),
+                                const SizedBox(width: 10),
+                                _postBody(),
+                                const SizedBox(width: 20),
+                                _sidebar(),
+                              ],
+                            ),
+                            CommentView(postId: widget.id)
+                          ],
+                        )),
                   ),
                 ),
               )
@@ -201,8 +187,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           const SizedBox(width: 16),
           IconButton(
             icon: const Icon(Icons.link),
-            onPressed: () =>
-                _sharePost('http://localhost:8000/posts/$idPost'),
+            onPressed: () => _sharePost('http://localhost:8000/posts/$idPost'),
           ),
           IconButton(
               icon: const Icon(Icons.share),
@@ -224,13 +209,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     }
   }
 
-  Widget _buildLoadingIndicator() {
-    return Container(
-      height: 600,
-      alignment: Alignment.center,
-      child: const CircularProgressIndicator(),
-    );
-  }
   Widget buildTagButton(String tag) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -260,7 +238,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _postBody() {
-    // _builderTitlePostContent();
     var postPreview = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -274,10 +251,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 children: listTag.map((tag) => buildTagButton(tag)).toList(),
               ),
             ),
-            MoreHoriz(idContent: widget.id, type: type,authorname: authorPost.username,username: username),
+            MoreHoriz(
+                idContent: widget.id,
+                type: type,
+                authorname: postDetailDTO.user.username,
+                username: JwtPayload.sub ?? ''),
           ],
         ),
-
         Container(
           decoration: const BoxDecoration(
               //   color: Colors.white,
@@ -326,21 +306,19 @@ class _PostDetailsPage extends State<PostDetailsPage> {
               child: const CircularProgressIndicator(),
             )
           : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              _builderAuthorPostContent(),
-              postPreview,
-
-            ],
-          ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                _builderAuthorPostContent(),
+                postPreview,
+              ],
+            ),
     );
   }
 
   getMarkdown() {
     String titleRaw = postDetailDTO.title;
     String title = titleRaw.isEmpty ? '' : '# **$titleRaw**';
-    // String tags = selectedTags.map((tag) => '#${tag.name}').join('\t');
     String content = postDetailDTO.content;
     String tags = "#";
     tags = tags + listTag.join('\t#');
@@ -351,33 +329,29 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     var future = postRepository.getOneDetails(id);
     future.then((response) {
       postDetailDTO = PostDetailDTO.fromJson(response.data);
-      authorPost = postDetailDTO.user;
       listTag = postDetailDTO.tags;
       updatedAt = "Đã đăng vào ${getTimeAgo(postDetailDTO.updatedAt)}";
       score = postDetailDTO.score;
     }).catchError((error) {
       appRouter.go("/not-found");
-      // String message = getMessageFromException(error);
-      // showTopRightSnackBar(context, message, NotifyType.error);
     });
-    //isLoading = false;
   }
 
   Future<void> _loadUser(String username) async {
-
-    if (JwtPayload.sub != null) {
+    try {
       var futureUser = await userRepository.getUser(username);
       if (mounted) {
         user = User.fromJson(futureUser.data);
       }
+    } catch (error) {
+      print("Người dùng chưa đăng nhập");
     }
   }
 
-  Future<void> _loadCheckVote(String postId, String username) async {
-    var futureVote = await voteRepository.checkVote(postId, username);
+  Future<void> _loadCheckVote(String postId) async {
+    var futureVote = await voteRepository.checkVote(postId);
     if (futureVote.data is Map<String, dynamic>) {
       Vote vote = Vote.fromJson(futureVote.data);
-
       if (mounted) {
         setState(() {
           upVote = vote.type;
@@ -413,9 +387,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           totalFollow = future.data;
         });
       }
-    }
-    else{
-      print("không có dữ liệu");
+    } else {
+      if (kDebugMode) {
+        print("Error load total follower ");
+      }
     }
   }
 
@@ -424,8 +399,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       appRouter.go("/login");
     } else {
       if (isFollow == true) {
-        var future = await followRepository.checkfollow(
-            user.username, authorPost.username);
+        var future =
+            await followRepository.checkFollow(postDetailDTO.user.username);
         if (future.data != "Follow not found") {
           Follow follow = Follow.fromJson(future.data);
           await followRepository.delete(follow.id);
@@ -438,7 +413,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       } else {
         FollowDTO newFollow = FollowDTO(
             follower: user.username,
-            followed: authorPost.username,
+            followed: postDetailDTO.user.username,
             createdAt: DateTime.now());
         await followRepository.add(newFollow);
         if (mounted) {
@@ -447,7 +422,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           });
         }
       }
-      _loadTotalFollower(authorPost.username);
+      _loadTotalFollower(postDetailDTO.user.username);
     }
   }
 
@@ -455,9 +430,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     if (JwtPayload.sub == null) {
       return;
     }
-
-    var future = await followRepository.checkfollow(follower, followed);
-
+    var future = await followRepository.checkFollow(followed);
     if (future.data is Map<String, dynamic>) {
       if (mounted) {
         setState(() {
@@ -474,17 +447,15 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     }
   }
 
-  Future<void> _loadBookmark(String itemId, String username) async {
-    var future = await bookmarkRepository.checkBookmark(itemId, username);
-
+  Future<void> _loadBookmark(String itemId) async {
+    var future = await bookmarkRepository.checkBookmark(itemId);
     if (future.data != null && future.data is bool) {
       bool isBookmarked = future.data;
-
       if (mounted) {
         isBookmark = isBookmarked;
       }
     } else {
-      // Xử lý trường hợp dữ liệu trả về từ API không đúng
+      print("Error load bookmark");
     }
   }
 
@@ -496,16 +467,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         List<Map<String, dynamic>> jsonDataList =
             List<Map<String, dynamic>>.from(response.data);
         posts = jsonDataList.map((json) => Post.fromJson(json)).toList();
-        if (posts.isEmpty) {
-          postsSameAuthorIsNull = true;
-        }
         posts = posts.length > 5 ? posts.take(5).toList() : List.from(posts);
         listTitlePost = posts.map((post) => post.title).toList();
         listDateTime = posts.map((post) => post.updatedAt).toList();
       });
     }).catchError((error) {
-      // String message = getMessageFromException(error);
-      // showTopRightSnackBar(context, message, NotifyType.error);
+      error.toString();
     });
   }
 
@@ -520,19 +487,20 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget _buildUserDetails() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      //  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         InkWell(
-          onTap: () {appRouter.go("/profile/${postDetailDTO.user.username}/posts");},
+          onTap: () {
+            appRouter.go("/profile/${postDetailDTO.user.username}/posts");
+          },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(50),
-            child: _buildPostImage(authorPost.avatarUrl ?? ""),
+            child: _buildPostImage(postDetailDTO.user.avatarUrl ?? ""),
           ),
         ),
         const SizedBox(width: 16),
         _buildUserProfile(),
         const SizedBox(width: 16),
-        if (user.id != authorPost.id) _buildFollowButton(),
+        if (user.id != postDetailDTO.user.id) _buildFollowButton(),
       ],
     );
   }
@@ -542,17 +510,17 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          // width: 200,
           child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 InkWell(
                   onTap: () {
-                    appRouter.go("/profile/${postDetailDTO.user.username}/posts");
+                    appRouter
+                        .go("/profile/${postDetailDTO.user.username}/posts");
                   },
                   child: Text(
-                    authorPost.displayName,
+                    postDetailDTO.user.displayName,
                     style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
@@ -566,7 +534,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         SizedBox(
           width: 200,
           child: Row(
-            //mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -623,9 +590,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     );
   }
 
-  Future<bool> checkVote(String postId, String username) async {
+  Future<bool> checkVote(String postId) async {
     Future<bool> isFuture;
-    var future = voteRepository.checkVote(postId, username);
+    var future = voteRepository.checkVote(postId);
     isFuture = future.then((response) {
       if (response.data == null) {
         return Future<bool>.value(false);
@@ -636,8 +603,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         return Future<bool>.value(true);
       }
     }).catchError((error) {
-      // String message = getMessageFromException(error);
-      // showTopRightSnackBar(context, message, NotifyType.error);
       return Future<bool>.value(false);
     });
     return isFuture;
@@ -647,13 +612,12 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     bool hasVoted;
     if (JwtPayload.sub == null) {
       appRouter.go('/login');
-      //GoRouter.of(context).go('/login');
     } else {
       if (stateVote == false) {
         setState(() {
           stateVote = true;
         });
-        hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+        hasVoted = await checkVote(widget.id);
         if (hasVoted == false) {
           VoteDTO voteDTO = VoteDTO(
               postId: widget.id,
@@ -690,7 +654,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 upVote = true;
                 downVote = false;
               });
-         //     await voteRepository.deleteVote(idVote);
             }
           }
         }
@@ -705,14 +668,13 @@ class _PostDetailsPage extends State<PostDetailsPage> {
     bool hasVoted;
     if (JwtPayload.sub == null) {
       appRouter.go('/login');
-      GoRouter.of(context).go('/login');
     } else {
       if (stateVote == false) {
         setState(() {
           stateVote == true;
         });
 
-        hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+        hasVoted = await checkVote(widget.id);
         if (hasVoted == false) {
           VoteDTO voteDTO = VoteDTO(
               postId: widget.id,
@@ -722,7 +684,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           await voteRepository.createVote(voteDTO);
           var postScore =
               await postRepository.updateScore(widget.id, score - 1);
-
           Post post = Post.fromJson(postScore.data);
           setState(() {
             score = post.score;
@@ -750,8 +711,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                 downVote = true;
                 upVote = false;
               });
-
-            //  await voteRepository.deleteVote(idVote);
             }
           }
         }
@@ -780,9 +739,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         }
       }
     } else {
-      appRouter.go('/login');
-      // String message = "Bạn chưa đăng nhập";
-      //  showTopRightSnackBar(context, message, NotifyType.error);
+      appRouter.go("/login");
     }
   }
 
@@ -794,7 +751,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   void _shareFacebook(String url) async {
-     url =
+    url =
         'https://www.youtube.com/watch?v=GbVfBSZE1Zc&t=977s&ab_channel=ACDAcademyChannel';
     final fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=$url';
     if (await canLaunchUrlString(fbUrl)) {
@@ -805,7 +762,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget _sidebar() {
-    // Gọi hàm để lấy widget TableOfContents
     Widget? tableOfContentsWidget = _tableOfContents();
     return SizedBox(
       width: 300,
@@ -831,13 +787,9 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   List<String> extractHeadingsFromMarkdown(String markdownText) {
     List<String> headings = [];
-
-    // Parse nội dung Markdown
     List<markdown.Node> nodes = markdown.Document(
       extensionSet: markdown.ExtensionSet.gitHubWeb,
     ).parseLines(markdownText.split('\n'));
-
-    // Lặp qua các nút để trích xuất tiêu đề
     for (var node in nodes) {
       if (node is markdown.Element && node.tag == 'h1') {
         headings.add(node.textContent);
@@ -851,12 +803,10 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   }
 
   Widget? _tableOfContents() {
-    List<String> headings =
-        extractHeadingsFromMarkdown(postDetailDTO.content);
+    List<String> headings = extractHeadingsFromMarkdown(postDetailDTO.content);
     if (headings.isEmpty) {
       return null;
     }
-    // Tạo một ScrollController
     ScrollController scrollController = ScrollController();
     return TableOfContents(
       headings: headings,
@@ -869,7 +819,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           _titleRelatedArticles(),
-          postsSameAuthorIsNull
+          posts.isEmpty
               ? const Padding(
                   padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
                   child: Text(
@@ -883,7 +833,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   Widget _titletableOfContents() {
     return Row(
-      //crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         const Text(
           "Mục lục",
@@ -908,8 +857,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
       ],
     );
   }
-
-//// open cac bai viet lien quan
 
   Widget _bodyRelatedArticles() {
     return Padding(
@@ -945,7 +892,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
                     child: Text(getTimeAgo(post.updatedAt)),
                   ),
-                  // _feedItem(),
                   Container(
                     height: 1,
                     width: 300,
@@ -968,87 +914,6 @@ class _PostDetailsPage extends State<PostDetailsPage> {
 
   void _openRelatedArticle(String postId) {
     appRouter.go('/posts/$postId');
-    // _initState();
-  }
-
-  Widget _feedItem() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
-      child: Row(
-        children: [
-          Tooltip(
-            message: "Lượt xem",
-            child: Row(
-              children: [
-                Icon(
-                  Icons.remove_red_eye, // Mã Unicode của biểu tượng con mắt
-                  color: Color.fromARGB(255, 212, 211, 211),
-                  // Màu của biểu tượng,
-                  size: 18,
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Text('30'),
-              ],
-            ),
-          ),
-          SizedBox(width: 12),
-          Tooltip(
-            message: "Bình luận",
-            child: Row(
-              children: [
-                Icon(
-                  Icons.comment,
-                  color: Color.fromARGB(255, 212, 211, 211),
-                  size: 18,
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Text('18'),
-              ],
-            ),
-          ),
-          SizedBox(width: 12),
-          Tooltip(
-            message: "Đã bookmark",
-            child: Row(
-              children: [
-                Icon(
-                  Icons.bookmark, // Mã Unicode của biểu tượng con mắt
-                  color: Color.fromARGB(255, 212, 211, 211),
-                  // Màu của biểu tượng,
-                  size: 18,
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Text('12'),
-              ],
-            ),
-          ),
-          SizedBox(width: 12),
-          Tooltip(
-            message: "Điểm",
-            child: Row(
-              children: [
-                Icon(
-                  Icons.score, // Mã Unicode của biểu tượng con mắt
-                  color: Color.fromARGB(255, 212, 211, 211),
-                  // Màu của biểu tượng,
-                  size: 18,
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Text('9'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildPostImage(String avatarUrl) {
@@ -1075,10 +940,8 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           size: 48, color: Colors.black54);
     }
   }
-
 }
 
-///// close cac bai viet lien quan
 Widget _titleRelatedArticles() {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.end,

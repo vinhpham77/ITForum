@@ -20,7 +20,6 @@ class TagListWidget extends StatelessWidget {
       padding: const EdgeInsets.only(right: 12),
       child: ElevatedButton(
         onPressed: () {
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => NewPostPage(tag)));
         },
         child: Text("#$tag"),
       ),

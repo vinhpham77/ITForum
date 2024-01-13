@@ -3,7 +3,8 @@ import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class ItemMenu {
   ItemMenu({required this.name, required this.icon, required this.route});
 
@@ -171,19 +172,28 @@ class _RightHeaderState extends State<RightHeader> {
                   }
                 },
                 icon: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: UserAvatar(imageUrl: JwtPayload.avatarUrl ?? '', size: 32)
-                ),
+                    borderRadius: BorderRadius.circular(50),
+                    child: UserAvatar(
+                        imageUrl: JwtPayload.avatarUrl ?? '', size: 32)),
                 iconSize: 32,
                 splashRadius: 16,
                 tooltip: 'Profiler',
               );
             },
             menuChildren: List<MenuItemButton>.generate(
-              createMenu.length,
+              profilerMenu.length,
+
               (int index) => MenuItemButton(
-                  onPressed: () =>
-                      {GoRouter.of(context).go(profilerMenu[index].route)},
+                  onPressed: () async {
+                    if (profilerMenu[index].name == "Đăng xuất") {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      prefs.remove('accessToken');
+                      prefs.remove('refreshToken');
+                     appRouter.go("/login");
+                    } else {
+                      GoRouter.of(context).go(profilerMenu[index].route);
+                    }
+                  },
                   child: Row(
                     children: [
                       Icon(profilerMenu[index].icon),
