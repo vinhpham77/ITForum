@@ -492,9 +492,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadListPost(String seriesId) async {
-    var futureSeries = await seriesRepository.getOneDetail(seriesId);
-
-      sp = Sp.fromJson(futureSeries.data);
     try {
       var fufutureSeries = await seriesRepository.getOneDetail(seriesId);
       sp = Sp.fromJson(fufutureSeries.data);
