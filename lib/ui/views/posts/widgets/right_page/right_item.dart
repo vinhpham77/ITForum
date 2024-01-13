@@ -18,7 +18,11 @@ class RightItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => {appRouter.go('/posts/${postAggregation.id}', extra: {})},
+            onTap: postAggregation.user == null
+                ? null
+                : () => appRouter.go(
+                '/profile/${postAggregation.user!.username}',
+                extra: {}),
             child: Text(postAggregation.title!,
               style: const TextStyle(fontSize: 16),
               softWrap: true,
@@ -36,8 +40,11 @@ class RightItem extends StatelessWidget {
             ],
           ),
           InkWell(
-            onTap: () => appRouter
-                .go('/profile/${postAggregation.user?.username}', extra: {}),
+            onTap: postAggregation.user == null
+                ? null
+                : () => appRouter.go(
+                '/profile/${postAggregation.user!.username}',
+                extra: {}),
             child: Text(postAggregation.user!.displayName,
               style: TextStyle(color: Colors.black38),
             ),

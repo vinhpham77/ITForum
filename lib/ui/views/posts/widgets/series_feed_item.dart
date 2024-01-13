@@ -18,8 +18,11 @@ class SeriesFeedItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => appRouter
-                .go('/profile/${seriesPost.user?.username}', extra: {}),
+            onTap: seriesPost.user == null
+                ? null
+                : () => appRouter.go(
+                '/profile/${seriesPost.user?.username}',
+                extra: {}),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: UserAvatar(

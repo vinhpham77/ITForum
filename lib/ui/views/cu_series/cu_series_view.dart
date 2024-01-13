@@ -294,59 +294,45 @@ class CuSeries extends StatelessWidget {
               ),
               maxLines: 1),
         ),
-        Container(
-          decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
+        Stack(
+          children: [
+            Container(
+              height: contentHeight,
+              decoration: BoxDecoration(
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+                borderRadius: isCreateMode
+                    ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8))
+                    : null,
+                color: Colors.white,
               ),
-            ],
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.only(
-            left: 48,
-            right: 48,
-            top: 8,
-            bottom: 12,
-          ),
-          child: Row(
-            children: [
-              AddImage(imageCallback: insertText)
-            ],
-          )
-        ),
-        Container(
-          height: contentHeight,
-          decoration: BoxDecoration(
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-            borderRadius: isCreateMode
-                ? const BorderRadius.only(
-                    bottomLeft: Radius.circular(8),
-                    bottomRight: Radius.circular(8))
-                : null,
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
-          child: TextFormField(
-              controller: _contentController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập nội dung';
-                }
-                return null;
-              },
-              maxLines: null,
-              decoration: const InputDecoration.collapsed(
-                hintText: 'Viết nội dung ở đây...',
-              )),
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
+              child: TextFormField(
+                  controller: _contentController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập nội dung';
+                    }
+                    return null;
+                  },
+                  maxLines: null,
+                  decoration: const InputDecoration.collapsed(
+                    hintText: 'Viết nội dung ở đây...',
+                  )),
+            ),
+            Positioned(
+              top: 8,
+              right: 12,
+              child: AddImage(imageCallback: insertText),
+            ),
+          ],
         ),
         if (!isCreateMode)
           Container(
@@ -616,14 +602,15 @@ class CuSeries extends StatelessWidget {
   void insertText(String input) {
     final text = _contentController.text;
     final textSelection = _contentController.selection;
-    final newText;
-    if(!textSelection.isValid)
-      newText = input;
-    else
-      newText = text.replaceRange(textSelection.start, textSelection.end, input);
-    final textSelectionNew = TextSelection.collapsed(offset: textSelection.start + input.length);
+    final String newText;
+    final int cursorPosition = textSelection.isValid ? textSelection.end : text.length;
+
+    newText = text.replaceRange(cursorPosition, cursorPosition, input);
+
+    final textSelectionNew = TextSelection.collapsed(offset: cursorPosition + input.length);
 
     _contentController.text = newText;
     _contentController.selection = textSelectionNew;
   }
+
 }
