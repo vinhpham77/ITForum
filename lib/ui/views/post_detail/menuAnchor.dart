@@ -1,17 +1,25 @@
 import 'dart:html';
+import 'package:cay_khe/dtos/notify_type.dart';
 import 'package:cay_khe/repositories/post_repository.dart';
 import 'package:cay_khe/repositories/series_repository.dart';
 import 'package:cay_khe/ui/router.dart';
+import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:dio/src/response.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class MoreHoriz extends StatefulWidget {
   final String username;
   final String authorname;
   final String type;
   final String idContent;
-  const MoreHoriz({super.key, required this.type, required this.idContent, required this.username, required this.authorname});
+
+  const MoreHoriz(
+      {super.key,
+      required this.type,
+      required this.idContent,
+      required this.username,
+      required this.authorname});
+
   @override
   State<MoreHoriz> createState() => _MoreHorizState();
 }
@@ -22,35 +30,31 @@ class _MoreHorizState extends State<MoreHoriz> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery
-        .of(context)
-        .size;
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        widgetMoreHoriz()
-      ],
+      children: [widgetMoreHoriz()],
     );
   }
 
-  Widget widgetMoreHoriz() =>
-      Row(
+  Widget widgetMoreHoriz() => Row(
         children: [
-          widget.username==widget.authorname?
-          _myMenuAnchor(): _menuAnchor()
+          if (widget.username == widget.authorname)
+            _myMenuAnchor()
+          else
+            _menuAnchor()
         ],
       );
 
-  Widget _myMenuAnchor(){
+  Widget _myMenuAnchor() {
+    print("mymenu");
     return MenuAnchor(
-      builder: (BuildContext context, MenuController controller,
-          Widget? child) {
+      builder:
+          (BuildContext context, MenuController controller, Widget? child) {
         return IconButton(
           onPressed: () {
             if (controller.isOpen) {
@@ -68,9 +72,9 @@ class _MoreHorizState extends State<MoreHoriz> {
       menuChildren: [
         MenuItemButton(
           onPressed: () {
-            if(widget.type=="series"){
+            if (widget.type == "series") {
               appRouter.go("/series/${widget.idContent}/edit");
-            }else{
+            } else {
               appRouter.go("/posts/${widget.idContent}/edit");
             }
           },
@@ -85,7 +89,6 @@ class _MoreHorizState extends State<MoreHoriz> {
         MenuItemButton(
           onPressed: () {
             showDeleteConfirmationDialog(context);
-            // Action for "Xóa bài viết" item
           },
           child: Row(
             children: [
@@ -95,14 +98,38 @@ class _MoreHorizState extends State<MoreHoriz> {
             ],
           ),
         ),
-        // Add more MenuItemButton widgets as needed
+        MenuItemButton(
+          onPressed: () {
+            if (widget.username == '') {
+              appRouter.go("/login");
+              return;
+            }
+            if (widget.username != widget.authorname) {
+              showTopRightSnackBar(context, "${widget.type} đã được báo cáo",
+                  NotifyType.success);
+            } else {
+              showTopRightSnackBar(
+                  context,
+                  "Bạn không thể báo cáo ${widget.type} của mình",
+                  NotifyType.success);
+            }
+          },
+          child: const Row(
+            children: [
+              Icon(Icons.flag),
+              SizedBox(width: 20),
+              Text("Báo cáo"),
+            ],
+          ),
+        ),
       ],
     );
   }
-  Widget _menuAnchor(){
+
+  Widget _menuAnchor() {
     return MenuAnchor(
-      builder: (BuildContext context, MenuController controller,
-          Widget? child) {
+      builder:
+          (BuildContext context, MenuController controller, Widget? child) {
         return IconButton(
           onPressed: () {
             if (controller.isOpen) {
@@ -120,7 +147,19 @@ class _MoreHorizState extends State<MoreHoriz> {
       menuChildren: [
         MenuItemButton(
           onPressed: () {
-            // Action for "Sửa" item
+            if (widget.username == '') {
+              appRouter.go("/login");
+              return;
+            }
+            if (widget.username != widget.authorname) {
+              showTopRightSnackBar(context, "${widget.type} đã được báo cáo",
+                  NotifyType.success);
+            } else {
+              showTopRightSnackBar(
+                  context,
+                  "Bạn không thể báo cáo ${widget.type} của mình",
+                  NotifyType.success);
+            }
           },
           child: const Row(
             children: [
@@ -133,6 +172,7 @@ class _MoreHorizState extends State<MoreHoriz> {
       ],
     );
   }
+
   Future<void> showDeleteConfirmationDialog(BuildContext context) async {
     return showDialog(
       context: context,
@@ -145,19 +185,20 @@ class _MoreHorizState extends State<MoreHoriz> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Hủy"),
+              child: const Text("Hủy"),
             ),
             TextButton(
               onPressed: () {
                 deleteSeries(widget.idContent, widget.type);
               },
-              child: Text("Xóa"),
+              child: const Text("Xóa"),
             ),
           ],
         );
       },
     );
   }
+
   Future<void> showAddPostConfirmationDialog(BuildContext context) async {
     return showDialog(
       context: context,
@@ -169,19 +210,20 @@ class _MoreHorizState extends State<MoreHoriz> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Hủy"),
+              child: const Text("Hủy"),
             ),
             TextButton(
               onPressed: () {
                 deleteSeries(widget.idContent, widget.type);
               },
-              child: Text("Thêm"),
+              child: const Text("Thêm"),
             ),
           ],
         );
       },
     );
   }
+
   Future<void> deleteSeries(String id, String type) async {
     Response future;
     if (type == 'bài viết') {

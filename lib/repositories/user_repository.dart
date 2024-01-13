@@ -34,4 +34,31 @@ class UserRepository {
   Future<Response<dynamic>> getStats(String username) async {
     return _dio.get("/stats/$username");
   }
+  Future<Response<dynamic>> changePassUser(
+      String username, String currentpassword, String newPassword) async {
+    return dio.post(
+      "/changePassword",
+      data: {
+        'username': username,
+        'currentPassword': currentpassword,
+        'newPassword': newPassword
+      },
+    );
+  }
+
+  Future<Response<dynamic>> forgotPassUser(String username) async {
+    return dio.post(
+      "/forgetPassword",
+      data: {'username': username},
+    );
+  }
+
+  Future<Response<dynamic>> resetPassUser(
+      String username, String newPassword, String otp) async {
+    return dio.post(
+      "/resetPassword",
+      data: {'username': username, 'newPassword': newPassword, 'otp': otp},
+    );
+  }
+
 }

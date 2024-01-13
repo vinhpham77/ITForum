@@ -1,16 +1,10 @@
 import 'dart:async';
-
 import 'package:cay_khe/dtos/notify_type.dart';
-import 'package:cay_khe/repositories/auth_repository.dart';
 import 'package:cay_khe/ui/common/utils/message_from_exception.dart';
-import 'package:cay_khe/ui/views/series_detail/seriesDetail.dart';
 import 'package:cay_khe/ui/widgets/notification.dart';
-import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/sp.dart';
 import '../repositories/sp_repository.dart';
-import '../ui/common/utils/jwt_interceptor.dart';
 
 class SeriesDetailBloc {
   final StreamController<Sp> _spController = StreamController<Sp>();

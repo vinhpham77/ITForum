@@ -24,18 +24,12 @@ class BookmarkRepository {
 
   Future<Response<dynamic>> unBookmark(String itemId) async {
     dio = JwtInterceptor(needToLogin: true).addInterceptors(dio);
-    return dio.delete('/un-bookmark', queryParameters: {
-      'itemId': itemId
-    });
+    return dio.delete('/un-bookmark', queryParameters: {'itemId': itemId});
   }
 
-  Future<Response<dynamic>> checkBookmark(
-      String itemId, String username) async {
+  Future<Response<dynamic>> checkBookmark(String itemId) async {
     dio = JwtInterceptor().addInterceptors(dio);
-    return dio.get('/checkBookmark', queryParameters: {
-      'itemId': itemId,
-      'username': username,
-    });
+    return dio.get('/checkBookmark', queryParameters: {'itemId': itemId});
   }
 
   Future<Response<dynamic>> getBookmarkByUsername(String username) async {
