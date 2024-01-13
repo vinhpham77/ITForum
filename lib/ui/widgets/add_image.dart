@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -12,7 +11,7 @@ typedef ImageCallback = Function(String imagePath);
 
 class AddImage extends StatefulWidget {
   final ImageCallback imageCallback;
-  AddImage({required this.imageCallback});
+  const AddImage({super.key, required this.imageCallback});
 
   @override
   State<AddImage> createState() => _AddImageState();
@@ -25,8 +24,8 @@ class _AddImageState extends State<AddImage> {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: getImage,
-      tooltip: 'Add image',
-      icon: Icon(Icons.image),
+      tooltip: 'Thêm ảnh',
+      icon: const Icon(Icons.image),
     );
   }
 
@@ -36,13 +35,11 @@ class _AddImageState extends State<AddImage> {
     if (image != null) {
       var future = _imageRepository.upload(image);
       future.then((response) {
-        widget.imageCallback('![Tux, the Linux mascot](${ApiConfig.baseUrl}/${ApiConfig.imagesEndpoint}/${response.data.toString()})');
+        widget.imageCallback('![Mô tả ảnh](${ApiConfig.baseUrl}/${ApiConfig.imagesEndpoint}/${response.data.toString()})');
       }).catchError((error) {
         String message = getMessageFromException(error);
         showTopRightSnackBar(context, message, NotifyType.error);
       });
-    } else {
-      print('No image selected.');
     }
   }
 }

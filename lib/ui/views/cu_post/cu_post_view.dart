@@ -192,7 +192,7 @@ class CuPost extends StatelessWidget {
           child: Markdown(
             data: getMarkdown(state),
             styleSheet:
-            MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
               textScaleFactor: 1.4,
               h1: Theme.of(context)
                   .textTheme
@@ -212,10 +212,10 @@ class CuPost extends StatelessWidget {
                   .copyWith(fontSize: 13),
               p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
               blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey.shade700,
-              ),
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey.shade700,
+                  ),
               listBullet: const TextStyle(fontSize: 16),
             ),
             softLineBreak: true,
@@ -287,10 +287,6 @@ class CuPost extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                margin: const EdgeInsets.only(right: 12),
-                child: AddImage(imageCallback: insertText),
-              ),
               for (var tag in state.selectedTags)
                 CustomTagItem(
                   tagName: tag.name,
@@ -306,35 +302,44 @@ class CuPost extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
+        Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(8),
+                    bottomRight: Radius.circular(8)),
+                color: Colors.white,
               ),
-            ],
-            borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8)),
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
-          height: contentHeight + (state.selectedTags.length == 3 ? 8 : 0),
-          child: TextFormField(
-            controller: _contentController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Vui lòng nhập nội dung';
-              }
-              return null;
-            },
-            maxLines: null,
-            decoration: const InputDecoration.collapsed(
-              hintText: 'Viết nội dung ở đây...',
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
+              height: contentHeight + (state.selectedTags.length == 3 ? 8 : 0),
+              child: TextFormField(
+                controller: _contentController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập nội dung';
+                  }
+                  return null;
+                },
+                maxLines: null,
+                decoration: const InputDecoration.collapsed(
+                  hintText: 'Viết nội dung ở đây...',
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              top: 8,
+              right: 12,
+              child: AddImage(imageCallback: insertText),
+            ),
+          ],
         ),
         _buildActionContainer(context, state)
       ],
@@ -391,7 +396,8 @@ class CuPost extends StatelessWidget {
   }
 
   Container _buildActionContainer(BuildContext context, CuPostSubState state) {
-    bool isWaiting = state is CuPublicPostWaitingState || state is CuPrivatePostWaitingState;
+    bool isWaiting =
+        state is CuPublicPostWaitingState || state is CuPrivatePostWaitingState;
 
     return Container(
         margin: const EdgeInsets.only(top: 16),
@@ -399,9 +405,11 @@ class CuPost extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             FilledButton(
-              onPressed: isWaiting ? null : () {
-                savePost(context, false, state);
-              },
+              onPressed: isWaiting
+                  ? null
+                  : () {
+                      savePost(context, false, state);
+                    },
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -422,10 +430,13 @@ class CuPost extends StatelessWidget {
                 children: [
                   TextButton(
                     style: TextButton.styleFrom(),
-                    onPressed: isWaiting ? null : () {
-                      savePost(context, true, state);
-                    },
-                    child: const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
+                    onPressed: isWaiting
+                        ? null
+                        : () {
+                            savePost(context, true, state);
+                          },
+                    child:
+                        const Text('Lưu tạm', style: TextStyle(fontSize: 16)),
                   ),
                   if (state is CuPrivatePostWaitingState)
                     const SizedBox(
@@ -552,12 +563,12 @@ class CuPost extends StatelessWidget {
   void insertText(String input) {
     final text = _contentController.text;
     final textSelection = _contentController.selection;
-    final newText;
-    if(!textSelection.isValid)
-      newText = input;
-    else
-      newText = text.replaceRange(textSelection.start, textSelection.end, input);
-    final textSelectionNew = TextSelection.collapsed(offset: textSelection.start + input.length);
+    final String newText;
+    final int cursorPosition = textSelection.isValid ? textSelection.end : text.length;
+
+    newText = text.replaceRange(cursorPosition, cursorPosition, input);
+
+    final textSelectionNew = TextSelection.collapsed(offset: cursorPosition + input.length);
 
     _contentController.text = newText;
     _contentController.selection = textSelectionNew;
