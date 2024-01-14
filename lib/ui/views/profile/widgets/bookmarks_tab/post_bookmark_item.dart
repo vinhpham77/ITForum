@@ -46,90 +46,93 @@ class PostBookmarkItem extends StatelessWidget {
                 size: 54,
               )),),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  InkWell(
-                    onTap: postBookmark.user == null
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: postBookmark.user == null
+                          ? null
+                          : () => {
+                        appRouter.go(
+                            '/profile/${postBookmark.user?.username}',
+                            extra: {})
+                      },
+                      hoverColor: Colors.black12,
+                      child:
+                    Text(
+                      postBookmark.user?.displayName ?? 'Người dùng ẩn danh',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.indigo[700]),
+                    ),),
+                    const SizedBox(width: 12),
+                    buildIconField(Icons.auto_fix_high_outlined,
+                        getTimeAgo(postBookmark.updatedAt), timeStyle)
+                    ,
+                    buildIconField(Icons.access_time_outlined,
+                        getTimeAgo(postBookmark.bookmarkedAt), timeStyle)
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 4),
+                  child: InkWell(
+                    onTap: postBookmark.title == null
                         ? null
-                        : () => {
-                      appRouter.go(
-                          '/profile/${postBookmark.user?.username}',
-                          extra: {})
+                        : () =>
+                    {
+                      appRouter.go('/posts/${postBookmark.id}', extra: {})
                     },
                     hoverColor: Colors.black12,
-                    child:
-                  Text(
-                    postBookmark.user?.displayName ?? 'Người dùng ẩn danh',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.indigo[700]),
-                  ),),
-                  const SizedBox(width: 12),
-                  buildIconField(Icons.auto_fix_high_outlined,
-                      getTimeAgo(postBookmark.updatedAt), timeStyle)
-                  ,
-                  buildIconField(Icons.access_time_outlined,
-                      getTimeAgo(postBookmark.bookmarkedAt), timeStyle)
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 4),
-                child: InkWell(
-                  onTap: postBookmark.title == null
-                      ? null
-                      : () =>
-                  {
-                    appRouter.go('/posts/${postBookmark.id}', extra: {})
-                  },
-                  hoverColor: Colors.black12,
-                  child: Text(
-                    postBookmark.title ?? 'Bài viết không còn tồn tại',
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                    child: Text(
+                      postBookmark.title ?? 'Bài viết không còn tồn tại',
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ),
-              ),
-              Row(
-                children: [
-                  Row(children: [
-                    for (var tag in postBookmark.tags)
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          tag,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.black54,
+                Row(
+                  children: [
+                    Row(children: [
+                      for (var tag in postBookmark.tags)
+                        Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            tag,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.black54,
+                            ),
                           ),
                         ),
-                      ),
-                    if (postBookmark.tags.isNotEmpty) const SizedBox(width: 16),
-                    buildIconField(
-                        Icons.comment_outlined,
-                        postBookmark.commentCount.toString(), fieldCountStyle),
-                    buildIconField(
-                        postBookmark.score < 0
-                            ? Icons.trending_down_outlined
-                            : Icons.trending_up_outlined,
-                        postBookmark.score.toString(), fieldCountStyle),
-                  ]),
-                ],
-              ),
-            ],
+                      if (postBookmark.tags.isNotEmpty) const SizedBox(width: 16),
+                      buildIconField(
+                          Icons.comment_outlined,
+                          postBookmark.commentCount.toString(), fieldCountStyle),
+                      buildIconField(
+                          postBookmark.score < 0
+                              ? Icons.trending_down_outlined
+                              : Icons.trending_up_outlined,
+                          postBookmark.score.toString(), fieldCountStyle),
+                    ]),
+                  ],
+                ),
+              ],
+            ),
           ),
         ]
         ,

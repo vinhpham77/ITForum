@@ -7,17 +7,17 @@ import 'ui/router.dart';
 
 void main() {
   usePathUrlStrategy();
-  runApp(const MyApp());
+  runApp(const ITForumApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class ITForumApp extends StatefulWidget {
+  const ITForumApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<ITForumApp> createState() => _ITForumAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _ITForumAppState extends State<ITForumApp> {
   Future<void>? _loadJwtFuture;
 
   @override
@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
   Widget buildMaterialApp({bool isLoading = false}) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Starfruit',
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,

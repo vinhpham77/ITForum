@@ -28,77 +28,80 @@ class PostTabItem extends StatelessWidget {
                 size: 54,
               )),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    postUser.user?.displayName ?? 'Người dùng ẩn danh',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.indigo[700]),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    getTimeAgo(postUser.updatedAt),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w300,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      postUser.user?.displayName ?? 'Người dùng ẩn danh',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.indigo[700]),
                     ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 4),
-                child: InkWell(
-                  onTap: postUser.title == null ? null : () => {
-                    appRouter.go('/posts/${postUser.id}', extra: {})
-                  },
-                  hoverColor: Colors.black12,
-                  child: Text(
-                    postUser.title ?? 'Bài viết không còn tồn tại',
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                    const SizedBox(width: 12),
+                    Text(
+                      getTimeAgo(postUser.updatedAt),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 4),
+                  child: InkWell(
+                    onTap: postUser.title == null ? null : () => {
+                      appRouter.go('/posts/${postUser.id}', extra: {})
+                    },
+                    hoverColor: Colors.black12,
+                    child: Text(
+                      postUser.title ?? 'Bài viết không còn tồn tại',
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ),
-              ),
-              Row(
-                children: [
-                  Row(children: [
-                    for (var tag in postUser.tags)
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          tag,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.black54,
+                Row(
+                  children: [
+                    Row(children: [
+                      for (var tag in postUser.tags)
+                        Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            tag,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.black54,
+                            ),
                           ),
                         ),
-                      ),
-                    if (postUser.tags.isNotEmpty)
-                      const SizedBox(width: 16),
-                    buildFieldCount(Icons.comment_outlined, postUser.commentCount),
-                    buildFieldCount(postUser.score < 0
-                        ? Icons.trending_down_outlined
-                        : Icons.trending_up_outlined, postUser.score),
-                  ]),
-                ],
-              ),
-            ],
+                      if (postUser.tags.isNotEmpty)
+                        const SizedBox(width: 16),
+                      buildFieldCount(Icons.comment_outlined, postUser.commentCount),
+                      buildFieldCount(postUser.score < 0
+                          ? Icons.trending_down_outlined
+                          : Icons.trending_up_outlined, postUser.score),
+                    ]),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

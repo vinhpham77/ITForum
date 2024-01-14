@@ -5,6 +5,7 @@ import 'package:cay_khe/ui/views/profile/widgets/bookmarks_tab/bookmarks_tab.dar
 import 'package:cay_khe/ui/views/profile/widgets/count_stats.dart';
 import 'package:cay_khe/ui/views/profile/widgets/custom_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/follows_tab/follows_tab.dart';
+import 'package:cay_khe/ui/views/profile/widgets/personal_tab/personal_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/posts_tab/posts_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/series_tab/series_tab.dart';
 import 'package:cay_khe/ui/views/profile/widgets/tag_chart.dart';
@@ -139,7 +140,7 @@ class Profile extends StatelessWidget {
       flex: _left,
       child: Container(
         transform: Matrix4.translationValues(-8.0, 0, 0),
-        padding: const EdgeInsets.only(right: 20.0),
+        padding: const EdgeInsets.only(right: 16.0),
         child: buildTab(selectedIndex)
       ),
     );
@@ -348,7 +349,7 @@ class Profile extends StatelessWidget {
       case 5:
         return _buildFollowsTab(isFollowers: true);
       case 6:
-        return const Center(child: Text('Tính năng sắp ra mắt'));
+        return  _buildPersonalTab();
       default:
         return _buildPostTab();
     }
@@ -370,5 +371,13 @@ class Profile extends StatelessWidget {
 
   Widget _buildBookmarksTab() {
     return BookmarksTab(username: username, page: page, limit: limit, isPostBookmarks: isPostBookmarks);
+  }
+
+  Widget _buildPersonalTab() {
+    if (params['isBasicInfoOption'] == 1) {
+      return PersonalTab(username: username, isBasicInfoOption: true);
+    }
+
+    return PersonalTab(username: username, isBasicInfoOption: false);
   }
 }

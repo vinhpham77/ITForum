@@ -28,6 +28,8 @@ class FollowsTab extends StatelessWidget {
 
   String get object => isFollowers ? "followers" : "followings";
 
+  String get message => isFollowers ? "người theo dõi" : "đang theo dõi";
+
   @override
   Widget build(BuildContext context) {
     return FollowsTabBlocProvider(
@@ -43,7 +45,15 @@ class FollowsTab extends StatelessWidget {
           },
           child: BlocBuilder<FollowsTabBloc, FollowsTabState>(
             builder: (context, state) {
-              if (state is FollowsSubState) {
+              if (state is FollowsEmptyState) {
+                return _buildSimpleContainer(
+                  child: Text(
+                    "Không có $message ${isFollowers ? 'nào' : 'ai'}!",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                );
+              }
+              else if (state is FollowsSubState) {
                 return Column(
                   children: [
                     _buildFollowList(context, state),
@@ -51,14 +61,21 @@ class FollowsTab extends StatelessWidget {
                   ],
                 );
               } else if (state is FollowsLoadErrorState) {
-                return Center(child: Text(state.message));
+                return _buildSimpleContainer(
+                    child: Center(child: Text(state.message)));
               }
 
-              return const Center(child: CircularProgressIndicator());
+              return _buildSimpleContainer(
+                  child: const Center(child: CircularProgressIndicator()));
             },
           ),
         ));
   }
+
+  Container _buildSimpleContainer({required Widget child}) => Container(
+      padding: const EdgeInsets.only(top: 20),
+      alignment: Alignment.center,
+      child: child);
 
   Widget _buildFollowList(BuildContext context, FollowsSubState state) {
     return Container(

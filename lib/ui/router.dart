@@ -8,11 +8,11 @@ import 'package:cay_khe/ui/views/posts/question_view.dart';
 import 'package:cay_khe/ui/views/profile/profile_view.dart';
 import 'package:cay_khe/ui/views/search/search_view.dart';
 import 'package:cay_khe/ui/views/series_detail/seriesDetail.dart';
-import 'package:cay_khe/ui/views/user_use/changePassword_page.dart';
-import 'package:cay_khe/ui/views/user_use/forgotPassword_page.dart';
-import 'package:cay_khe/ui/views/user_use/login_page.dart';
-import 'package:cay_khe/ui/views/user_use/register_page.dart';
-import 'package:cay_khe/ui/views/user_use/resetPassword_page.dart';
+import 'package:cay_khe/ui/views/user_author/changePassword_page.dart';
+import 'package:cay_khe/ui/views/user_author/forgotPassword_page.dart';
+import 'package:cay_khe/ui/views/user_author/login_page.dart';
+import 'package:cay_khe/ui/views/user_author/register_page.dart';
+import 'package:cay_khe/ui/views/user_author/resetPassword_page.dart';
 import 'package:cay_khe/ui/widgets/screen_with_header_and_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -454,15 +454,43 @@ final appRouter = GoRouter(
                   params: state.extra as Map<String, dynamic>? ?? {}),
             ))),
     GoRoute(
-        path: '/profile/:username/personal',
-        pageBuilder: (context, state) => MaterialPage<void>(
-            key: UniqueKey(),
-            child: ScreenWithHeaderAndFooter(
-              body: Profile(
-                  username: state.pathParameters['username']!,
-                  selectedIndex: 6,
-                  params: state.extra as Map<String, dynamic>? ?? {}),
-            ))),
+      path: '/profile/:username/personal',
+      redirect: (BuildContext context, GoRouterState state) async {
+        return '/profile/${state.pathParameters['username']}/personal/basic-info';
+      },
+    ),
+    GoRoute(
+        path: '/profile/:username/personal/basic-info',
+        pageBuilder: (context, state) {
+          Map<String, dynamic> params =
+              state.extra as Map<String, dynamic>? ?? {};
+          params['isBasicInfoOption'] = 1;
+
+          return MaterialPage<void>(
+              key: UniqueKey(),
+              child: ScreenWithHeaderAndFooter(
+                body: Profile(
+                    username: state.pathParameters['username']!,
+                    selectedIndex: 6,
+                    params: params),
+              ));
+        }),
+    GoRoute(
+        path: '/profile/:username/personal/bio',
+        pageBuilder: (context, state) {
+          Map<String, dynamic> params =
+              state.extra as Map<String, dynamic>? ?? {};
+          params['isBasicInfoOption'] = 0;
+
+          return MaterialPage<void>(
+              key: UniqueKey(),
+              child: ScreenWithHeaderAndFooter(
+                body: Profile(
+                    username: state.pathParameters['username']!,
+                    selectedIndex: 6,
+                    params: params),
+              ));
+        }),
   ],
   errorPageBuilder: (context, state) => const MaterialPage<void>(
       key: ValueKey('not-found'),

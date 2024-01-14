@@ -7,13 +7,15 @@ import 'package:cay_khe/ui/widgets/notification.dart';
 import 'package:cay_khe/validators/vadidatiions.dart';
 import 'package:flutter/material.dart';
 
+import '../repositories/user_repository.dart';
+
 class ResetPasswordBloc {
   final StreamController _usernameController = StreamController();
   final StreamController _otpController = StreamController();
   final StreamController _passController = StreamController();
   final StreamController _repassController = StreamController();
   StreamController<String> loginStatusController = StreamController();
-  final AuthRepository _userRepository = AuthRepository();
+  final UserRepository _userRepository = UserRepository();
 
   Stream get usernameStream => _usernameController.stream;
 
@@ -63,6 +65,7 @@ class ResetPasswordBloc {
           context, 'Đổi mật khẩu thành công!', NotifyType.success);
       return Future<bool>.value(true);
     }).catchError((error) {
+      print("loi r");
       String message = getMessageFromException(error);
       showTopRightSnackBar(context, message, NotifyType.error);
       return Future<bool>.value(false);

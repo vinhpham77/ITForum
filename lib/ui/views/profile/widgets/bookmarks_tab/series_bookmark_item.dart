@@ -47,72 +47,75 @@ class SeriesBookmarkItem extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  InkWell(
-                    onTap: seriesBookmark.user == null
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: seriesBookmark.user == null
+                          ? null
+                          : () => {
+                                appRouter.go(
+                                    '/profile/${seriesBookmark.user?.username}',
+                                    extra: {})
+                              },
+                      hoverColor: Colors.black12,
+                      child: Text(
+                        seriesBookmark.user?.displayName ?? 'Người dùng ẩn danh',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.indigo[700]),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    buildIconField(Icons.auto_fix_high_outlined,
+                        getTimeAgo(seriesBookmark.updatedAt), timeStyle),
+                    buildIconField(Icons.access_time_outlined,
+                        getTimeAgo(seriesBookmark.bookmarkedAt), timeStyle)
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 4),
+                  child: InkWell(
+                    onTap: seriesBookmark.title == null
                         ? null
                         : () => {
-                              appRouter.go(
-                                  '/profile/${seriesBookmark.user?.username}',
-                                  extra: {})
+                              appRouter
+                                  .go('/posts/${seriesBookmark.id}', extra: {})
                             },
                     hoverColor: Colors.black12,
                     child: Text(
-                      seriesBookmark.user?.displayName ?? 'Người dùng ẩn danh',
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.indigo[700]),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  buildIconField(Icons.auto_fix_high_outlined,
-                      getTimeAgo(seriesBookmark.updatedAt), timeStyle),
-                  buildIconField(Icons.access_time_outlined,
-                      getTimeAgo(seriesBookmark.bookmarkedAt), timeStyle)
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 4),
-                child: InkWell(
-                  onTap: seriesBookmark.title == null
-                      ? null
-                      : () => {
-                            appRouter
-                                .go('/posts/${seriesBookmark.id}', extra: {})
-                          },
-                  hoverColor: Colors.black12,
-                  child: Text(
-                    seriesBookmark.title ?? 'Series không còn tồn tại',
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                      seriesBookmark.title ?? 'Series không còn tồn tại',
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ),
-              ),
-              Row(
-                children: [
-                  buildIconField(
-                      Icons.backup_table_rounded,
-                      seriesBookmark.postIds.length.toString(),
-                      fieldCountStyle),
-                  buildIconField(Icons.comment_outlined,
-                      seriesBookmark.commentCount.toString(), fieldCountStyle),
-                  buildIconField(
-                      seriesBookmark.score < 0
-                          ? Icons.trending_down_outlined
-                          : Icons.trending_up_outlined,
-                      seriesBookmark.score.toString(),
-                      fieldCountStyle)
-                ],
-              ),
-            ],
+                Row(
+                  children: [
+                    buildIconField(
+                        Icons.backup_table_rounded,
+                        seriesBookmark.postIds.length.toString(),
+                        fieldCountStyle),
+                    buildIconField(Icons.comment_outlined,
+                        seriesBookmark.commentCount.toString(), fieldCountStyle),
+                    buildIconField(
+                        seriesBookmark.score < 0
+                            ? Icons.trending_down_outlined
+                            : Icons.trending_up_outlined,
+                        seriesBookmark.score.toString(),
+                        fieldCountStyle)
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

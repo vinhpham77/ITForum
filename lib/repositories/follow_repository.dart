@@ -38,11 +38,9 @@ class FollowRepository {
     return dio.post('/unfollow', data: followed);
   }
 
-  Future<Response<dynamic>> checkfollow(
-      String follower, String followed) async {
+  Future<Response<dynamic>> checkFollow(String followed) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/check', queryParameters: {
-      'follower': follower,
       'followed': followed,
     });
   }
@@ -51,10 +49,7 @@ class FollowRepository {
     return dio.get('/totalFollower/$followedId');
   }
 
-  Future<Response<dynamic>> getSeries({
-    required int page,
-    int? limit
-  }) async {
+  Future<Response<dynamic>> getSeries({required int page, int? limit}) async {
     dio = JwtInterceptor().addInterceptors(dio);
     return dio.get('/get/series?page=${page}&limit=${limit}');
   }

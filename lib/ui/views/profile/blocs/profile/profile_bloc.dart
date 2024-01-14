@@ -44,7 +44,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   Future<void> _loadProfile(
       LoadProfileEvent event, Emitter<ProfileState> emit) async {
     try {
-      final userFuture = _userRepository.getUser(event.username);
+      final userFuture = _userRepository.get(event.username);
       final isFollowingFuture =
           JwtPayload.sub != null && JwtPayload.sub != event.username
               ? _followRepository.isFollowing(event.username)

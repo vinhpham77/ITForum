@@ -20,16 +20,13 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../dtos/jwt_payload.dart';
-import '../../../dtos/notify_type.dart';
 import '../../../dtos/vote_dto.dart';
 import '../../../models/vote.dart';
 import '../../../repositories/post_repository.dart';
 import '../../../repositories/sp_repository.dart';
 import '../../../repositories/vote_repository.dart';
-import '../../common/utils/message_from_exception.dart';
 import '../../router.dart';
 import '../../widgets/comment/comment_view.dart';
-import '../../widgets/notification.dart';
 import '../post_detail/menuAnchor.dart';
 
 class SeriesDetail extends StatefulWidget {
@@ -49,37 +46,26 @@ class _SeriesDetailState extends State<SeriesDetail> {
   final userRepository = UserRepository();
   final followRepository = FollowRepository();
   final bookmarkRepository = BookmarkRepository();
-  late SeriesDetailBloc seriesDetailBloc;
-  late List<String> listTagsPost;
-  late List<String> listTagsSeries;
   late Follow follow;
   late List<PostAggregation> listPostDetail = [];
   bool stateVote = false;
   bool upVote = false;
   bool downVote = false;
-  bool typeVote = false;
-  bool isHoveredTitle = false;
-  bool isClickedTitle = false;
   bool isHoveredUserLink = false;
   bool isFollow = false;
   bool isBookmark = false;
   bool isLoading = false;
   bool isPrivate = false;
+  bool isPrivateNoAuth = false;
   String idVote = '';
   String type = "series";
-  String username = JwtPayload.sub ?? '';
   String _currentId = '';
   int totalSeries = 0;
   int totalFollow = 0;
   int score = 0;
   User user = User.empty();
-  User authorSeries = User.empty();
-  List<String> listTag = [];
-  String textPrivate = "";
-  int scoreNormal = 0;
   Sp sp = Sp.constructor();
-  bool isView = false;
-  bool loi = false;
+
 
   @override
   void initState() {
@@ -108,12 +94,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
       });
     }
     await _loadListPost(widget.id);
-    var futureCheckVote = _loadCheckVote(widget.id, JwtPayload.sub ?? '');
-    var futureUser = _loadUser(username);
-    var futureFollow = _loadFollow(user.username, authorSeries.username);
-    var futureBookmark = _loadBookmark(widget.id, username);
+    var futureCheckVote = _loadCheckVote(widget.id);
+    var futureUser = _loadUser(JwtPayload.sub ?? '');
+    var futureFollow = _loadFollow(JwtPayload.sub ?? '', sp.createdBy);
+    var futureBookmark = _loadBookmark(widget.id);
     var futureTotalSeries = _loadTotalSeries(sp.createdBy);
-    var futureTotalFollower = _loadTotalFollower(authorSeries.username);
+    var futureTotalFollower = _loadTotalFollower(sp.createdBy);
     await Future.wait([
       futureCheckVote,
       futureUser,
@@ -128,7 +114,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
         isLoading = false;
       });
     }
-    // await _loadingCompleter.future;
   }
 
   @override
@@ -136,7 +121,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       return SizedBox(
           width: constraints.maxWidth,
-          child: !loi
+          child: !isPrivateNoAuth
               ? !isLoading
                   ? Center(
                       child: SizedBox(
@@ -164,8 +149,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
                                         MoreHoriz(
                                             type: type,
                                             idContent: widget.id,
-                                            authorname: authorSeries.username,
-                                            username: username),
+                                            authorname: sp.createdBy,
+                                            username: JwtPayload.sub ?? ''),
                                         if (sp != null)
                                           SeriesContentWidget(sp: sp)
                                         else
@@ -190,10 +175,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     )
                   : _buildLoadingIndicator()
               : const Center(
-              child: Text(
-                "Bạn không có quyền xem bài viết này",
-                style: TextStyle(fontSize: 28),
-              )));
+                  child: Text(
+                  "Bạn không có quyền xem bài viết này",
+                  style: TextStyle(fontSize: 28),
+                )));
     });
   }
 
@@ -220,24 +205,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
             ),
           ),
         ),
-        // Row(
-        //   children: [
-        //     IconButton(onPressed: () => {}, icon: const Icon(Icons.add)),
-        //     const Text("Add my post to this series")
-        //   ],
-        // )
       ],
     );
-  }
-
-  bool checkPrivate(String userName, String authorName, bool isPrivate) {
-    if (isPrivate && userName == authorName || !isPrivate) {
-      textPrivate = "";
-      return true;
-    } else {
-      textPrivate = "Bạn không có quyền xem bài viết này";
-      return false;
-    }
   }
 
   Widget _buildLoadingIndicator() {
@@ -248,16 +217,15 @@ class _SeriesDetailState extends State<SeriesDetail> {
     );
   }
 
-  Future<bool> checkVote(String postId, String username) async {
+  Future<bool> checkVote(String postId) async {
     Future<bool> isFuture;
-    var future = voteRepository.checkVote(postId, username);
+    var future = voteRepository.checkVote(postId);
     isFuture = future.then((response) {
       if (response.data == null) {
         return Future<bool>.value(false);
       } else {
         Vote vote = Vote.fromJson(response.data);
         idVote = vote.id;
-        typeVote = vote.type;
         return Future<bool>.value(true);
       }
     }).catchError((error) {
@@ -266,9 +234,9 @@ class _SeriesDetailState extends State<SeriesDetail> {
     return isFuture;
   }
 
-  Future<void> _loadCheckVote(String postId, String username) async {
-    if (username != null) {
-      var futureVote = await voteRepository.checkVote(postId, username);
+  Future<void> _loadCheckVote(String postId) async {
+    if (JwtPayload.sub != null) {
+      var futureVote = await voteRepository.checkVote(postId);
       if (futureVote.data is Map<String, dynamic>) {
         Vote vote = Vote.fromJson(futureVote.data);
         setState(() {
@@ -301,139 +269,142 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
   }
 
-  Future<void> _loadScoreSeries(String postId) async {
-    var futureSp = await spRepository.getOne(postId);
-    Sp sp = Sp.fromJson(futureSp.data);
-    if (mounted) {
-      setState(() {
-        score = sp.score;
-        isPrivate = sp.isPrivate;
-      });
-    }
-  }
-
   Widget stickySideBar() {
-    return Column(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    appRouter.go("/profile/${authorSeries.username}/posts");
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child:
-                        UserAvatar(imageUrl: authorSeries.avatarUrl, size: 48),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      appRouter.go("/profile/${sp.createdBy}/posts");
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child:
+                          UserAvatar(imageUrl: sp.user.avatarUrl, size: 48),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      onEnter: (_) {
-                        setState(() {
-                          isHoveredUserLink = true;
-                        });
-                      },
-                      onExit: (_) {
-                        setState(() {
-                          isHoveredUserLink = false;
-                        });
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          appRouter
-                              .go("/profile/${authorSeries.username}/posts");
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        onEnter: (_) {
+                          setState(() {
+                            isHoveredUserLink = true;
+                          });
                         },
-                        child: Text(
-                          authorSeries.displayName,
-                          style: TextStyle(
-                            color: isHoveredUserLink
-                                ? Colors.lightBlueAccent
-                                : Colors.indigo,
-                            decoration: isHoveredUserLink
-                                ? TextDecoration.underline
-                                : null,
+                        onExit: (_) {
+                          setState(() {
+                            isHoveredUserLink = false;
+                          });
+                        },
+                        child: GestureDetector(
+                          onTap: () {
+                            appRouter
+                                .go("/profile/${sp.createdBy}/posts");
+                          },
+                          child: Text(
+                            sp.user.displayName,
+                            style: TextStyle(
+                              color: isHoveredUserLink
+                                  ? Colors.lightBlueAccent
+                                  : Colors.indigo,
+                              decoration: isHoveredUserLink
+                                  ? TextDecoration.underline
+                                  : null,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text("@${authorSeries.username}"),
-                    const SizedBox(height: 8),
-                    if (authorSeries.id != user.id)
-                      ElevatedButton(
-                        onPressed: () => _follow(),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            isFollow
-                                ? const Icon(Icons.check)
-                                : const Icon(Icons.add),
-                            isFollow ? const Text("Đã theo dõi") : const Text('Theo dõi'),
-                          ],
+                      const SizedBox(height: 8),
+                      Text("@${sp.createdBy}"),
+                      const SizedBox(height: 8),
+                      if (sp.user.id != user.id)
+                        ElevatedButton(
+                          onPressed: () => _follow(),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              isFollow
+                                  ? const Icon(Icons.check,color: Colors.white,size: 16)
+                                  : const Icon(Icons.add,color: Colors.white,size: 16),
+                              const SizedBox(width: 4),
+                              isFollow
+                                  ? const Text("Đã theo dõi",style: TextStyle(color: Colors.white))
+                                  : const Text('Theo dõi',style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildIconWithText(
-                    Icons.verified_user_sharp, totalFollow.toString()),
-                const SizedBox(width: 12),
-                _buildIconWithText(
-                    Icons.pending_actions, totalSeries.toString()),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: ElevatedButton(
-                onPressed: authorSeries.id != user.id
-                    ? () => _toggleBookmark()
-                    : null,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    isBookmark
-                        ? const Icon(Icons.bookmark)
-                        : const Icon(Icons.bookmark_add_outlined),
-                    isBookmark
-                        ? const Text('HỦY BOOKMARK SERIES')
-                        : const Text('BOOKMARK SERIES NÀY'),
-                  ],
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildIconWithText(
+                      Icons.verified_user_sharp, totalFollow.toString()),
+                  const SizedBox(width: 12),
+                  _buildIconWithText(
+                      Icons.pending_actions, totalSeries.toString()),
+                ],
+              ),
+              if (sp.user.id != user.id)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: ElevatedButton(
+                  onPressed:
+                      sp.user.id != user.id ? () => _toggleBookmark() : null,
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      isBookmark
+                          ? const Icon(Icons.bookmark,color: Colors.white,size: 16)
+                          : const Icon(Icons.bookmark_add_outlined,color: Colors.white,size: 16),
+                      const SizedBox(width: 4),
+                      isBookmark
+                          ? const Text('HỦY BOOKMARK SERIES',style: TextStyle(color: Colors.white))
+                          : const Text('BOOKMARK SERIES NÀY',style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Container(
-          height: 20,
-          width: 200,
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.grey,
-                width: 1.0, // Độ dày của border
+            ],
+          ),
+          Container(
+            height: 20,
+            width: 200,
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey,
+                  width: 1.0, // Độ dày của border
+                ),
               ),
             ),
           ),
-        ),
-        _buildSocialShareSection(widget.id)
-      ],
+          _buildSocialShareSection(widget.id)
+        ],
+      ),
     );
   }
 
@@ -493,12 +464,11 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   Future<void> _loadListPost(String seriesId) async {
     try {
-      var fufutureSeries = await seriesRepository.getOneDetail(seriesId);
-      sp = Sp.fromJson(fufutureSeries.data);
-      authorSeries = sp.user;
+      var futureSeries = await seriesRepository.getOneDetail(seriesId);
+      sp = Sp.fromJson(futureSeries.data);
       for (var e in sp.posts) {
         PostAggregation p = PostAggregation.empty();
-        p.user = authorSeries;
+        p.user = sp.user;
         p.title = e.title;
         p.id = e.id;
         p.score = e.score;
@@ -513,50 +483,15 @@ class _SeriesDetailState extends State<SeriesDetail> {
         }
       }
     } catch (error) {
-      loi = true;
+      isPrivateNoAuth = true;
     }
-
-    // var fufutureSeries=seriesRepository.getOneDetail(seriesId);
-    // fufutureSeries.then((value) {
-    //   setState(() {
-    //     sp = Sp.fromJson(value.data);
-    //     authorSeries = sp.user;
-    //     for (var e in sp.posts) {
-    //       PostAggregation p = PostAggregation.empty();
-    //       p.user = authorSeries;
-    //       p.title = e.title;
-    //       p.id = e.id;
-    //       p.score = e.score;
-    //       p.content = e.content;
-    //       p.updatedAt = e.updatedAt;
-    //       p.tags = e.tags;
-    //       p.private = e.isPrivate;
-    //       score = sp.score;
-    //       isPrivate = sp.isPrivate;
-    //       if (listPostDetail.length < sp.posts.length) {
-    //         listPostDetail.add(p);
-    //       }
-    //     }
-    //   });
-    //
-    // } ).catchError((error){
-    //   print("loi");
-    //     loi = true;
-    //   });
-    //
-
-    // Map<String, int> uniqueTagCount = countUniqueTags(listTag);
-    // List<String> getTop5Tags = this.getTop5Tags(uniqueTagCount);
-    // listTag = getTop5Tags;
   }
 
   List<String> getTop5Tags(Map<String, int> tagCount) {
     var sortedEntries = tagCount.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-
     var top5Entries = sortedEntries.take(5);
     List<String> top5Tags = top5Entries.map((entry) => entry.key).toList();
-
     return top5Tags;
   }
 
@@ -570,7 +505,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
         tagCount[tag] = 1;
       }
     }
-
     return tagCount;
   }
 
@@ -581,7 +515,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
         messageValue = 'Người theo dõi';
         break;
       case Icons.pending_actions:
-        messageValue = 'Bài viết';
+        messageValue = 'Series';
         break;
       default:
         messageValue = 'Default Message';
@@ -604,23 +538,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   Future<void> _loadUser(String username) async {
     if (JwtPayload.sub != null) {
-      var futureUser = await userRepository.getUser(username);
+      var futureUser = await userRepository.get(username);
       user = User.fromJson(futureUser.data);
     }
   }
-
-  Future<void> _loadSeriesDetail(String id) async {
-    var future = seriesRepository.getOneDetail(id);
-    future.then((response) {
-      sp = Sp.fromJson(response.data);
-    }).catchError((error) {
-      String message = getMessageFromException(error);
-      showTopRightSnackBar(context, message, NotifyType.error);
-    });
-  }
-
-  Future<void> _loadBookmark(String itemId, String username) async {
-    var future = await bookmarkRepository.checkBookmark(itemId, username);
+  Future<void> _loadBookmark(String itemId) async {
+    var future = await bookmarkRepository.checkBookmark(itemId);
     if (future.data == true) {
       if (mounted) {
         setState(() {
@@ -637,10 +560,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadFollow(String follower, String followed) async {
-    if (user.username == '') {
+    if (follower == '') {
       return;
     }
-    var future = await followRepository.checkfollow(follower, followed);
+    var future = await followRepository.checkFollow(followed);
     if (future.data is Map<String, dynamic>) {
       if (mounted) {
         setState(() {
@@ -662,8 +585,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       appRouter.go("/login");
     } else {
       if (isFollow == true) {
-        var future = await followRepository.checkfollow(
-            user.username, authorSeries.username);
+        var future = await followRepository.checkFollow(sp.createdBy);
         if (future.data != "Follow not found") {
           Follow follow = Follow.fromJson(future.data);
           await followRepository.delete(follow.id);
@@ -676,7 +598,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       } else {
         FollowDTO newFollow = FollowDTO(
             follower: user.username,
-            followed: authorSeries.username,
+            followed: sp.createdBy,
             createdAt: DateTime.now());
         await followRepository.add(newFollow);
         if (mounted) {
@@ -685,7 +607,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
           });
         }
       }
-      _loadTotalFollower(authorSeries.username);
+      _loadTotalFollower(sp.createdBy);
     }
   }
 
@@ -727,19 +649,10 @@ class _SeriesDetailState extends State<SeriesDetail> {
       }
     } else {
       appRouter.go('/login');
-      // String message = "Bạn chưa đăng nhập";
-      //  showTopRightSnackBar(context, message, NotifyType.error);
     }
   }
 
   void _upVote() async {
-    if (typeVote == true) {
-      scoreNormal = score - 1;
-    } else {
-      if (typeVote == false) {
-        scoreNormal = score + 1;
-      }
-    }
     bool hasVoted;
     if (JwtPayload.sub == null) {
       appRouter.go('/login');
@@ -750,7 +663,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       stateVote = true;
     });
 
-    hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+    hasVoted = await checkVote(widget.id);
     if (hasVoted == false) {
       VoteDTO voteDTO = VoteDTO(
           postId: widget.id,
@@ -787,7 +700,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
             upVote = true;
             downVote = false;
           });
-          //await voteRepository.deleteVote(idVote);
         }
       }
     }
@@ -806,7 +718,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
         setState(() {
           stateVote = true;
         });
-        hasVoted = await checkVote(widget.id, JwtPayload.sub!);
+        hasVoted = await checkVote(widget.id);
         if (hasVoted == false) {
           VoteDTO voteDTO = VoteDTO(
               postId: widget.id,

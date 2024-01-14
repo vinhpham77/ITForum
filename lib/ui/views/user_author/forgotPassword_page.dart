@@ -1,4 +1,5 @@
 import 'package:cay_khe/blocs/forgotPassword_bloc.dart';
+import 'package:cay_khe/ui/router.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -102,7 +103,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     bool isValid = await bloc.isValidInfo(_usernameController.text);
 
     if (isValid) {
-      GoRouter.of(context).go("/resetPass");
+      appRouter.go("/resetPass");
     }
   }
 
