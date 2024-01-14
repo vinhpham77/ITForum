@@ -1,9 +1,11 @@
 import 'package:cay_khe/dtos/jwt_payload.dart';
+import 'package:cay_khe/repositories/auth_repository.dart';
 import 'package:cay_khe/ui/router.dart';
 import 'package:cay_khe/ui/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class ItemMenu {
   ItemMenu({required this.name, required this.icon, required this.route});
 
@@ -38,6 +40,7 @@ class _RightHeaderState extends State<RightHeader> {
   ];
 
   final searchController = TextEditingController();
+  AuthRepository authRepository = AuthRepository();
 
   @override
   void initState() {
@@ -181,14 +184,16 @@ class _RightHeaderState extends State<RightHeader> {
             },
             menuChildren: List<MenuItemButton>.generate(
               profilerMenu.length,
-
               (int index) => MenuItemButton(
                   onPressed: () async {
                     if (profilerMenu[index].name == "Đăng xuất") {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await authRepository
+                          .logoutUser(prefs.getString('refreshToken')!);
                       prefs.remove('accessToken');
                       prefs.remove('refreshToken');
-                     appRouter.go("/login");
+                      appRouter.go("/");
                     } else {
                       GoRouter.of(context).go(profilerMenu[index].route);
                     }

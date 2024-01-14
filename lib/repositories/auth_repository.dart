@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:cay_khe/api_config.dart';
 import 'package:dio/dio.dart';
-
+import 'package:dio/io.dart';
+import '../ui/common/utils/jwt_interceptor.dart';
 
 class AuthRepository {
   late Dio dio;
@@ -10,6 +11,7 @@ class AuthRepository {
   AuthRepository() {
     dio = Dio(BaseOptions(baseUrl: baseUrl));
   }
+
   Future<Response<dynamic>> loginUser(String username, String password) async {
     return dio.post("/signin", data: {
       'username': username,
@@ -30,5 +32,19 @@ class AuthRepository {
     );
   }
 
+  Future<Response<dynamic>> logoutUser(String refreshToken) async {
+    dio = JwtInterceptor().addInterceptors(dio);
+    if (refreshToken == null) {
+      throw Exception('Chưa cung cấp refresh token');
+    }
+    return dio.get("/logout",
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookies': 'refresh_token=$refreshToken',
+        }
+      ),
+    );
+  }
 
 }
