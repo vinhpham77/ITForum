@@ -3,20 +3,18 @@ import 'dart:async';
 import 'package:cay_khe/api_config.dart';
 import 'package:dio/dio.dart';
 
-import '../ui/common/utils/jwt_interceptor.dart';
-
 class UserRepository {
-  late Dio dio;
-  final String baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.usersEndpoint}";
+  late Dio _dio;
+  final String _baseUrl = "${ApiConfig.baseUrl}/${ApiConfig.usersEndpoint}";
 
   UserRepository() {
-    dio = Dio(BaseOptions(baseUrl: baseUrl));
+    _dio = Dio(BaseOptions(baseUrl: _baseUrl));
   }
 
-  Future<Response<dynamic>> getUser(String username) async {
-    dio = JwtInterceptor().addInterceptors(dio);
-    return dio.get("/$username");
+  Future<Response<dynamic>> get(String username) async {
+    return _dio.get("/$username");
   }
+
   Future<Response<dynamic>> getFollows({
     required String username,
     required int page,
@@ -24,7 +22,7 @@ class UserRepository {
     required bool isFollowed,
   }) async {
     String object = isFollowed ? "followers" : "followings";
-    return dio.get(
+    return _dio.get(
       "/$username/$object",
       queryParameters: {
         "page": page,
@@ -34,22 +32,22 @@ class UserRepository {
   }
 
   Future<Response<dynamic>> getStats(String username) async {
-    return dio.get("/stats/$username");
+    return _dio.get("/stats/$username");
   }
   Future<Response<dynamic>> changePassUser(
-      String username, String currentpassword, String newPassword) async {
-    return dio.post(
+      String username, String currentPassword, String newPassword) async {
+    return _dio.post(
       "/changePassword",
       data: {
         'username': username,
-        'currentPassword': currentpassword,
+        'currentPassword': currentPassword,
         'newPassword': newPassword
       },
     );
   }
 
   Future<Response<dynamic>> forgotPassUser(String username) async {
-    return dio.post(
+    return _dio.post(
       "/forgetPassword",
       data: {'username': username},
     );
@@ -57,7 +55,7 @@ class UserRepository {
 
   Future<Response<dynamic>> resetPassUser(
       String username, String newPassword, String otp) async {
-    return dio.post(
+    return _dio.post(
       "/resetPassword",
       data: {'username': username, 'newPassword': newPassword, 'otp': otp},
     );
