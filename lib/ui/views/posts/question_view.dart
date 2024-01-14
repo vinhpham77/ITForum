@@ -112,17 +112,6 @@ class _QuestionViewState extends State<QuestionView> {
               isQuestion: true,
               params: widget.params,
             )),
-        NavigationPost(
-            index: 2,
-            text: "Đã Bookmark",
-            path: "/viewquestionbookmark",
-            widget: BookmarkPost(
-              username: JwtPayload.sub!,
-              page: getPage(widget.params['page'] ?? "1"),
-              limit: 10,
-              isQuestion: true,
-              params: widget.params,
-            )),
       ];
 
   List<NavigationPost> get navi => [

@@ -169,7 +169,7 @@ class _SearchViewState extends State<SearchView> {
       [
         NavigationPost(
             index: 0,
-            text: "bài viết",
+            text: "Bài viết",
             path: "/viewsearch",
             widget: SearchPostView(
               params: widget.params,

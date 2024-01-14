@@ -103,28 +103,6 @@ final appRouter = GoRouter(
               ));
         }),
     GoRoute(
-        path: '/viewquestionbookmark',
-        pageBuilder: (context, state) {
-          return MaterialPage<void>(
-              key: const ValueKey("viewquestionbookmark"),
-              child: ScreenWithHeaderAndFooter(
-                body: QuestionView(
-                    indexSelected: 2, params: convertQuery(query: "")),
-              ));
-        }),
-    GoRoute(
-        path: '/viewquestionbookmark/:query',
-        pageBuilder: (context, state) {
-          return MaterialPage<void>(
-              key: const ValueKey("viewquestionbookmark"),
-              child: ScreenWithHeaderAndFooter(
-                body: QuestionView(
-                    indexSelected: 2,
-                    params: convertQuery(
-                        query: state.pathParameters["query"] ?? "")),
-              ));
-        }),
-    GoRoute(
       path: '/search',
       pageBuilder: (context, state) => const MaterialPage<void>(
         key: ValueKey('search'),
