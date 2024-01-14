@@ -35,16 +35,11 @@ class AuthRepository {
   Future<Response<dynamic>> logoutUser(String refreshToken) async {
     dio = JwtInterceptor().addInterceptors(dio);
     if (refreshToken == null) {
-      throw Exception('Chưa cung cấp refresh token');
+      throw Exception('Đăng xuất thất bại');
     }
-    return dio.get("/logout",
-      options: Options(
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookies': 'refresh_token=$refreshToken',
-        }
-      ),
-    );
+    return dio.post("/logout",queryParameters: {
+      'refreshToken': refreshToken,
+    });
   }
 
 }

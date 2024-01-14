@@ -187,13 +187,7 @@ class _RightHeaderState extends State<RightHeader> {
               (int index) => MenuItemButton(
                   onPressed: () async {
                     if (profilerMenu[index].name == "Đăng xuất") {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      await authRepository
-                          .logoutUser(prefs.getString('refreshToken')!);
-                      prefs.remove('accessToken');
-                      prefs.remove('refreshToken');
-                      appRouter.go("/");
+                      showLogoutConfirmationDialog(context);
                     } else {
                       GoRouter.of(context).go(profilerMenu[index].route);
                     }
@@ -211,4 +205,60 @@ class _RightHeaderState extends State<RightHeader> {
           ),
         ],
       );
+
+  Future<void> showLogoutConfirmationDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: const Text("Bạn có chắc chắn muốn đăng xuất?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {
+                  logoutClient();
+                });
+
+
+              },
+              child: const Text("Thiết bị này"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await authRepository
+                    .logoutUser(prefs.getString('refreshToken')!);
+                setState(()  {
+                  logoutClient();
+                });
+
+              },
+              child: const Text("Tất cả thiết bị"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Hủy bỏ"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> logoutClient() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('accessToken');
+    prefs.remove('refreshToken');
+    JwtPayload.sub=null;
+    JwtPayload.displayName=null;
+    JwtPayload.avatarUrl=null;
+    JwtPayload.iat=null;
+    JwtPayload.exp=null;
+    JwtPayload.role=null;
+    appRouter.go("/");
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:cay_khe/blocs/login_bloc.dart';
+import 'package:cay_khe/ui/router.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -34,13 +35,18 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
-                          child: Text("STARFRUIT",
+                         Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
+                          child:GestureDetector(
+                            onTap:(){
+                              appRouter.go("/");
+                            },
+                            child: const Text("STARFRUIT",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
-                                  fontSize: 50)),
+                                  fontSize: 50),
+                          ) ),
                         ),
                         const Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
