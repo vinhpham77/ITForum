@@ -102,7 +102,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
     await _loadListPost(widget.id);
     var futureCheckVote = _loadCheckVote(widget.id);
     var futureUser = _loadUser(username);
-    var futureFollow = _loadFollow(user.username, sp.createdBy);
+    var futureFollow = _loadFollow(username, sp.createdBy);
     var futureBookmark = _loadBookmark(widget.id);
     var futureTotalSeries = _loadTotalSeries(sp.createdBy);
     var futureTotalFollower = _loadTotalFollower(sp.createdBy);
@@ -335,16 +335,20 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     if (sp.user.id != user.id)
                       ElevatedButton(
                         onPressed: () => _follow(),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             isFollow
-                                ? const Icon(Icons.check)
-                                : const Icon(Icons.add),
+                                ? const Icon(Icons.check,color: Colors.white,size: 16)
+                                : const Icon(Icons.add,color: Colors.white,size: 16),
+                            const SizedBox(width: 4),
                             isFollow
-                                ? const Text("Đã theo dõi")
-                                : const Text('Theo dõi'),
+                                ? const Text("Đã theo dõi",style: TextStyle(color: Colors.white))
+                                : const Text('Theo dõi',style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -352,6 +356,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                 ),
               ],
             ),
+            const SizedBox(height: 4),
             Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -369,16 +374,20 @@ class _SeriesDetailState extends State<SeriesDetail> {
               child: ElevatedButton(
                 onPressed:
                     sp.user.id != user.id ? () => _toggleBookmark() : null,
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     isBookmark
-                        ? const Icon(Icons.bookmark)
-                        : const Icon(Icons.bookmark_add_outlined),
+                        ? const Icon(Icons.bookmark,color: Colors.white,size: 16)
+                        : const Icon(Icons.bookmark_add_outlined,color: Colors.white,size: 16),
+                    const SizedBox(width: 4),
                     isBookmark
-                        ? const Text('HỦY BOOKMARK SERIES')
-                        : const Text('BOOKMARK SERIES NÀY'),
+                        ? const Text('HỦY BOOKMARK SERIES',style: TextStyle(color: Colors.white))
+                        : const Text('BOOKMARK SERIES NÀY',style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -509,7 +518,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
         messageValue = 'Người theo dõi';
         break;
       case Icons.pending_actions:
-        messageValue = 'Bài viết';
+        messageValue = 'Series';
         break;
       default:
         messageValue = 'Default Message';
@@ -554,7 +563,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadFollow(String follower, String followed) async {
-    if (user.username == '') {
+    if (follower == '') {
+      print("loi rong");
       return;
     }
     var future = await followRepository.checkFollow(followed);
@@ -563,12 +573,16 @@ class _SeriesDetailState extends State<SeriesDetail> {
         setState(() {
           follow = Follow.fromJson(future.data);
           isFollow = true;
+          print("isFollow true");
+          print(isFollow);
         });
       }
     } else {
       if (mounted) {
         setState(() {
           isFollow = false;
+          print("isFollow false");
+          print(isFollow);
         });
       }
     }

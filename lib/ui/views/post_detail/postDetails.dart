@@ -579,12 +579,16 @@ class _PostDetailsPage extends State<PostDetailsPage> {
   Widget _buildFollowButton() {
     return ElevatedButton(
       onPressed: () => _follow(),
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          isFollow ? const Icon(Icons.check) : const Icon(Icons.add),
-          isFollow ? const Text("Đã theo dõi") : const Text('Theo dõi'),
+          isFollow ? const Icon(Icons.check, color: Colors.white,size: 16) : const Icon(Icons.add, color: Colors.white,size: 16),
+          const SizedBox(width: 4),
+          isFollow ? const Text("Đã theo dõi", style: TextStyle(color: Colors.white)) : const Text('Theo dõi', style: TextStyle(color: Colors.white)),
         ],
       ),
     );
