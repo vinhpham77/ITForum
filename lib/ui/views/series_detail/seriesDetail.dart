@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:cay_khe/blocs/seriesDetail_bloc.dart';
+
 import 'package:cay_khe/dtos/follow_dto.dart';
 import 'package:cay_khe/models/bookmarkInfo.dart';
 import 'package:cay_khe/models/follow.dart';
@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+
 import '../../../dtos/jwt_payload.dart';
 import '../../../dtos/vote_dto.dart';
 import '../../../models/vote.dart';
@@ -65,7 +66,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
   int score = 0;
   User user = User.empty();
   Sp sp = Sp.constructor();
-
 
   @override
   void initState() {
@@ -285,8 +285,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                       appRouter.go("/profile/${sp.createdBy}/posts");
                     },
                     child: ClipOval(
-                      child:
-                          UserAvatar(imageUrl: sp.user.avatarUrl, size: 48),
+                      child: UserAvatar(imageUrl: sp.user.avatarUrl, size: 48),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -307,8 +306,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                         },
                         child: GestureDetector(
                           onTap: () {
-                            appRouter
-                                .go("/profile/${sp.createdBy}/posts");
+                            appRouter.go("/profile/${sp.createdBy}/posts");
                           },
                           child: Text(
                             sp.user.displayName,
@@ -330,19 +328,24 @@ class _SeriesDetailState extends State<SeriesDetail> {
                         ElevatedButton(
                           onPressed: () => _follow(),
                           style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color(0xFF6C83FE)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               isFollow
-                                  ? const Icon(Icons.check,color: Colors.white,size: 16)
-                                  : const Icon(Icons.add,color: Colors.white,size: 16),
+                                  ? const Icon(Icons.check,
+                                      color: Colors.white, size: 16)
+                                  : const Icon(Icons.add,
+                                      color: Colors.white, size: 16),
                               const SizedBox(width: 4),
                               isFollow
-                                  ? const Text("Đã theo dõi",style: TextStyle(color: Colors.white))
-                                  : const Text('Theo dõi',style: TextStyle(color: Colors.white)),
+                                  ? const Text("Đã theo dõi",
+                                      style: TextStyle(color: Colors.white))
+                                  : const Text('Theo dõi',
+                                      style: TextStyle(color: Colors.white)),
                             ],
                           ),
                         ),
@@ -364,29 +367,34 @@ class _SeriesDetailState extends State<SeriesDetail> {
                 ],
               ),
               if (sp.user.id != user.id)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: ElevatedButton(
-                  onPressed:
-                      sp.user.id != user.id ? () => _toggleBookmark() : null,
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      isBookmark
-                          ? const Icon(Icons.bookmark,color: Colors.white,size: 16)
-                          : const Icon(Icons.bookmark_add_outlined,color: Colors.white,size: 16),
-                      const SizedBox(width: 4),
-                      isBookmark
-                          ? const Text('HỦY BOOKMARK SERIES',style: TextStyle(color: Colors.white))
-                          : const Text('BOOKMARK SERIES NÀY',style: TextStyle(color: Colors.white)),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: ElevatedButton(
+                    onPressed:
+                        sp.user.id != user.id ? () => _toggleBookmark() : null,
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        isBookmark
+                            ? const Icon(Icons.bookmark,
+                                color: Colors.white, size: 16)
+                            : const Icon(Icons.bookmark_add_outlined,
+                                color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        isBookmark
+                            ? const Text('HỦY BOOKMARK SERIES',
+                                style: TextStyle(color: Colors.white))
+                            : const Text('BOOKMARK SERIES NÀY',
+                                style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           Container(
@@ -541,6 +549,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
       user = User.fromJson(futureUser.data);
     }
   }
+
   Future<void> _loadBookmark(String itemId) async {
     var future = await bookmarkRepository.checkBookmark(itemId);
     if (future.data == true) {

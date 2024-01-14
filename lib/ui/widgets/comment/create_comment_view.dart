@@ -1,29 +1,32 @@
-import 'package:cay_khe/dtos/comment.dart';
 import 'package:cay_khe/ui/widgets/add_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:image_picker/image_picker.dart';
 
-import '../../../api_config.dart';
 import '../../../dtos/jwt_payload.dart';
 import '../../../dtos/notify_type.dart';
 import '../../../dtos/sub_comment_aggregate.dart';
 import '../../../dtos/sub_comment_dto.dart';
 import '../../../repositories/comment_repository.dart';
-import '../../../repositories/image_repository.dart';
 import '../../common/utils/message_from_exception.dart';
 import '../notification.dart';
 import '../user_avatar.dart';
 
-typedef CommentChangedCallback = Function(SubCommentAggreGate subCommentAggreGate);
+typedef CommentChangedCallback = Function(
+    SubCommentAggreGate subCommentAggreGate);
 
 class CreateCommentView extends StatefulWidget {
   final String postId;
   final String subId;
   final CommentChangedCallback callback;
   final String context;
-  CreateCommentView({required this.postId, this.subId = '', required this.callback, this.context = ''});
+
+  CreateCommentView(
+      {required this.postId,
+      this.subId = '',
+      required this.callback,
+      this.context = ''});
+
   @override
   State<CreateCommentView> createState() => _CreateCommentViewState();
 }
@@ -33,17 +36,19 @@ class _CreateCommentViewState extends State<CreateCommentView> {
   final TextEditingController _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final CommentRepository commentRepository = CommentRepository();
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _contentController.text = widget.context;
   }
+
   @override
   Widget build(BuildContext context) {
     return Form(
         key: _formKey,
-        child:Column(
+        child: Column(
           children: [
             Row(
               children: [
@@ -56,13 +61,11 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                   child: Text(
                     'Viết',
                     style: TextStyle(
-                      color: (_isEditing)
-                          ? Colors.black87
-                          : Colors.grey.shade400,
+                      color:
+                          (_isEditing) ? Colors.black87 : Colors.grey.shade400,
                       fontSize: 16,
-                      fontWeight: (_isEditing)
-                          ? FontWeight.w500
-                          : FontWeight.w400,
+                      fontWeight:
+                          (_isEditing) ? FontWeight.w500 : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -75,13 +78,11 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                   child: Text(
                     'Xem trước',
                     style: TextStyle(
-                      color: (!_isEditing)
-                          ? Colors.black87
-                          : Colors.grey.shade400,
+                      color:
+                          (!_isEditing) ? Colors.black87 : Colors.grey.shade400,
                       fontSize: 16,
-                      fontWeight: (!_isEditing)
-                          ? FontWeight.w500
-                          : FontWeight.w400,
+                      fontWeight:
+                          (!_isEditing) ? FontWeight.w500 : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -95,7 +96,10 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                   child: InkWell(
                     onTap: () {},
                     child: ClipOval(
-                      child:UserAvatar(imageUrl: JwtPayload.avatarUrl, size: 32,),
+                      child: UserAvatar(
+                        imageUrl: JwtPayload.avatarUrl,
+                        size: 32,
+                      ),
                     ),
                   ),
                 ),
@@ -105,7 +109,9 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                     children: [
                       Row(
                         children: [
-                          _isEditing ? _buildCommentEditingTab() : _buildCommentPreviewTab(context),
+                          _isEditing
+                              ? _buildCommentEditingTab()
+                              : _buildCommentPreviewTab(context),
                         ],
                       ),
                       Padding(
@@ -116,23 +122,31 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                           child: FloatingActionButton(
                             backgroundColor: Color.fromRGBO(96, 120, 254, 1),
                             onPressed: () {
-                              if(!validateOnPressed())
-                                return;
+                              if (!validateOnPressed()) return;
                               Future<Response<dynamic>> future;
-                              if(widget.context == '')
-                                future = commentRepository.add(widget.postId, createCommentDto(widget.subId));
+                              if (widget.context == '')
+                                future = commentRepository.add(widget.postId,
+                                    createCommentDto(widget.subId));
                               else
-                                future = commentRepository.updateSubComment(widget.postId, widget.subId, createCommentDto(""));
+                                future = commentRepository.updateSubComment(
+                                    widget.postId,
+                                    widget.subId,
+                                    createCommentDto(""));
                               future.then((response) {
-                                widget.callback(SubCommentAggreGate.fromJson(response.data));
-                
+                                widget.callback(SubCommentAggreGate.fromJson(
+                                    response.data));
+
                                 _contentController.text = "";
                               }).catchError((error) {
                                 String message = getMessageFromException(error);
-                                showTopRightSnackBar(context, message, NotifyType.error);
+                                showTopRightSnackBar(
+                                    context, message, NotifyType.error);
                               });
                             },
-                            child: Text(widget.context == '' ? "Bình luận" : "Cập nhật", style: TextStyle(color: Colors.white),),
+                            child: Text(
+                              widget.context == '' ? "Bình luận" : "Cập nhật",
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ),
                       )
@@ -142,8 +156,7 @@ class _CreateCommentViewState extends State<CreateCommentView> {
               ],
             )
           ],
-        )
-    );
+        ));
   }
 
   Widget _buildCommentEditingTab() {
@@ -171,30 +184,29 @@ class _CreateCommentViewState extends State<CreateCommentView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: TextFormField(
-                controller: _contentController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập nội dung';
-                  }
-                  return null;
-                },
-                maxLines: null,
-                decoration: const InputDecoration.collapsed(
-                  hintText: 'Viết nội dung ở đây...',
+              Expanded(
+                child: TextFormField(
+                  controller: _contentController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập nội dung';
+                    }
+                    return null;
+                  },
+                  maxLines: null,
+                  decoration: const InputDecoration.collapsed(
+                    hintText: 'Viết nội dung ở đây...',
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
                 ),
-                onChanged: (value) {
-                  setState(() {});
-                },
-              ),),
+              ),
               Column(
-                children: [
-                  AddImage(imageCallback: insertText)
-                ],
+                children: [AddImage(imageCallback: insertText)],
               )
             ],
-          )
-      ),
+          )),
     );
   }
 
@@ -221,8 +233,7 @@ class _CreateCommentViewState extends State<CreateCommentView> {
         height: 200,
         child: Markdown(
           data: _contentController.text,
-          styleSheet:
-          MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
             textScaleFactor: 1.4,
             h1: Theme.of(context)
                 .textTheme
@@ -232,23 +243,17 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                 .textTheme
                 .headlineSmall!
                 .copyWith(fontSize: 28),
-            h3: Theme.of(context)
-                .textTheme
-                .titleLarge!
-                .copyWith(fontSize: 20),
-            h6: Theme.of(context)
-                .textTheme
-                .bodyMedium!
-                .copyWith(fontSize: 13),
+            h3: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 20),
+            h6: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13),
             p: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
             blockquote: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              fontSize: 14,
-              fontStyle: FontStyle.italic,
-              color: Colors.grey.shade700,
-            ),
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade700,
+                ),
             // Custom blockquote style
-            listBullet: const TextStyle(
-                fontSize: 16), // Custom list item bullet style
+            listBullet:
+                const TextStyle(fontSize: 16), // Custom list item bullet style
           ),
           softLineBreak: true,
         ),
@@ -260,11 +265,13 @@ class _CreateCommentViewState extends State<CreateCommentView> {
     final text = _contentController.text;
     final textSelection = _contentController.selection;
     final newText;
-    if(!textSelection.isValid)
+    if (!textSelection.isValid)
       newText = input;
     else
-      newText = text.replaceRange(textSelection.start, textSelection.end, input);
-    final textSelectionNew = TextSelection.collapsed(offset: textSelection.start + input.length);
+      newText =
+          text.replaceRange(textSelection.start, textSelection.end, input);
+    final textSelectionNew =
+        TextSelection.collapsed(offset: textSelection.start + input.length);
 
     _contentController.text = newText;
     _contentController.selection = textSelectionNew;
@@ -286,7 +293,10 @@ class _CreateCommentViewState extends State<CreateCommentView> {
   // }
 
   SubCommentDto createCommentDto(String idFather) {
-    return SubCommentDto(subCommentFatherId: idFather,username: JwtPayload.sub ?? "", content: _contentController.text);
+    return SubCommentDto(
+        subCommentFatherId: idFather,
+        username: JwtPayload.sub ?? "",
+        content: _contentController.text);
   }
 
   bool validateOnPressed() {
