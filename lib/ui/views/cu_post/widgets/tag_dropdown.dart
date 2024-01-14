@@ -49,6 +49,7 @@ class _TagDropdownState extends State<TagDropdown> {
 
     return DropdownMenu<Tag>(
       controller: tagController,
+      menuHeight: 320,
       enableFilter: true,
       initialSelection: null,
       inputDecorationTheme: const InputDecorationTheme(
