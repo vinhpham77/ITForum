@@ -43,7 +43,7 @@ class _BookmarkFeedState extends State<BookmarkFeed> {
                 value: isSeries ? 'Series' : 'Bài viết',
                 onChanged: (String? newValue) {
                   widget.params["isSeries"] = isSeries ? 'false' : 'true';
-                  appRouter.go('/viewbookmark/${converPageParams(widget.params)}');
+                  appRouter.go('/viewbookmark/${convertPageParams(widget.params)}');
                 },
                 items: <String>['Bài viết', 'Series']
                     .map<DropdownMenuItem<String>>((String value) {

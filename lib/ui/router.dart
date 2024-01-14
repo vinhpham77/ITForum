@@ -454,43 +454,15 @@ final appRouter = GoRouter(
                   params: state.extra as Map<String, dynamic>? ?? {}),
             ))),
     GoRoute(
-      path: '/profile/:username/personal',
-      redirect: (BuildContext context, GoRouterState state) async {
-        return '/profile/${state.pathParameters['username']}/personal/basic-info';
-      },
-    ),
-    GoRoute(
-        path: '/profile/:username/personal/basic-info',
-        pageBuilder: (context, state) {
-          Map<String, dynamic> params =
-              state.extra as Map<String, dynamic>? ?? {};
-          params['isBasicInfoOption'] = 1;
-
-          return MaterialPage<void>(
-              key: UniqueKey(),
-              child: ScreenWithHeaderAndFooter(
-                body: Profile(
-                    username: state.pathParameters['username']!,
-                    selectedIndex: 6,
-                    params: params),
-              ));
-        }),
-    GoRoute(
-        path: '/profile/:username/personal/bio',
-        pageBuilder: (context, state) {
-          Map<String, dynamic> params =
-              state.extra as Map<String, dynamic>? ?? {};
-          params['isBasicInfoOption'] = 0;
-
-          return MaterialPage<void>(
-              key: UniqueKey(),
-              child: ScreenWithHeaderAndFooter(
-                body: Profile(
-                    username: state.pathParameters['username']!,
-                    selectedIndex: 6,
-                    params: params),
-              ));
-        }),
+        path: '/profile/:username/personal',
+        pageBuilder: (context, state) => MaterialPage<void>(
+            key: UniqueKey(),
+            child: ScreenWithHeaderAndFooter(
+              body: Profile(
+                  username: state.pathParameters['username']!,
+                  selectedIndex: 6,
+                  params: state.extra as Map<String, dynamic>? ?? {}),
+            ))),
   ],
   errorPageBuilder: (context, state) => const MaterialPage<void>(
       key: ValueKey('not-found'),

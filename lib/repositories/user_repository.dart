@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:cay_khe/api_config.dart';
+import 'package:cay_khe/dtos/user_dto.dart';
 import 'package:dio/dio.dart';
+
+import '../ui/common/utils/jwt_interceptor.dart';
 
 class UserRepository {
   late Dio _dio;
@@ -61,4 +64,8 @@ class UserRepository {
     );
   }
 
+  Future<Response<dynamic>> update(String username, UserDTO userDTO) async {
+    _dio = JwtInterceptor(needToLogin: true).addInterceptors(_dio);
+    return _dio.put('/$username/update', data: userDTO.toJson());
+  }
 }

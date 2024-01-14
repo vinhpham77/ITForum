@@ -1,16 +1,21 @@
 class UserDTO {
-  final String username;
   final String email;
-  // Thêm các trường khác tương ứng với dữ liệu user từ API
+  final bool? gender;
+  final DateTime? birthdate;
+  final String? avatarUrl;
+  final String? bio;
+  final String displayName;
 
-  UserDTO({required this.username, required this.email});
-  
-  // Phương thức tạo user từ JSON
-  factory UserDTO.fromJson(Map<String, dynamic> json) {
-    return UserDTO(
-      username: json['username'],
-      email: json['email'],
-      // Các trường khác tương ứng với dữ liệu user từ API
-    );
+  UserDTO({required this.email, required this.gender, required this.birthdate, required this.avatarUrl, required this.bio, required this.displayName});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'gender': gender,
+      'birthdate': birthdate?.toIso8601String(),
+      'bio': bio,
+      'displayName': displayName,
+      'avatarUrl': avatarUrl,
+    };
   }
 }

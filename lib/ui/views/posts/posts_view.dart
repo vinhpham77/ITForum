@@ -51,7 +51,6 @@ class _PostsViewState extends State<PostsView> {
   }
   @override
   Widget build(BuildContext context) {
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
@@ -157,11 +156,11 @@ class _PostsViewState extends State<PostsView> {
       ];
 }
 
-String converPageParams(Map<String, String> params) {
+String convertPageParams(Map<String, String> params) {
   return params.entries.map((e) => '${e.key}=${e.value}').join('&');
 }
 
-String converParams(Map<String, String> params) {
+String convertParams(Map<String, String> params) {
   params["page"] = "1";
   return params.entries.map((e) => '${e.key}=${e.value}').join('&');
 }

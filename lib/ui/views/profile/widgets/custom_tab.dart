@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 class CustomTab extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
-  final Widget child;
+  final String label;
 
   const CustomTab(
       {super.key,
       required this.isActive,
-      required this.child,
+      required this.label,
       required this.onTap});
 
   @override
@@ -29,7 +29,15 @@ class CustomTab extends StatelessWidget {
             ),
           ),
         ),
-        child: child,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: isActive
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).textTheme.bodyLarge!.color,
+          ),
+        )
       ),
     );
   }

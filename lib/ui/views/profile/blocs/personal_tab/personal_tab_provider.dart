@@ -3,6 +3,8 @@ import 'package:cay_khe/ui/views/profile/blocs/personal_tab/personal_tab_bloc.da
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../repositories/image_repository.dart';
+
 class PersonalTabProvider extends StatelessWidget {
   final Widget child;
   final String username;
@@ -14,7 +16,9 @@ class PersonalTabProvider extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<PersonalTabBloc>(
       create: (context) {
-        final bloc = PersonalTabBloc(userRepository: UserRepository())
+        final bloc = PersonalTabBloc(
+            userRepository: UserRepository(),
+            imageRepository: ImageRepository())
           ..add(LoadUserEvent(username: username));
 
         return bloc;

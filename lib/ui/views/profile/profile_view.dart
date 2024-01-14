@@ -28,12 +28,14 @@ class Profile extends StatelessWidget {
 
   const Profile(
       {super.key,
-        required this.username,
-        required this.selectedIndex,
-        required this.params});
+      required this.username,
+      required this.selectedIndex,
+      required this.params});
 
   int get page => params['page'] ?? 1;
+
   bool get isPostBookmarks => params['postBookmarks'] != 0;
+
   int get limit => params['limit'] ?? pageSize;
 
   @override
@@ -64,7 +66,7 @@ class Profile extends StatelessWidget {
               return Container(
                 color: Colors.white.withOpacity(0.5),
                 padding:
-                const EdgeInsets.symmetric(vertical: bodyVerticalSpace),
+                    const EdgeInsets.symmetric(vertical: bodyVerticalSpace),
                 child: Column(
                   children: [
                     _buildUserContainer(context, state),
@@ -139,10 +141,9 @@ class Profile extends StatelessWidget {
     return Expanded(
       flex: _left,
       child: Container(
-        transform: Matrix4.translationValues(-8.0, 0, 0),
-        padding: const EdgeInsets.only(right: 16.0),
-        child: buildTab(selectedIndex)
-      ),
+          transform: Matrix4.translationValues(-8.0, 0, 0),
+          padding: const EdgeInsets.only(right: 16.0),
+          child: buildTab(selectedIndex)),
     );
   }
 
@@ -176,10 +177,7 @@ class Profile extends StatelessWidget {
                             isActive: index == selectedIndex,
                             onTap: () => appRouter.go(tabs[index]['path']!,
                                 extra: {'limit': limit}),
-                            child: Text(
-                              '${tabs[index]['title']}',
-                              style: const TextStyle(fontSize: 14),
-                            )),
+                            label: '${tabs[index]['title']}'),
                     ],
                   ),
                 ),
@@ -265,14 +263,14 @@ class Profile extends StatelessWidget {
         onPressed: isWaiting
             ? null
             : () => context.read<ProfileBloc>().add(UnfollowEvent(
-            user: state.user,
-            isFollowing: state.isFollowing,
-            tagCounts: state.tagCounts,
-            profileStats: state.profileStats)),
+                user: state.user,
+                isFollowing: state.isFollowing,
+                tagCounts: state.tagCounts,
+                profileStats: state.profileStats)),
         style: TextButton.styleFrom(
           backgroundColor: Colors.indigoAccent.withOpacity(0.05),
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         ),
         child: const Text('Đang theo dõi'),
@@ -283,10 +281,10 @@ class Profile extends StatelessWidget {
         onPressed: isWaiting
             ? null
             : () => context.read<ProfileBloc>().add(FollowEvent(
-            user: state.user,
-            isFollowing: state.isFollowing,
-            tagCounts: state.tagCounts,
-            profileStats: state.profileStats)),
+                user: state.user,
+                isFollowing: state.isFollowing,
+                tagCounts: state.tagCounts,
+                profileStats: state.profileStats)),
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
           shape: RoundedRectangleBorder(
@@ -317,7 +315,9 @@ class Profile extends StatelessWidget {
       },
       {
         'title': 'Bookmark',
-        'path': isPostBookmarks ? '/profile/$username/bookmarks/posts' : '/profile/$username/bookmarks/series',
+        'path': isPostBookmarks
+            ? '/profile/$username/bookmarks/posts'
+            : '/profile/$username/bookmarks/series',
       },
       {
         'title': 'Đang theo dõi',
@@ -349,7 +349,7 @@ class Profile extends StatelessWidget {
       case 5:
         return _buildFollowsTab(isFollowers: true);
       case 6:
-        return  _buildPersonalTab();
+        return PersonalTab(username: username);
       default:
         return _buildPostTab();
     }
@@ -370,14 +370,10 @@ class Profile extends StatelessWidget {
   }
 
   Widget _buildBookmarksTab() {
-    return BookmarksTab(username: username, page: page, limit: limit, isPostBookmarks: isPostBookmarks);
-  }
-
-  Widget _buildPersonalTab() {
-    if (params['isBasicInfoOption'] == 1) {
-      return PersonalTab(username: username, isBasicInfoOption: true);
-    }
-
-    return PersonalTab(username: username, isBasicInfoOption: false);
+    return BookmarksTab(
+        username: username,
+        page: page,
+        limit: limit,
+        isPostBookmarks: isPostBookmarks);
   }
 }
