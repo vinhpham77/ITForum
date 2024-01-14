@@ -270,138 +270,141 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Widget stickySideBar() {
-    return Column(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    appRouter.go("/profile/${sp.createdBy}/posts");
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child:
-                        UserAvatar(imageUrl: sp.user.avatarUrl, size: 48),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      appRouter.go("/profile/${sp.createdBy}/posts");
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child:
+                          UserAvatar(imageUrl: sp.user.avatarUrl, size: 48),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      onEnter: (_) {
-                        setState(() {
-                          isHoveredUserLink = true;
-                        });
-                      },
-                      onExit: (_) {
-                        setState(() {
-                          isHoveredUserLink = false;
-                        });
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          appRouter
-                              .go("/profile/${sp.createdBy}/posts");
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        onEnter: (_) {
+                          setState(() {
+                            isHoveredUserLink = true;
+                          });
                         },
-                        child: Text(
-                          sp.user.displayName,
-                          style: TextStyle(
-                            color: isHoveredUserLink
-                                ? Colors.lightBlueAccent
-                                : Colors.indigo,
-                            decoration: isHoveredUserLink
-                                ? TextDecoration.underline
-                                : null,
+                        onExit: (_) {
+                          setState(() {
+                            isHoveredUserLink = false;
+                          });
+                        },
+                        child: GestureDetector(
+                          onTap: () {
+                            appRouter
+                                .go("/profile/${sp.createdBy}/posts");
+                          },
+                          child: Text(
+                            sp.user.displayName,
+                            style: TextStyle(
+                              color: isHoveredUserLink
+                                  ? Colors.lightBlueAccent
+                                  : Colors.indigo,
+                              decoration: isHoveredUserLink
+                                  ? TextDecoration.underline
+                                  : null,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text("@${sp.createdBy}"),
-                    const SizedBox(height: 8),
-                    if (sp.user.id != user.id)
-                      ElevatedButton(
-                        onPressed: () => _follow(),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                      const SizedBox(height: 8),
+                      Text("@${sp.createdBy}"),
+                      const SizedBox(height: 8),
+                      if (sp.user.id != user.id)
+                        ElevatedButton(
+                          onPressed: () => _follow(),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              isFollow
+                                  ? const Icon(Icons.check,color: Colors.white,size: 16)
+                                  : const Icon(Icons.add,color: Colors.white,size: 16),
+                              const SizedBox(width: 4),
+                              isFollow
+                                  ? const Text("Đã theo dõi",style: TextStyle(color: Colors.white))
+                                  : const Text('Theo dõi',style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            isFollow
-                                ? const Icon(Icons.check,color: Colors.white,size: 16)
-                                : const Icon(Icons.add,color: Colors.white,size: 16),
-                            const SizedBox(width: 4),
-                            isFollow
-                                ? const Text("Đã theo dõi",style: TextStyle(color: Colors.white))
-                                : const Text('Theo dõi',style: TextStyle(color: Colors.white)),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildIconWithText(
-                    Icons.verified_user_sharp, totalFollow.toString()),
-                const SizedBox(width: 12),
-                _buildIconWithText(
-                    Icons.pending_actions, totalSeries.toString()),
-              ],
-            ),
-            if (sp.user.id != user.id)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: ElevatedButton(
-                onPressed:
-                    sp.user.id != user.id ? () => _toggleBookmark() : null,
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    isBookmark
-                        ? const Icon(Icons.bookmark,color: Colors.white,size: 16)
-                        : const Icon(Icons.bookmark_add_outlined,color: Colors.white,size: 16),
-                    const SizedBox(width: 4),
-                    isBookmark
-                        ? const Text('HỦY BOOKMARK SERIES',style: TextStyle(color: Colors.white))
-                        : const Text('BOOKMARK SERIES NÀY',style: TextStyle(color: Colors.white)),
-                  ],
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildIconWithText(
+                      Icons.verified_user_sharp, totalFollow.toString()),
+                  const SizedBox(width: 12),
+                  _buildIconWithText(
+                      Icons.pending_actions, totalSeries.toString()),
+                ],
+              ),
+              if (sp.user.id != user.id)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: ElevatedButton(
+                  onPressed:
+                      sp.user.id != user.id ? () => _toggleBookmark() : null,
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(const Color(0xFF6C83FE)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      isBookmark
+                          ? const Icon(Icons.bookmark,color: Colors.white,size: 16)
+                          : const Icon(Icons.bookmark_add_outlined,color: Colors.white,size: 16),
+                      const SizedBox(width: 4),
+                      isBookmark
+                          ? const Text('HỦY BOOKMARK SERIES',style: TextStyle(color: Colors.white))
+                          : const Text('BOOKMARK SERIES NÀY',style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Container(
-          height: 20,
-          width: 200,
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.grey,
-                width: 1.0, // Độ dày của border
+            ],
+          ),
+          Container(
+            height: 20,
+            width: 200,
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey,
+                  width: 1.0, // Độ dày của border
+                ),
               ),
             ),
           ),
-        ),
-        _buildSocialShareSection(widget.id)
-      ],
+          _buildSocialShareSection(widget.id)
+        ],
+      ),
     );
   }
 
