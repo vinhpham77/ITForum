@@ -15,8 +15,7 @@
 //               children: [
 //                 InkWell(
 //                   onTap: () {},
-//                   child: ClipRRect(
-//                     borderRadius: BorderRadius.circular(50),
+//                   child: ClipOval(
 //                     child: _buildPostImage(postAggregation.user.avatarUrl ?? ""),
 //                   ),
 //                 ),

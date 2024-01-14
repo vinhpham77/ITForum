@@ -23,8 +23,7 @@ class SeriesFeedItem extends StatelessWidget {
                 : () => appRouter.go(
                 '/profile/${seriesPost.user?.username}',
                 extra: {}),
-            child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
+            child: ClipOval(
                 child: UserAvatar(
                   imageUrl: seriesPost.user?.avatarUrl,
                   size: 54,

@@ -172,8 +172,7 @@ class _RightHeaderState extends State<RightHeader> {
                     controller.open();
                   }
                 },
-                icon: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
+                icon: ClipOval(
                     child: UserAvatar(
                         imageUrl: JwtPayload.avatarUrl ?? '', size: 32)),
                 iconSize: 32,

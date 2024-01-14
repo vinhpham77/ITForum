@@ -81,8 +81,7 @@ class _StickySidebarState extends State<StickySidebar> {
               children: [
                 InkWell(
                   onTap: () {},
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
+                  child: ClipOval(
                     child: UserAvatar(
                         imageUrl: widget.authorSeries.avatarUrl, size: 48),
                   ),

@@ -67,8 +67,7 @@ class FollowTabItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+          ClipOval(
               child: UserAvatar(
                 imageUrl: userStats.avatarUrl,
                 size: 54,

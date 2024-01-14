@@ -91,55 +91,52 @@ class _CreateCommentViewState extends State<CreateCommentView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: InkWell(
                     onTap: () {},
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
+                    child: ClipOval(
                       child:UserAvatar(imageUrl: JwtPayload.avatarUrl, size: 32,),
                     ),
                   ),
                 ),
-                Container(
-                  child: Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            _isEditing ? _buildCommentEditingTab() : _buildCommentPreviewTab(context),
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(8),
-                          child: SizedBox(
-                            height: 36,
-                            width: 100,
-                            child: FloatingActionButton(
-                              backgroundColor: Color.fromRGBO(96, 120, 254, 1),
-                              onPressed: () {
-                                if(!validateOnPressed())
-                                  return;
-                                Future<Response<dynamic>> future;
-                                if(widget.context == '')
-                                  future = commentRepository.add(widget.postId, createCommentDto(widget.subId));
-                                else
-                                  future = commentRepository.updateSubComment(widget.postId, widget.subId, createCommentDto(""));
-                                future.then((response) {
-                                  widget.callback(SubCommentAggreGate.fromJson(response.data));
-
-                                  _contentController.text = "";
-                                }).catchError((error) {
-                                  String message = getMessageFromException(error);
-                                  showTopRightSnackBar(context, message, NotifyType.error);
-                                });
-                              },
-                              child: Text(widget.context == '' ? "Bình luận" : "Cập nhật", style: TextStyle(color: Colors.white),),
-                            ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          _isEditing ? _buildCommentEditingTab() : _buildCommentPreviewTab(context),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8),
+                        child: SizedBox(
+                          height: 36,
+                          width: 100,
+                          child: FloatingActionButton(
+                            backgroundColor: Color.fromRGBO(96, 120, 254, 1),
+                            onPressed: () {
+                              if(!validateOnPressed())
+                                return;
+                              Future<Response<dynamic>> future;
+                              if(widget.context == '')
+                                future = commentRepository.add(widget.postId, createCommentDto(widget.subId));
+                              else
+                                future = commentRepository.updateSubComment(widget.postId, widget.subId, createCommentDto(""));
+                              future.then((response) {
+                                widget.callback(SubCommentAggreGate.fromJson(response.data));
+                
+                                _contentController.text = "";
+                              }).catchError((error) {
+                                String message = getMessageFromException(error);
+                                showTopRightSnackBar(context, message, NotifyType.error);
+                              });
+                            },
+                            child: Text(widget.context == '' ? "Bình luận" : "Cập nhật", style: TextStyle(color: Colors.white),),
                           ),
-                        )
-                      ],
-                    ),
+                        ),
+                      )
+                    ],
                   ),
                 )
               ],

@@ -201,8 +201,7 @@ class Profile extends StatelessWidget {
         children: [
           Row(
             children: [
-              ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
+              ClipOval(
                   child: UserAvatar(
                     imageUrl: state.user.avatarUrl,
                     size: 68,

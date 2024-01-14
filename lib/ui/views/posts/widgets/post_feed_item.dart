@@ -27,8 +27,7 @@ class PostFeedItem extends StatelessWidget {
                 : () => appRouter.go(
                 '/profile/${postAggregation.user!.username}',
                 extra: {}),
-            child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
+            child: ClipOval(
                 child: UserAvatar(
                   imageUrl: postAggregation.user?.avatarUrl,
                   size: 54,

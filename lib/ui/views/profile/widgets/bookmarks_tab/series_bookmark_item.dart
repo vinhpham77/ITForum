@@ -29,8 +29,7 @@ class SeriesBookmarkItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(50),
+          ClipOval(
             child: InkWell(
               onTap: seriesBookmark.user == null
                   ? null

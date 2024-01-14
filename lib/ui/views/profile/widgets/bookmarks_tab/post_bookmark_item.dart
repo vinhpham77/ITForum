@@ -39,8 +39,7 @@ class PostBookmarkItem extends StatelessWidget {
             },
             hoverColor: Colors.black12,
             child:
-          ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+          ClipOval(
               child: UserAvatar(
                 imageUrl: postBookmark.user?.avatarUrl,
                 size: 54,

@@ -284,8 +284,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     onTap: () {
                       appRouter.go("/profile/${sp.createdBy}/posts");
                     },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
+                    child: ClipOval(
                       child:
                           UserAvatar(imageUrl: sp.user.avatarUrl, size: 48),
                     ),

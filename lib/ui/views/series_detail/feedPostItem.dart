@@ -32,8 +32,7 @@ class _PostFeedItemState extends State<PostFeedItemSeries> {
               onTap: () {
                 print('Navigate to: ${widget.postAggregation.id}');
               },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
+              child: ClipOval(
                 child: UserAvatar(
                   imageUrl: widget.postAggregation.user?.avatarUrl,
                   size: 54,

@@ -492,8 +492,7 @@ class _PostDetailsPage extends State<PostDetailsPage> {
           onTap: () {
             appRouter.go("/profile/${postDetailDTO.user.username}/posts");
           },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
+          child: ClipOval(
             child: _buildPostImage(postDetailDTO.user.avatarUrl ?? ""),
           ),
         ),
