@@ -46,32 +46,26 @@ class _SeriesDetailState extends State<SeriesDetail> {
   final userRepository = UserRepository();
   final followRepository = FollowRepository();
   final bookmarkRepository = BookmarkRepository();
-  late SeriesDetailBloc seriesDetailBloc;
-  late List<String> listTagsPost;
-  late List<String> listTagsSeries;
   late Follow follow;
   late List<PostAggregation> listPostDetail = [];
   bool stateVote = false;
   bool upVote = false;
   bool downVote = false;
-  bool typeVote = false;
   bool isHoveredUserLink = false;
   bool isFollow = false;
   bool isBookmark = false;
   bool isLoading = false;
   bool isPrivate = false;
+  bool isPrivateNoAuth = false;
   String idVote = '';
   String type = "series";
-  String username = JwtPayload.sub ?? '';
   String _currentId = '';
   int totalSeries = 0;
   int totalFollow = 0;
   int score = 0;
   User user = User.empty();
-  List<String> listTag = [];
   Sp sp = Sp.constructor();
-  bool isView = false;
-  bool isPrivateNoAuth = false;
+
 
   @override
   void initState() {
@@ -101,8 +95,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
     }
     await _loadListPost(widget.id);
     var futureCheckVote = _loadCheckVote(widget.id);
-    var futureUser = _loadUser(username);
-    var futureFollow = _loadFollow(username, sp.createdBy);
+    var futureUser = _loadUser(JwtPayload.sub ?? '');
+    var futureFollow = _loadFollow(JwtPayload.sub ?? '', sp.createdBy);
     var futureBookmark = _loadBookmark(widget.id);
     var futureTotalSeries = _loadTotalSeries(sp.createdBy);
     var futureTotalFollower = _loadTotalFollower(sp.createdBy);
@@ -156,7 +150,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                                             type: type,
                                             idContent: widget.id,
                                             authorname: sp.createdBy,
-                                            username: username),
+                                            username: JwtPayload.sub ?? ''),
                                         if (sp != null)
                                           SeriesContentWidget(sp: sp)
                                         else
@@ -232,7 +226,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
       } else {
         Vote vote = Vote.fromJson(response.data);
         idVote = vote.id;
-        typeVote = vote.type;
         return Future<bool>.value(true);
       }
     }).catchError((error) {
@@ -242,7 +235,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
   }
 
   Future<void> _loadCheckVote(String postId) async {
-    if (username != null) {
+    if (JwtPayload.sub != null) {
       var futureVote = await voteRepository.checkVote(postId);
       if (futureVote.data is Map<String, dynamic>) {
         Vote vote = Vote.fromJson(futureVote.data);
@@ -369,6 +362,7 @@ class _SeriesDetailState extends State<SeriesDetail> {
                     Icons.pending_actions, totalSeries.toString()),
               ],
             ),
+            if (sp.user.id != user.id)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: ElevatedButton(
@@ -467,8 +461,8 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   Future<void> _loadListPost(String seriesId) async {
     try {
-      var fufutureSeries = await seriesRepository.getOneDetail(seriesId);
-      sp = Sp.fromJson(fufutureSeries.data);
+      var futureSeries = await seriesRepository.getOneDetail(seriesId);
+      sp = Sp.fromJson(futureSeries.data);
       for (var e in sp.posts) {
         PostAggregation p = PostAggregation.empty();
         p.user = sp.user;
@@ -564,7 +558,6 @@ class _SeriesDetailState extends State<SeriesDetail> {
 
   Future<void> _loadFollow(String follower, String followed) async {
     if (follower == '') {
-      print("loi rong");
       return;
     }
     var future = await followRepository.checkFollow(followed);
@@ -573,16 +566,12 @@ class _SeriesDetailState extends State<SeriesDetail> {
         setState(() {
           follow = Follow.fromJson(future.data);
           isFollow = true;
-          print("isFollow true");
-          print(isFollow);
         });
       }
     } else {
       if (mounted) {
         setState(() {
           isFollow = false;
-          print("isFollow false");
-          print(isFollow);
         });
       }
     }
