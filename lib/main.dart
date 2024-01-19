@@ -20,11 +20,11 @@ class ITForumApp extends StatefulWidget {
 class _ITForumAppState extends State<ITForumApp> {
   Future<void>? _loadJwtFuture;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadJwtFuture = loadJwt();
-  }
+    @override
+    void initState() {
+      super.initState();
+      _loadJwtFuture = loadJwt();
+    }
 
   @override
   Widget build(BuildContext context) {
