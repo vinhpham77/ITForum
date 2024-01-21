@@ -59,14 +59,14 @@ class _CommentState extends State<CommentView> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Bình luận",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Padding(
                 padding: EdgeInsets.only(top: 8, bottom: 8),
                 child: JwtPayload.sub == null
-                    ? Center(
+                    ? const Center(
                         child: Text(
                           "Đăng nhập để bình luận",
                           style: TextStyle(color: Colors.black38),
@@ -170,7 +170,7 @@ class _CommentState extends State<CommentView> {
                             if (!comment.isReply) comment.isReply = true;
                           });
                         },
-                        child: Text(
+                        child: const Text(
                           "Trả lời",
                           style: TextStyle(color: Colors.blueAccent),
                         ),

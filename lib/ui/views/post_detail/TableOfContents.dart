@@ -17,7 +17,7 @@ class TableOfContents extends StatelessWidget {
 
               int index = headings.indexOf(heading);
               scrollController.animateTo(
-                index * 100.0, // Giả sử mỗi tiêu đề tương ứng với 100 pixel
+                index * 100.0,
                 duration: const Duration(seconds: 1),
                 curve: Curves.easeInOut,
               );

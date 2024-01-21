@@ -120,18 +120,19 @@ class _CreateCommentViewState extends State<CreateCommentView> {
                           height: 36,
                           width: 100,
                           child: FloatingActionButton(
-                            backgroundColor: Color.fromRGBO(96, 120, 254, 1),
+                            backgroundColor: const Color.fromRGBO(96, 120, 254, 1),
                             onPressed: () {
                               if (!validateOnPressed()) return;
                               Future<Response<dynamic>> future;
-                              if (widget.context == '')
+                              if (widget.context == '') {
                                 future = commentRepository.add(widget.postId,
                                     createCommentDto(widget.subId));
-                              else
+                              } else {
                                 future = commentRepository.updateSubComment(
                                     widget.postId,
                                     widget.subId,
                                     createCommentDto(""));
+                              }
                               future.then((response) {
                                 widget.callback(SubCommentAggreGate.fromJson(
                                     response.data));
